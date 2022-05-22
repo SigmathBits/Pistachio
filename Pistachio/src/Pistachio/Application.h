@@ -13,6 +13,6 @@ namespace Pistachio {
 		void Run();
 	};
 
-	// TO be defined in CLIENT
+	// To be defined in CLIENT
 	Application* CreateApplication();
 }
