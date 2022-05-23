@@ -48,7 +48,7 @@ project "Pistachio"
 
 	filter "system:windows"
 		cppdialect "C++17"
-		--staticruntime "off"
+		--staticruntime "on"
 		systemversion "latest"
 
 		defines {
