@@ -10,13 +10,25 @@ workspace "Pistachio"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+-- Inlcude directories relative to root folder (solition directory)
+IncludeDir = {}
+IncludeDir["GLFW"] = "Pistachio/vendor/GLFW/include"
+
+
+include "Pistachio/vendor/GLFW"
+
+
 project "Pistachio"
 	location "Pistachio"
 	kind "SharedLib"
 	language "C++"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("intermediates/" .. outputdir .. "/%{prj.name}")
+
+	pchheader "pstpch.h"
+	pchsource "Pistachio/src/pstpch.cpp"
 
 	files {
 		"%{prj.name}/src/**.h",
@@ -26,11 +38,17 @@ project "Pistachio"
 	includedirs {
 		"%{prj.name}/src",
 		"%{prj.name}/vendor/spdlog/include",
+		"%{IncludeDir.GLFW}",
+	}
+
+	links {
+		"GLFW",
+		"opengl32.lib",
 	}
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
+		--staticruntime "off"
 		systemversion "latest"
 
 		defines {
@@ -44,18 +62,21 @@ project "Pistachio"
 
 	filter "configurations:Debug"
 		defines "PST_DEBUG"
-		symbols "On"
+		--buildoptions "/MDd"
+		runtime "Debug"
+		symbols "on"
 
 	filter "configurations:Debug"
 		defines "PST_RELEASE"
-		optimize "On"
+		--buildoptions "/MD"
+		runtime "Release"
+		optimize "on"
 
 	filter "configurations:Dist"
+		--buildoptions "/MD"
 		defines "PST_DIST"
-		optimize "On"
-
-	filter { "system:windows", "configurations:Release" }
-		buildoptions "/MT"  -- Set multi-threaded flag
+		runtime "Release"
+		optimize "on"
 
 
 project "Sandbox"
