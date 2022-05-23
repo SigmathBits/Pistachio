@@ -9,8 +9,6 @@
 
 namespace Pistachio {
 
-#define BIND_EVENT_FUNCTION(x) std::bind(&Application::x, this, std::placeholders::_1)
-
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application() {
@@ -19,7 +17,7 @@ namespace Pistachio {
 
 		m_Window = std::unique_ptr<Window>(Window::Create());
 
-		m_Window->SetEventCallback(BIND_EVENT_FUNCTION(OnEvent));
+		m_Window->SetEventCallback(PST_BIND_EVENT_FUNCTION(Application::OnEvent));
 	}
 
 	Application::~Application() {
@@ -41,7 +39,7 @@ namespace Pistachio {
 
 	void Application::OnEvent(Event& event) {
 		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FUNCTION(OnWindowClose));
+		dispatcher.Dispatch<WindowCloseEvent>(PST_BIND_EVENT_FUNCTION(Application::OnWindowClose));
 
 		PST_CORE_TRACE(event);
 

@@ -11,10 +11,10 @@ namespace Pistachio {
 	enum class EventType {
 		None = 0,
 		// Application Events
-		WindowResize, WindowClose, /*Not implemented:*/ WindowFocus, WindowLostFocus, WindowMoved,
-		AppTick, AppUpdate, AppRenderer,
+		WindowResize, WindowClose, WindowFocus, WindowLostFocus, /*Not implemented:*/ WindowMoved,
+		AppTick, AppUpdate, AppRender,
 		// Key Events
-		KeyPressed, KeyReleased,
+		KeyPressed, KeyReleased, KeyTyped,
 		// Mouse Events
 		MouseMoved, MouseScrolled, MouseButtonPressed, MouseButtonReleased,
 	};

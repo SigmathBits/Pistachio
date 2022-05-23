@@ -33,6 +33,22 @@ namespace Pistachio {
 		EVENT_CATEGORY(EVENT_CATEGORY_APPLICATION)
 	};
 	
+	class PISTACHIO_API WindowFocusEvent : public Event {
+	public:
+		WindowFocusEvent() {}
+
+		EVENT_TYPE(WindowFocus)
+		EVENT_CATEGORY(EVENT_CATEGORY_APPLICATION)
+	};
+
+	class PISTACHIO_API WindowLostFocusEvent : public Event {
+	public:
+		WindowLostFocusEvent() {}
+
+		EVENT_TYPE(WindowLostFocus)
+		EVENT_CATEGORY(EVENT_CATEGORY_APPLICATION)
+	};
+	
 	class PISTACHIO_API AppTickEvent : public Event {
 	public:
 		AppTickEvent() {}
@@ -53,7 +69,7 @@ namespace Pistachio {
 	public:
 		AppRenderEvent() {}
 
-		EVENT_TYPE(AppTick)
+		EVENT_TYPE(AppRender)
 		EVENT_CATEGORY(EVENT_CATEGORY_APPLICATION)
 	};
 

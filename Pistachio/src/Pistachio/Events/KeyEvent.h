@@ -43,12 +43,20 @@ namespace Pistachio {
 		int m_RepeatCount;
 	};
 	
-	class PISTACHIO_API KeyReleaseEvent : public KeyEvent {
+	class PISTACHIO_API KeyReleasedEvent : public KeyEvent {
 	public:
-		KeyReleaseEvent(int keycode)
+		KeyReleasedEvent(int keycode)
 			: KeyEvent(keycode) {}
 
-		EVENT_TYPE(KeyPressed)
+		EVENT_TYPE(KeyReleased)
+	};
+		
+	class PISTACHIO_API KeyTypedEvent : public KeyEvent {
+	public:
+		KeyTypedEvent(int keycode)
+			: KeyEvent(keycode) {}
+
+		EVENT_TYPE(KeyTyped)
 	};
 
 }

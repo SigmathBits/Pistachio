@@ -353,3 +353,4 @@ MigrationBackup/
 ## Custom gitignores
 intermediates/
 bin-int/
+**/imgui.ini

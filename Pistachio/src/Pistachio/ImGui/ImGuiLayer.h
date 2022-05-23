@@ -2,6 +2,10 @@
 
 #include "Pistachio/Layer.h"
 
+#include "Pistachio/Events/ApplicationEvent.h"
+#include "Pistachio/Events/KeyEvent.h"
+#include "Pistachio/Events/MouseEvent.h"
+
 
 namespace Pistachio {
 
@@ -16,7 +20,23 @@ namespace Pistachio {
 		virtual void OnEvent(Event& event);
 
 	private:
+		bool OnWindowResize(WindowResizeEvent& event);
+		bool OnWindowFocus(WindowFocusEvent& event);
+		bool OnWindowLostFocus(WindowLostFocusEvent& event);
+
+		bool OnMouseMoved(MouseMovedEvent& event);
+		bool OnMouseScrolled(MouseScrolledEvent& event);
+		bool OnMouseButtonPressed(MouseButtonPressedEvent& event);
+		bool OnMouseButtonReleased(MouseButtonReleasedEvent& event);
+
+		bool OnKeyPressed(KeyPressedEvent& event);
+		bool OnKeyReleased(KeyReleasedEvent& event);
+		bool OnKeyTyped(KeyTypedEvent& event);
+
+	private:
 		float m_Time = 0.0f;
+
+		static int ImGuiLayer::GLFWKeyToImGuiKey(int key);
 	};
 
 }

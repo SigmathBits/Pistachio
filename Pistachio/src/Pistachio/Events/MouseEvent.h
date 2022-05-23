@@ -39,7 +39,7 @@ namespace Pistachio {
 			return ss.str();
 		}
 
-		EVENT_TYPE(MouseMoved)
+		EVENT_TYPE(MouseScrolled)
 		EVENT_CATEGORY(EVENT_CATEGORY_MOUSE | EVENT_CATEGORY_INPUT)
 	private:
 		float m_XOffset, m_YOffset;

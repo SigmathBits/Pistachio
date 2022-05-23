@@ -7,7 +7,7 @@ public:
 		: Layer("Example") {}
 
 	void OnUpdate() override {
-		PST_INFO("ExampleLayer::Update");
+		//PST_TRACE("ExampleLayer::Update");
 	}
 
 	void OnEvent(Pistachio::Event& event) override {

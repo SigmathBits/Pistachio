@@ -58,7 +58,8 @@ namespace Pistachio {
 
 		SetVSync(true);
 
-		// Set up all GLFW event callbacks
+		/// Set up all GLFW event callbacks
+		// Application Events
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -76,6 +77,19 @@ namespace Pistachio {
 			data.EventCallback(event);
 		});
 
+		glfwSetWindowFocusCallback(m_Window, [](GLFWwindow* window, int focused) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			if (focused) {
+				WindowFocusEvent event;
+				data.EventCallback(event);
+			} else {
+				WindowLostFocusEvent event;
+				data.EventCallback(event);
+			}
+		});
+
+		// Key Events
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -86,7 +100,7 @@ namespace Pistachio {
 					break;
 				}
 				case GLFW_RELEASE: {
-					KeyReleaseEvent event(key);
+					KeyReleasedEvent event(key);
 					data.EventCallback(event);
 					break;
 				}
@@ -102,6 +116,14 @@ namespace Pistachio {
 			}
 		});
 
+		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int character) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			KeyTypedEvent event(character);
+			data.EventCallback(event);
+		});
+
+		// Mouse Events
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
