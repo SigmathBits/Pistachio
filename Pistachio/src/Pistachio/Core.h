@@ -16,6 +16,10 @@
 	#error Pistachio only supports Windows!
 #endif
 
+#ifdef PST_DEBUG
+	#define PST_ENABLE_ASSERTS
+#endif
+
 #ifdef PST_ENABLE_ASSERTS
 	#define PST_CORE_ASSERT(x, ...) { if(!(x)) { PST_CORE_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
 	#define PST_ASSERT(x, ...)      { if(!(x)) { PST_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }

@@ -23,7 +23,7 @@ public:
 		PushOverlay(new Pistachio::ImGuiLayer());
 	}
 
-	~Sandbox() {
+	~Sandbox() override {
 
 	}
 };

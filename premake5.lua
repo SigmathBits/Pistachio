@@ -1,5 +1,6 @@
 workspace "Pistachio"
 	architecture "x64"
+	startproject "Sandbox"
 	
 	configurations {
 		"Debug",
@@ -10,16 +11,18 @@ workspace "Pistachio"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
--- Inlcude directories relative to root folder (solition directory)
+-- Inlcude directories relative to root folder (Solution directory)
 IncludeDir = {}
 IncludeDir["GLFW"] = "Pistachio/vendor/GLFW/include"
 IncludeDir["Glad"] = "Pistachio/vendor/Glad/include"
 IncludeDir["ImGui"] = "Pistachio/vendor/imgui"
 
 
-include "Pistachio/vendor/GLFW"
-include "Pistachio/vendor/Glad"
-include "Pistachio/vendor/imgui"
+group "Dependancies"
+	include "Pistachio/vendor/imgui"
+	include "Pistachio/vendor/GLFW"
+	include "Pistachio/vendor/Glad"
+group ""
 
 
 project "Pistachio"
@@ -56,7 +59,6 @@ project "Pistachio"
 
 	filter "system:windows"
 		cppdialect "C++17"
-		--staticruntime "on"
 		systemversion "latest"
 
 		defines {
@@ -66,25 +68,22 @@ project "Pistachio"
 		}
 
 		postbuildcommands {
-			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox")
+			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Sandbox/\"")
 		}
 
 	filter "configurations:Debug"
 		defines "PST_DEBUG"
 		runtime "Debug"
-		--buildoptions "/MDd"
 		symbols "on"
 
 	filter "configurations:Release"
 		defines "PST_RELEASE"
 		runtime "Release"
-		--buildoptions "/MD"
 		optimize "on"
 
 	filter "configurations:Dist"
 		defines "PST_DIST"
 		runtime "Release"
-		--buildoptions "/MD"
 		optimize "on"
 
 
@@ -113,7 +112,6 @@ project "Sandbox"
 
 	filter "system:windows"
 		cppdialect "C++17"
-		--staticruntime "on"
 		systemversion "latest"
 
 		defines {
@@ -134,9 +132,4 @@ project "Sandbox"
 		defines "PST_DIST"
 		runtime "Release"
 		optimize "on"
-
-
-workspace "Pistachio"
-  architecture "x64"
-  startproject "Sandbox"
   

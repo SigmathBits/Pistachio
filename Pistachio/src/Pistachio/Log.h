@@ -11,7 +11,7 @@
 #define PST_CORE_INFO(...)      Pistachio::Log::CoreLogger()->info(__VA_ARGS__)
 #define PST_CORE_WARN(...)      Pistachio::Log::CoreLogger()->warn(__VA_ARGS__)
 #define PST_CORE_ERROR(...)     Pistachio::Log::CoreLogger()->error(__VA_ARGS__)
-#define PST_CORE_CRITACAL(...)  Pistachio::Log::CoreLogger()->critical(__VA_ARGS__)
+#define PST_CORE_CRITICAL(...)  Pistachio::Log::CoreLogger()->critical(__VA_ARGS__)
 							 
 // Client log macros		 
 #define PST_TRACE(...)          Pistachio::Log::ClientLogger()->trace(__VA_ARGS__)
