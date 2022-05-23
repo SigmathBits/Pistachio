@@ -14,10 +14,12 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["GLFW"] = "Pistachio/vendor/GLFW/include"
 IncludeDir["Glad"] = "Pistachio/vendor/Glad/include"
+IncludeDir["ImGui"] = "Pistachio/vendor/imgui/include"
 
 
 include "Pistachio/vendor/GLFW"
 include "Pistachio/vendor/Glad"
+include "Pistachio/vendor/imgui"
 
 
 project "Pistachio"
@@ -42,11 +44,13 @@ project "Pistachio"
 		"%{prj.name}/vendor/spdlog/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
+		"%{IncludeDir.ImGui}",
 	}
 
 	links {
 		"GLFW",
 		"Glad",
+		"imgui",
 		"opengl32.lib",
 	}
 
