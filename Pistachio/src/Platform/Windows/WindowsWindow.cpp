@@ -1,5 +1,7 @@
 #include "pstpch.h"
 
+#include <glad/glad.h>
+
 #include "WindowsWindow.h"
 
 #include "Pistachio/Core.h"
@@ -47,6 +49,9 @@ namespace Pistachio {
 
 		m_Window = glfwCreateWindow(properties.Width, properties.Height, properties.Title.c_str(), nullptr, nullptr);
 		glfwMakeContextCurrent(m_Window);
+
+		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+		PST_CORE_ASSERT(status, "Failed to initialise Glad!");
 
 		// What data is passed to callback functions set with GLFW
 		glfwSetWindowUserPointer(m_Window, &m_Data);

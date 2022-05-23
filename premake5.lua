@@ -13,9 +13,11 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 -- Inlcude directories relative to root folder (solition directory)
 IncludeDir = {}
 IncludeDir["GLFW"] = "Pistachio/vendor/GLFW/include"
+IncludeDir["Glad"] = "Pistachio/vendor/Glad/include"
 
 
 include "Pistachio/vendor/GLFW"
+include "Pistachio/vendor/Glad"
 
 
 project "Pistachio"
@@ -39,10 +41,12 @@ project "Pistachio"
 		"%{prj.name}/src",
 		"%{prj.name}/vendor/spdlog/include",
 		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.Glad}",
 	}
 
 	links {
 		"GLFW",
+		"Glad",
 		"opengl32.lib",
 	}
 
@@ -54,6 +58,7 @@ project "Pistachio"
 		defines {
 			"PST_PLATFORM_WINDOWS",
 			"PST_BUILD_DLL",
+			"GLFW_INCLUDE_NONE",
 		}
 
 		postbuildcommands {
