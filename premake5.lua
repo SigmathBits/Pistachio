@@ -24,6 +24,7 @@ project "Pistachio"
 	}
 
 	includedirs {
+		"%{prj.name}/src",
 		"%{prj.name}/vendor/spdlog/include",
 	}
 
@@ -72,7 +73,7 @@ project "Sandbox"
 
 	includedirs { 
 		"Pistachio/vendor/spdlog/include",
-		"Pistachio/src"
+		"Pistachio/src",
 	}
 
 	links {
