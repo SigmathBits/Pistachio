@@ -62,20 +62,20 @@ project "Pistachio"
 
 	filter "configurations:Debug"
 		defines "PST_DEBUG"
-		--buildoptions "/MDd"
 		runtime "Debug"
+		--buildoptions "/MDd"
 		symbols "on"
 
-	filter "configurations:Debug"
+	filter "configurations:Release"
 		defines "PST_RELEASE"
-		--buildoptions "/MD"
 		runtime "Release"
+		--buildoptions "/MD"
 		optimize "on"
 
 	filter "configurations:Dist"
-		--buildoptions "/MD"
 		defines "PST_DIST"
 		runtime "Release"
+		--buildoptions "/MD"
 		optimize "on"
 
 
@@ -83,6 +83,7 @@ project "Sandbox"
 	location "Sandbox"
 	kind "ConsoleApp"
 	language "C++"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("intermediates/" .. outputdir .. "/%{prj.name}")
@@ -103,7 +104,7 @@ project "Sandbox"
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
+		--staticruntime "on"
 		systemversion "latest"
 
 		defines {
@@ -112,15 +113,18 @@ project "Sandbox"
 
 	filter "configurations:Debug"
 		defines "PST_DEBUG"
-		symbols "On"
+		runtime "Debug"
+		symbols "on"
 
-	filter "configurations:Debug"
+	filter "configurations:Release"
 		defines "PST_RELEASE"
-		optimize "On"
+		runtime "Release"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "PST_DIST"
-		optimize "On"
+		runtime "Release"
+		optimize "on"
 
 
 workspace "Pistachio"

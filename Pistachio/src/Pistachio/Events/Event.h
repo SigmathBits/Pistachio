@@ -38,8 +38,9 @@ namespace Pistachio {
 
 
 	class PISTACHIO_API Event {
-		friend class EventDispatcher;  // So the EventDispatcher can update m_Handled
 	public:
+		bool Handled = false;
+
 		virtual EventType Type() const = 0;
 		virtual int CategoryFlags() const = 0;
 		virtual const char* Name() const = 0;
@@ -48,9 +49,6 @@ namespace Pistachio {
 		inline bool IsInCategory(EventCategory category) const {
 			return CategoryFlags() & category;
 		}
-
-	protected:
-		bool m_Handled = false;
 	};
 	
 	class EventDispatcher {
@@ -63,7 +61,7 @@ namespace Pistachio {
 		template<typename T>
 		bool Dispatch(EventFunction<T> function) {
 			if (m_Event.Type() == T::StaticType()) {
-				m_Event.m_Handled = function(*(T*)&m_Event);
+				m_Event.Handled = function(*(T*)&m_Event);
 				return true;
 			}
 			return false;
