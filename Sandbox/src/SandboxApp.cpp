@@ -20,6 +20,7 @@ class Sandbox : public Pistachio::Application {
 public:
 	Sandbox() {
 		PushLayer(new ExampleLayer());
+		PushOverlay(new Pistachio::ImGuiLayer());
 	}
 
 	~Sandbox() {

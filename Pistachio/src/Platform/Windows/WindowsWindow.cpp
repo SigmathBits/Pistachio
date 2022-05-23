@@ -1,8 +1,8 @@
 #include "pstpch.h"
 
-#include <glad/glad.h>
-
 #include "WindowsWindow.h"
+
+#include <glad/glad.h>
 
 #include "Pistachio/Core.h"
 

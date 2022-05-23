@@ -25,6 +25,10 @@ namespace Pistachio {
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
+
+		inline Window& CurrentWindow() const { return *m_Window; }
+		static inline Application& Current() { return *s_Instance; }
+
 	private:
 		bool OnWindowClose(WindowCloseEvent& event);
 
@@ -32,6 +36,9 @@ namespace Pistachio {
 		bool m_Running = true;
 
 		LayerStack m_LayerStack;
+
+	private:
+		static Application* s_Instance;
 	};
 
 	// To be defined in CLIENT

@@ -14,7 +14,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["GLFW"] = "Pistachio/vendor/GLFW/include"
 IncludeDir["Glad"] = "Pistachio/vendor/Glad/include"
-IncludeDir["ImGui"] = "Pistachio/vendor/imgui/include"
+IncludeDir["ImGui"] = "Pistachio/vendor/imgui"
 
 
 include "Pistachio/vendor/GLFW"
