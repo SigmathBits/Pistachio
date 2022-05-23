@@ -1,6 +1,8 @@
 # Pistachio
 
-![Pistachio](resources/Pistachio.png)
+<p align="center">
+    <image src="resources/Pistachio.png" alt="Pistachio">
+</p>
 
 A [Hazel](https://github.com/TheCherno/Hazel) Engine clone following the 
 [Game Engine series](https://www.youtube.com/watch?v=JxIZbV_XjAs&list=PLlrATfBNZ98dC-V-N3m0Go4deliWHPFwT) by 
