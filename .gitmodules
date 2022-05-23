@@ -6,3 +6,8 @@
 [submodule "Pistachio/vendor/GLFW"]
 	path = Pistachio/vendor/GLFW
 	url = https://github.com/TheCherno/glfw.git
+[submodule "Pistachio/vendor/imgui"]
+	path = Pistachio/vendor/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "Pistachio/vendor/imgui/"]
+	branch = v1.87
