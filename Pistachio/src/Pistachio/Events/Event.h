@@ -50,25 +50,32 @@ namespace Pistachio {
 			return CategoryFlags() & category;
 		}
 	};
-	
+		
 	class EventDispatcher {
 		template<typename T>
 		using EventFunction = std::function<bool(T&)>;
+
 	public:
-		EventDispatcher(Event& event) 
-			: m_Event(event) {}
+		EventDispatcher() {}
 
 		template<typename T>
-		bool Dispatch(EventFunction<T> function) {
-			if (m_Event.Type() == T::StaticType()) {
-				m_Event.Handled = function(*(T*)&m_Event);
-				return true;
+		void SetEventCallback(EventFunction<T> callback) {
+			m_EventCallbacks[T::StaticType()] = *(EventFunction<Event>*)&callback;
+		}
+
+		bool Dispatch(Event& event) const {
+			auto pair = m_EventCallbacks.find(event.Type());
+			if (pair == m_EventCallbacks.end()) {
+				return false;
 			}
-			return false;
+
+			event.Handled = pair->second(event);
+
+			return true;
 		}
 
 	private:
-		Event& m_Event;
+		std::unordered_map<EventType, EventFunction<Event>> m_EventCallbacks;
 	};
 
 

@@ -2,6 +2,7 @@
 
 #include "Pistachio/Layer.h"
 
+#include "Pistachio/Events/Event.h"
 #include "Pistachio/Events/ApplicationEvent.h"
 #include "Pistachio/Events/KeyEvent.h"
 #include "Pistachio/Events/MouseEvent.h"
@@ -17,21 +18,20 @@ namespace Pistachio {
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		virtual void OnUpdate() override;
-		virtual void OnEvent(Event& event) override;
 
 	private:
-		bool OnWindowResize(WindowResizeEvent& event);
-		bool OnWindowFocus(WindowFocusEvent& event);
-		bool OnWindowLostFocus(WindowLostFocusEvent& event);
+		bool OnWindowResize(WindowResizeEvent& event) override;
+		bool OnWindowFocus(WindowFocusEvent& event) override;
+		bool OnWindowLostFocus(WindowLostFocusEvent& event) override;
 
-		bool OnMouseMoved(MouseMovedEvent& event);
-		bool OnMouseScrolled(MouseScrolledEvent& event);
-		bool OnMouseButtonPressed(MouseButtonPressedEvent& event);
-		bool OnMouseButtonReleased(MouseButtonReleasedEvent& event);
+		bool OnMouseMoved(MouseMovedEvent& event) override;
+		bool OnMouseScrolled(MouseScrolledEvent& event) override;
+		bool OnMouseButtonPressed(MouseButtonPressedEvent& event) override;
+		bool OnMouseButtonReleased(MouseButtonReleasedEvent& event) override;
 
-		bool OnKeyPressed(KeyPressedEvent& event);
-		bool OnKeyReleased(KeyReleasedEvent& event);
-		bool OnKeyTyped(KeyTypedEvent& event);
+		bool OnKeyPressed(KeyPressedEvent& event) override;
+		bool OnKeyReleased(KeyReleasedEvent& event) override;
+		bool OnKeyTyped(KeyTypedEvent& event) override;
 
 	private:
 		float m_Time = 0.0f;

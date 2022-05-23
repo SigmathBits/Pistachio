@@ -25,15 +25,13 @@ namespace Pistachio {
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImGui::StyleColorsDark();
+		ImGui::StyleColorsClassic();
 
 		ImGuiIO& io = ImGui::GetIO();
 		io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
 		io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
 
 		// Setup Platform/Renderer backends
-		//GLFWwindow* window = glfwGetCurrentContext();
-		//ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 410");
 
         // Attatch clipboard copy functions
@@ -49,7 +47,6 @@ namespace Pistachio {
 	void ImGuiLayer::OnDetach() {
 		// Cleanup
 		ImGui_ImplOpenGL3_Shutdown();
-		//ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
 
@@ -64,7 +61,6 @@ namespace Pistachio {
 
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
-		//ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
 		static bool show = true;
@@ -73,25 +69,6 @@ namespace Pistachio {
 		// Rendering
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	}
-
-	void ImGuiLayer::OnEvent(Event& event) {
-		EventDispatcher dispatcher(event);
-
-        // Application Events
-        dispatcher.Dispatch<WindowFocusEvent>(PST_BIND_EVENT_FUNCTION(ImGuiLayer::OnWindowFocus));
-        dispatcher.Dispatch<WindowLostFocusEvent>(PST_BIND_EVENT_FUNCTION(ImGuiLayer::OnWindowLostFocus));
-
-		// Mouse Events
-		dispatcher.Dispatch<MouseMovedEvent>(PST_BIND_EVENT_FUNCTION(ImGuiLayer::OnMouseMoved));
-		dispatcher.Dispatch<MouseScrolledEvent>(PST_BIND_EVENT_FUNCTION(ImGuiLayer::OnMouseScrolled));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(PST_BIND_EVENT_FUNCTION(ImGuiLayer::OnMouseButtonPressed));
-		dispatcher.Dispatch<MouseButtonReleasedEvent>(PST_BIND_EVENT_FUNCTION(ImGuiLayer::OnMouseButtonReleased));
-		
-		// Key Events
-		dispatcher.Dispatch<KeyPressedEvent>(PST_BIND_EVENT_FUNCTION(ImGuiLayer::OnKeyPressed));
-		dispatcher.Dispatch<KeyReleasedEvent>(PST_BIND_EVENT_FUNCTION(ImGuiLayer::OnKeyReleased));
-		dispatcher.Dispatch<KeyTypedEvent>(PST_BIND_EVENT_FUNCTION(ImGuiLayer::OnKeyTyped));
 	}
 
     bool ImGuiLayer::OnWindowResize(WindowResizeEvent& event) {
@@ -155,11 +132,10 @@ namespace Pistachio {
     bool ImGuiLayer::OnKeyPressed(KeyPressedEvent& event) {
         PST_CORE_TRACE("ImGui: {0}", event);
 
-        int keyCode = event.KeyCode();
-        int key = GLFWKeyToImGuiKey(keyCode);
-
+        int key = GLFWKeyToImGuiKey(event.KeyCode());
         ImGuiIO& io = ImGui::GetIO();
 
+        // Set key modifiers manually
         switch (key) {
             case ImGuiKey_LeftCtrl:
             case ImGuiKey_RightCtrl: {
@@ -195,11 +171,10 @@ namespace Pistachio {
     bool ImGuiLayer::OnKeyReleased(KeyReleasedEvent& event) {
         PST_CORE_TRACE("ImGui: {0}", event);
 
-        int keyCode = event.KeyCode();
-        int key = GLFWKeyToImGuiKey(keyCode);
-
+        int key = GLFWKeyToImGuiKey(event.KeyCode());
         ImGuiIO& io = ImGui::GetIO();
 
+        // Set key modifiers manually
         switch (key) {
         case ImGuiKey_LeftCtrl:
         case ImGuiKey_RightCtrl: {

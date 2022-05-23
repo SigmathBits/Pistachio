@@ -37,6 +37,8 @@ namespace Pistachio {
 
 		LayerStack m_LayerStack;
 
+		EventDispatcher m_EventDispatcher;
+
 	private:
 		static Application* s_Instance;
 	};
