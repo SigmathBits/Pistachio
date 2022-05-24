@@ -4,6 +4,8 @@
 
 #include "Pistachio/Window.h"
 
+#include "Pistachio/Renderer/GraphicsContext.h"
+
 
 namespace Pistachio {
 
@@ -29,6 +31,8 @@ namespace Pistachio {
 
 	private:
 		GLFWwindow* m_Window;
+
+		GraphicsContext* m_Context;
 
 		struct WindowData {
 			std::string Title;
