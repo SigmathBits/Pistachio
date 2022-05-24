@@ -14,10 +14,12 @@ namespace Pistachio {
 
 		virtual void OnUpdate() override;
 
-		virtual unsigned int Width() const override { return m_Data.Width; };
-		virtual unsigned int Height() const override { return m_Data.Height;  };
+		inline virtual unsigned int Width() const override { return m_Data.Width; };
+		inline virtual unsigned int Height() const override { return m_Data.Height; };
 
-		virtual void SetEventCallback(const EventCallbackFunction& callback) override;
+		inline virtual void* NativeWindow() const override { return m_Window; };
+
+		inline virtual void SetEventCallback(const EventCallbackFunction& callback) override { m_Data.EventCallback = callback; };
 		virtual void SetVSync(bool enabled) override;
 		virtual bool IsVSync() const override;
 

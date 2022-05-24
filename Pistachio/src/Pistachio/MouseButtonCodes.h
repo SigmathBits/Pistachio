@@ -1,0 +1,18 @@
+#pragma once
+
+
+/// From glfw3.h
+enum PistachioMouseButton {
+	PST_MOUSE_BUTTON_1         = 0,
+	PST_MOUSE_BUTTON_2         = 1,
+	PST_MOUSE_BUTTON_3         = 2,
+	PST_MOUSE_BUTTON_4         = 3,
+	PST_MOUSE_BUTTON_5         = 4,
+	PST_MOUSE_BUTTON_6         = 5,
+	PST_MOUSE_BUTTON_7         = 6,
+	PST_MOUSE_BUTTON_8         = 7,
+	PST_MOUSE_BUTTON_LAST      = PST_MOUSE_BUTTON_8,
+	PST_MOUSE_BUTTON_LEFT      = PST_MOUSE_BUTTON_1,
+	PST_MOUSE_BUTTON_RIGHT     = PST_MOUSE_BUTTON_2,
+	PST_MOUSE_BUTTON_MIDDLE    = PST_MOUSE_BUTTON_3,
+};

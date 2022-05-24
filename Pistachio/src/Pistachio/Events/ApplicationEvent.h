@@ -21,6 +21,7 @@ namespace Pistachio {
 
 		EVENT_TYPE(WindowResize)
 		EVENT_CATEGORY(EVENT_CATEGORY_APPLICATION)
+
 	private:
 		unsigned int m_Width, m_Height;
 	};

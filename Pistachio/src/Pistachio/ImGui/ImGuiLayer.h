@@ -35,8 +35,6 @@ namespace Pistachio {
 
 	private:
 		float m_Time = 0.0f;
-
-		static int ImGuiLayer::GLFWKeyToImGuiKey(int key);
 	};
 
 }

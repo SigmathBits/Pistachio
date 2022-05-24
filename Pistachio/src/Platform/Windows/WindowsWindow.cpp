@@ -16,7 +16,7 @@ namespace Pistachio {
 	static bool s_GLFWInitialised = false;
 
 	static void GLFWErrorCallback(int error, const char* description) {
-		PST_CORE_ERROR("GLFW ERROR {0}: {1}", error, description);
+		PST_CORE_ERROR("GLFW Error 0x{0:x}: {1}", error, description);
 	}
 
 	Window* Window::Create(const WindowProperties& properties) {
@@ -95,17 +95,17 @@ namespace Pistachio {
 
 			switch (action) {
 				case GLFW_PRESS: {
-					KeyPressedEvent event(key, 0);
+					KeyPressedEvent event((PistachioKey)key, 0);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE: {
-					KeyReleasedEvent event(key);
+					KeyReleasedEvent event((PistachioKey)key);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_REPEAT: {
-					KeyPressedEvent event(key, 1);
+					KeyPressedEvent event((PistachioKey)key, 1);
 					data.EventCallback(event);
 					break;
 				}
@@ -129,12 +129,12 @@ namespace Pistachio {
 
 			switch (action) {
 				case GLFW_PRESS: {
-					MouseButtonPressedEvent event(button);
+					MouseButtonPressedEvent event((PistachioMouseButton)button);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE: {
-					MouseButtonReleasedEvent event(button);
+					MouseButtonReleasedEvent event((PistachioMouseButton)button);
 					data.EventCallback(event);
 					break;
 				}
@@ -167,10 +167,6 @@ namespace Pistachio {
 	void WindowsWindow::OnUpdate() {
 		glfwPollEvents();
 		glfwSwapBuffers(m_Window);
-	}
-
-	void WindowsWindow::SetEventCallback(const EventCallbackFunction& callback) {
-		m_Data.EventCallback = callback;
 	}
 
 	void WindowsWindow::SetVSync(bool enabled) {

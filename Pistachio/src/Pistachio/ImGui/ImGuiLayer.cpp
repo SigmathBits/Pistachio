@@ -9,8 +9,12 @@
 
 #include "Platform/Windows/WindowsWindow.h"
 
+#include "Pistachio/KeyCodes.h"
+
 
 namespace Pistachio {
+
+    static ImGuiKey PistachioKeyToImGuiKey(PistachioKey keyCode);
 
 	ImGuiLayer::ImGuiLayer() 
 		: Layer("ImGui") {
@@ -52,7 +56,7 @@ namespace Pistachio {
 
 	void ImGuiLayer::OnUpdate() {
 		ImGuiIO& io = ImGui::GetIO();
-		Application& app = Application::Current();
+		Application& app = Application::Instance();
 		io.DisplaySize = ImVec2(app.CurrentWindow().Width(), app.CurrentWindow().Height());
 
 		float time = (float)glfwGetTime();
@@ -132,11 +136,11 @@ namespace Pistachio {
     bool ImGuiLayer::OnKeyPressed(KeyPressedEvent& event) {
         PST_CORE_TRACE("ImGui: {0}", event);
 
-        int key = GLFWKeyToImGuiKey(event.KeyCode());
+        ImGuiKey keyCode = PistachioKeyToImGuiKey(event.KeyCode());
         ImGuiIO& io = ImGui::GetIO();
 
         // Set key modifiers manually
-        switch (key) {
+        switch (keyCode) {
             case ImGuiKey_LeftCtrl:
             case ImGuiKey_RightCtrl: {
                 io.AddKeyEvent(ImGuiKey_ModCtrl, true);
@@ -161,7 +165,7 @@ namespace Pistachio {
                 break;
         }
 
-        io.AddKeyEvent(key, true);
+        io.AddKeyEvent(keyCode, true);
 
         PST_CORE_TRACE("KeyCtrl={}, KeyShift={}, KeyAlt={}, KeySuper={}", io.KeyCtrl, io.KeyShift, io.KeyAlt, io.KeySuper);
 
@@ -171,11 +175,11 @@ namespace Pistachio {
     bool ImGuiLayer::OnKeyReleased(KeyReleasedEvent& event) {
         PST_CORE_TRACE("ImGui: {0}", event);
 
-        int key = GLFWKeyToImGuiKey(event.KeyCode());
+        ImGuiKey keyCode = PistachioKeyToImGuiKey(event.KeyCode());
         ImGuiIO& io = ImGui::GetIO();
 
         // Set key modifiers manually
-        switch (key) {
+        switch (keyCode) {
         case ImGuiKey_LeftCtrl:
         case ImGuiKey_RightCtrl: {
             io.AddKeyEvent(ImGuiKey_ModCtrl, false);
@@ -200,7 +204,7 @@ namespace Pistachio {
             break;
         }
 
-        io.AddKeyEvent(key, false);
+        io.AddKeyEvent(keyCode, false);
 
         return false;
     }
@@ -209,14 +213,14 @@ namespace Pistachio {
         PST_CORE_TRACE("ImGui: {0}", event);
 
         ImGuiIO& io = ImGui::GetIO();
-        io.AddInputCharacter(event.KeyCode());
+        io.AddInputCharacter(event.Character());
 
         return false;
     }
 
-    int ImGuiLayer::GLFWKeyToImGuiKey(int key)
+    static ImGuiKey PistachioKeyToImGuiKey(PistachioKey keyCode)
     {
-        switch (key)
+        switch (keyCode)
         {
         case GLFW_KEY_TAB: return ImGuiKey_Tab;
         case GLFW_KEY_LEFT: return ImGuiKey_LeftArrow;

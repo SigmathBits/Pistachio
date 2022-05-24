@@ -4,7 +4,9 @@
 
 #include "Log.h"
 
-#include <glad/glad.h>
+#include "Input.h"
+
+#include <glad/glad.h>  // Temporary
 
 
 namespace Pistachio {
@@ -41,9 +43,9 @@ namespace Pistachio {
 	}
 
 	void Application::OnEvent(Event& event) {
-		m_EventDispatcher.Dispatch(event);
-
 		PST_CORE_TRACE(event);
+
+		m_EventDispatcher.Dispatch(event);
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); ) {
 			(*--it)->OnEvent(event);

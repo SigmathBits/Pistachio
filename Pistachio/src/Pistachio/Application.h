@@ -27,7 +27,7 @@ namespace Pistachio {
 		void PushOverlay(Layer* overlay);
 
 		inline Window& CurrentWindow() const { return *m_Window; }
-		static inline Application& Current() { return *s_Instance; }
+		static inline Application& Instance() { return *s_Instance; }
 
 	private:
 		bool OnWindowClose(WindowCloseEvent& event);

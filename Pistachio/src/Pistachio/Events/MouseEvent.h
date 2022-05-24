@@ -2,6 +2,8 @@
 
 #include "Event.h"
 
+#include "Pistachio/MouseButtonCodes.h"
+
 
 namespace Pistachio {
 
@@ -21,6 +23,7 @@ namespace Pistachio {
 
 		EVENT_TYPE(MouseMoved)
 		EVENT_CATEGORY(EVENT_CATEGORY_MOUSE | EVENT_CATEGORY_INPUT)
+
 	private:
 		float m_MouseX, m_MouseY;
 	};
@@ -41,13 +44,14 @@ namespace Pistachio {
 
 		EVENT_TYPE(MouseScrolled)
 		EVENT_CATEGORY(EVENT_CATEGORY_MOUSE | EVENT_CATEGORY_INPUT)
+
 	private:
 		float m_XOffset, m_YOffset;
 	};
 
 	class PISTACHIO_API MouseButtonEvent : public Event {
 	public:
-		inline int MouseButton() const { return m_Button; }
+		inline PistachioMouseButton MouseButton() const { return m_Button; }
 
 		std::string ToString() const override {
 			std::stringstream ss;
@@ -56,16 +60,17 @@ namespace Pistachio {
 		}
 
 		EVENT_CATEGORY(EVENT_CATEGORY_MOUSE | EVENT_CATEGORY_MOUSE_BUTTON | EVENT_CATEGORY_INPUT)
+
 	protected:
-		MouseButtonEvent(int button) 
+		MouseButtonEvent(PistachioMouseButton button)
 			: m_Button(button) {}
 
-		int m_Button;
+		PistachioMouseButton m_Button;
 	};
 
 	class PISTACHIO_API MouseButtonPressedEvent : public MouseButtonEvent {
 	public:
-		MouseButtonPressedEvent(int button)
+		MouseButtonPressedEvent(PistachioMouseButton button)
 			: MouseButtonEvent(button) {}
 
 		EVENT_TYPE(MouseButtonPressed)
@@ -73,7 +78,7 @@ namespace Pistachio {
 	
 	class PISTACHIO_API MouseButtonReleasedEvent : public MouseButtonEvent {
 	public:
-		MouseButtonReleasedEvent(int button)
+		MouseButtonReleasedEvent(PistachioMouseButton button)
 			: MouseButtonEvent(button) {}
 
 		EVENT_TYPE(MouseButtonReleased)
