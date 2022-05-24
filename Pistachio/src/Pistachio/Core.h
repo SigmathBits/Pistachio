@@ -7,10 +7,14 @@
 
 
 #ifdef PST_PLATFORM_WINDOWS
-	#ifdef PST_BUILD_DLL
-		#define PISTACHIO_API __declspec(dllexport)
+	#if PST_DYNAMIC_LINK
+		#ifdef PST_BUILD_DLL
+			#define PISTACHIO_API __declspec(dllexport)
+		#else
+			#define PISTACHIO_API __declspec(dllimport)
+		#endif
 	#else
-		#define PISTACHIO_API __declspec(dllimport)
+		#define PISTACHIO_API
 	#endif
 #else
 	#error Pistachio only supports Windows!

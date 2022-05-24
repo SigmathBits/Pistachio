@@ -21,6 +21,9 @@ namespace Pistachio {
 
 		m_Window->SetEventCallback(PST_BIND_EVENT_FUNCTION(Application::OnEvent));
 
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
+
 		// Set callbacks
 		m_EventDispatcher.SetEventCallback<WindowCloseEvent>(PST_BIND_EVENT_FUNCTION(Application::OnWindowClose));
 	}
@@ -37,6 +40,12 @@ namespace Pistachio {
 			for (Layer* layer : m_LayerStack) {
 				layer->OnUpdate();
 			}
+
+			m_ImGuiLayer->Begin();
+			for (Layer* layer : m_LayerStack) {
+				layer->OnImGuiRender();
+			}
+			m_ImGuiLayer->End();
 
 			m_Window->OnUpdate();
 		}
@@ -63,12 +72,10 @@ namespace Pistachio {
 
 	void Application::PushLayer(Layer* layer) {
 		m_LayerStack.PushLayer(layer);
-		layer->OnAttach();
 	}
 
 	void Application::PushOverlay(Layer* overlay) {
 		m_LayerStack.PushOverlay(overlay);
-		overlay->OnAttach();
 	}
 
 }

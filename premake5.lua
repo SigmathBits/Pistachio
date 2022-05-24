@@ -20,16 +20,17 @@ IncludeDir["glm"] = "Pistachio/vendor/glm"
 
 
 group "Dependancies"
-	include "Pistachio/vendor/imgui"
 	include "Pistachio/vendor/GLFW"
 	include "Pistachio/vendor/Glad"
+	include "Pistachio/vendor/imgui"
 group ""
 
 
 project "Pistachio"
 	location "Pistachio"
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
+	cppdialect "C++17"
 	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
@@ -61,19 +62,18 @@ project "Pistachio"
 		"imgui",
 		"opengl32.lib",
 	}
+	
+	defines {
+		"_CRT_SECURE_NO_WARNINGS",
+	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
 		defines {
 			"PST_PLATFORM_WINDOWS",
 			"PST_BUILD_DLL",
 			"GLFW_INCLUDE_NONE",
-		}
-
-		postbuildcommands {
-			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Sandbox/\"")
 		}
 
 	filter "configurations:Debug"
@@ -96,6 +96,7 @@ project "Sandbox"
 	location "Sandbox"
 	kind "ConsoleApp"
 	language "C++"
+	cppdialect "C++17"
 	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
@@ -109,6 +110,7 @@ project "Sandbox"
 	includedirs { 
 		"Pistachio/vendor/spdlog/include",
 		"Pistachio/src",
+		"Pistachio/vendor",
 		"%{IncludeDir.glm}",
 	}
 
@@ -117,7 +119,6 @@ project "Sandbox"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
 		defines {

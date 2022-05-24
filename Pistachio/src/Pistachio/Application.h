@@ -11,6 +11,8 @@
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
 
+#include "Pistachio/ImGui/ImGuiLayer.h"
+
 
 namespace Pistachio {
 	
@@ -33,9 +35,11 @@ namespace Pistachio {
 		bool OnWindowClose(WindowCloseEvent& event);
 
 		std::unique_ptr<Window> m_Window;
+
 		bool m_Running = true;
 
 		LayerStack m_LayerStack;
+		ImGuiLayer* m_ImGuiLayer;
 
 		EventDispatcher m_EventDispatcher;
 

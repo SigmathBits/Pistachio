@@ -19,6 +19,8 @@ namespace Pistachio {
 		virtual void OnDetach() {}
 		virtual void OnUpdate() {}
 
+		virtual void OnImGuiRender() {}
+
 		virtual void OnEvent(Event& event);
 
 		inline const std::string& Name() const { return m_DebugName; }

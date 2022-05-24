@@ -7,8 +7,7 @@ project "Glad"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-	files
-	{
+	files {
 		"include/glad/glad.h",
 		"include/KHR/khrplatform.h",
 		"src/glad.c",
