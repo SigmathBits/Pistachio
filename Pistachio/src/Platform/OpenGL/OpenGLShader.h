@@ -12,11 +12,15 @@ namespace Pistachio {
 	class OpenGLShader : public Shader {
 	public:
 		OpenGLShader(const std::string& filepath);
-		OpenGLShader(const std::string& vertexSource, const std::string& fragmentSource);
+		OpenGLShader(const std::string& name, const std::string& filepath);
+		OpenGLShader(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource);
+
 		virtual ~OpenGLShader() override;
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
+
+		virtual const std::string& Name() const override { return m_Name; };
 
 		void UploadUniformInt(const std::string& name, int value) const;
 
@@ -35,6 +39,7 @@ namespace Pistachio {
 
 	private:
 		unsigned int m_RendererID;
+		std::string m_Name;
 	};
 
 }

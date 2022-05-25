@@ -12,7 +12,7 @@ namespace Pistachio {
 	Ref<VertexArray> VertexArray::Create() {
 		switch (Renderer::RenderAPI()) {
 			case RendererAPI::RenderAPI::None:
-				PST_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+				PST_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
 				return nullptr;
 			case RendererAPI::RenderAPI::OpenGL:
 				return std::make_shared<OpenGLVertexArray>();

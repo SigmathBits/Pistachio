@@ -38,10 +38,26 @@ namespace Pistachio {
 		std::string shaderSource = ReadFile(filepath);
 		auto shaderSources = Preprocess(shaderSource);
 		Compile(shaderSources);
+
+		// Extract name from filepath
+		auto lastSlash = filepath.find_last_of("/\\");
+		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+
+		auto lastPeriod = filepath.rfind(".");
+		auto count = (lastPeriod == std::string::npos ? filepath.size() : lastPeriod) - lastSlash;
+
+		m_Name = filepath.substr(lastSlash, count);
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& vertexSource, const std::string& fragmentSource)
-		: m_RendererID(0) {
+	OpenGLShader::OpenGLShader(const std::string& name, const std::string& filepath)
+		: m_Name(name) {
+		std::string shaderSource = ReadFile(filepath);
+		auto shaderSources = Preprocess(shaderSource);
+		Compile(shaderSources);
+	}
+
+	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource)
+		: m_RendererID(0), m_Name(name) {
 		std::unordered_map<GLenum, std::string> sources;
 		sources[GL_VERTEX_SHADER] = vertexSource;
 		sources[GL_FRAGMENT_SHADER] = fragmentSource;

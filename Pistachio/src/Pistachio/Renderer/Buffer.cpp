@@ -53,7 +53,7 @@ namespace Pistachio {
 	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, size_t size) {
 		switch (Renderer::RenderAPI()) {
 			case RendererAPI::RenderAPI::None:
-				PST_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+				PST_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
 				return nullptr;
 			case RendererAPI::RenderAPI::OpenGL:
 				return std::make_shared<OpenGLVertexBuffer>(vertices, size);
@@ -66,7 +66,7 @@ namespace Pistachio {
 	Ref<IndexBuffer> IndexBuffer::Create(unsigned int* indices, unsigned int count) {
 		switch (Renderer::RenderAPI()) {
 			case RendererAPI::RenderAPI::None:
-				PST_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+				PST_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
 				return nullptr;
 			case RendererAPI::RenderAPI::OpenGL:
 				return std::make_shared<OpenGLIndexBuffer>(indices, count);

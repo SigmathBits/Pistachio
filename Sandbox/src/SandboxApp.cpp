@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Platform/OpenGL/OpenGLShader.h"
+#include "Pistachio/Renderer/Shader.h"
 
 
 class ExampleLayer : public Pistachio::Layer {
@@ -47,14 +48,14 @@ public:
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
 		// Shaders
-		m_FlatColourShader = Pistachio::Shader::Create("assets/shaders/FlatColour.glsl");
-		m_TextureShader = Pistachio::Shader::Create("assets/shaders/Texture.glsl");
+		m_ShaderLibrary.Load("assets/shaders/FlatColour.glsl");
+		auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
 
 		// Textures
 		m_Texture = Pistachio::Texture2D::Create("assets/textures/Pistachio.png");
 
-		m_TextureShader->Bind();
-		std::dynamic_pointer_cast<Pistachio::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
+		textureShader->Bind();
+		std::dynamic_pointer_cast<Pistachio::OpenGLShader>(textureShader)->UploadUniformInt("u_Texture", 0);
 	}
 
 	void OnUpdate(Pistachio::Timestep timestep) override {
@@ -114,21 +115,25 @@ public:
 			// Grid
 			glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
-			m_FlatColourShader->Bind();
-			std::dynamic_pointer_cast<Pistachio::OpenGLShader>(m_FlatColourShader)->UploadUniformFloat4("u_Colour", m_Colour);
+			auto flatColourShader = m_ShaderLibrary.Get("FlatColour");
+
+			flatColourShader->Bind();
+			std::dynamic_pointer_cast<Pistachio::OpenGLShader>(flatColourShader)->UploadUniformFloat4("u_Colour", m_Colour);
 
 			for (int y = 0; y < 20; y++) {
 				for (int x = 0; x < 20; x++) {
 					glm::vec3 pos(x * 0.11f, y * 0.11f, 0.0f);
 					glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
-					Pistachio::Renderer::Submit(m_FlatColourShader, m_VertexArray, transform);
+					Pistachio::Renderer::Submit(flatColourShader, m_VertexArray, transform);
 				}
 			}
 
 			// Square
+			auto textureShader = m_ShaderLibrary.Get("Texture");
+
 			m_Texture->Bind(0);
 			glm::mat4 transform2 = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)), m_Position);
-			Pistachio::Renderer::Submit(m_TextureShader, m_VertexArray, transform2);
+			Pistachio::Renderer::Submit(textureShader, m_VertexArray, transform2);
 
 			Pistachio::Renderer::EndScene();
 		}
@@ -146,7 +151,8 @@ private:
 	Pistachio::Ref<Pistachio::VertexArray> m_VertexArray;
 
 	Pistachio::Ref<Pistachio::Texture2D> m_Texture;
-	Pistachio::Ref<Pistachio::Shader> m_FlatColourShader, m_TextureShader;
+
+	Pistachio::ShaderLibrary m_ShaderLibrary;
 
 	glm::vec3 m_CameraPosition;
 	float m_CameraRotation = 0.0f;
