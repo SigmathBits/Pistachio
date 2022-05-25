@@ -2,6 +2,8 @@
 
 #include "WindowsWindow.h"
 
+#include <GLFW/glfw3.h>
+
 #include "Pistachio/Core.h"
 
 #include "Pistachio/Events/ApplicationEvent.h"
@@ -49,7 +51,7 @@ namespace Pistachio {
 
 		m_Window = glfwCreateWindow(properties.Width, properties.Height, properties.Title.c_str(), nullptr, nullptr);
 
-		m_Context = new OpenGLGraphicsContext(m_Window);
+		m_Context = new OpenGLContext(m_Window);
 		m_Context->Init();
 
 		// What data is passed to callback functions set with GLFW

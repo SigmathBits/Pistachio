@@ -1,10 +1,11 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
-
 #include "Pistachio/Window.h"
 
 #include "Pistachio/Renderer/GraphicsContext.h"
+
+
+struct GLFWwindow;
 
 
 namespace Pistachio {

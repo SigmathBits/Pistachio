@@ -8,9 +8,9 @@ struct GLFWwindow;
 
 namespace Pistachio {
 
-	class OpenGLGraphicsContext : public GraphicsContext {
+	class OpenGLContext : public GraphicsContext {
 	public:
-		OpenGLGraphicsContext(GLFWwindow* windowHandle);
+		OpenGLContext(GLFWwindow* windowHandle);
 
 		virtual void Init() override;
 		virtual void SwapBuffers() override;

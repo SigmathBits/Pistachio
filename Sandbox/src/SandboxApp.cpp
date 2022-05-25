@@ -9,7 +9,6 @@ public:
 		: Layer("Example") {}
 
 	void OnUpdate() override {
-		//PST_TRACE("ExampleLayer::Update");
 		if (Pistachio::Input::IsKeyPressed(PST_KEY_TAB)) {
 			PST_TRACE("Tab key is pressed! (polled)");
 		}
@@ -21,16 +20,9 @@ public:
 		ImGui::End();
 	}
 
-	void OnEvent(Pistachio::Event& event) override {
-		Layer::OnEvent(event);
-
-		PST_TRACE(event);
-	}
-
 	bool OnKeyPressed(Pistachio::KeyPressedEvent& event) override {
-		char c = (char)event.KeyCode();
-		if (isprint(c)) {
-			PST_TRACE("{0}", c);
+		if (event.KeyCode() == PST_KEY_S) {
+			PST_TRACE("S key pressed!");
 		}
 		return false;
 	}

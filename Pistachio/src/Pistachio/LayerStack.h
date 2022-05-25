@@ -1,8 +1,7 @@
 #pragma once
 
-#include <vector>
-
 #include "Pistachio/Core.h"
+
 #include "Layer.h"
 
 

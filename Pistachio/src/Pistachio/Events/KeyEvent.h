@@ -63,7 +63,7 @@ namespace Pistachio {
 
 		std::string ToString() const override {
 			std::stringstream ss;
-			ss << Name() << ": Character=" << m_Character;
+			ss << Name() << ": Character='" << m_Character << "'";
 			return ss.str();
 		}
 

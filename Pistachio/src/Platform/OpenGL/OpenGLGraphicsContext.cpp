@@ -8,19 +8,24 @@
 
 namespace Pistachio {
 
-	OpenGLGraphicsContext::OpenGLGraphicsContext(GLFWwindow* windowHandle)
+	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle)
 		: m_WindowHandle(windowHandle) {
 		PST_CORE_ASSERT(windowHandle, "Window handle is null")
 	}
 
-	void OpenGLGraphicsContext::Init() {
+	void OpenGLContext::Init() {
 		glfwMakeContextCurrent(m_WindowHandle);
 
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		PST_CORE_ASSERT(status, "Failed to initialise Glad");
+
+		PST_CORE_INFO("OpenGL Info");
+		PST_CORE_INFO("  Vendor: {}", glGetString(GL_VENDOR));
+		PST_CORE_INFO("  Renderer: {}", glGetString(GL_RENDERER));
+		PST_CORE_INFO("  Version: {}", glGetString(GL_VERSION));
 	}
 
-	void OpenGLGraphicsContext::SwapBuffers() {
+	void OpenGLContext::SwapBuffers() {
 		glfwSwapBuffers(m_WindowHandle);
 	}
 
