@@ -24,4 +24,8 @@
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\Texture.glsl" />
+    <None Include="assets\shaders\FlatColour.glsl" />
+  </ItemGroup>
 </Project>

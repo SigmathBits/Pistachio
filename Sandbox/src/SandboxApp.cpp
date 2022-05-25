@@ -46,68 +46,11 @@ public:
 		indexBuffer = Pistachio::IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int));
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
-		/// Shaders
-		std::string colourShaderVertexSource = R"glsl(
-#version 330 core
+		// Shaders
+		m_FlatColourShader = Pistachio::Shader::Create("assets/shaders/FlatColour.glsl");
+		m_TextureShader = Pistachio::Shader::Create("assets/shaders/Texture.glsl");
 
-uniform mat4 u_ProjectionViewMatrix;
-uniform mat4 u_Transform;
-
-layout(location = 0) in vec4 a_Position;
-
-void main() {
-	gl_Position = u_ProjectionViewMatrix * u_Transform * a_Position;
-}
-)glsl";
-
-		std::string colourShaderFragmentSource = R"glsl(
-#version 330 core
-
-uniform vec4 u_Colour;
-
-layout(location = 0) out vec4 colour;
-
-void main () {
-	colour = u_Colour;
-}
-)glsl";
-
-		m_FlatColourShader = Pistachio::Shader::Create(colourShaderVertexSource, colourShaderFragmentSource);
-
-		std::string textureShaderVertexSource = R"glsl(
-#version 330 core
-
-uniform mat4 u_ProjectionViewMatrix;
-uniform mat4 u_Transform;
-
-layout(location = 0) in vec4 a_Position;
-layout(location = 1) in vec2 a_TextureCoords;
-
-out vec2 v_TextureCoords;
-
-void main() {
-	v_TextureCoords = a_TextureCoords;
-
-	gl_Position = u_ProjectionViewMatrix * u_Transform * a_Position;
-}
-)glsl";
-
-		std::string textureShaderFragmentSource = R"glsl(
-#version 330 core
-
-uniform sampler2D u_Texture;
-
-in vec2 v_TextureCoords;
-
-layout(location = 0) out vec4 colour;
-
-void main () {
-	colour = texture(u_Texture, v_TextureCoords);
-}
-)glsl";
-
-		m_TextureShader = Pistachio::Shader::Create(textureShaderVertexSource, textureShaderFragmentSource);
-
+		// Textures
 		m_Texture = Pistachio::Texture2D::Create("assets/textures/Pistachio.png");
 
 		m_TextureShader->Bind();
