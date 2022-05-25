@@ -13,6 +13,8 @@ namespace Pistachio {
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
+		void UploadUniformMat4(const std::string& name, const glm::mat4& matrix) const override;
+
 	private:
 		unsigned int m_RendererID;
 	};
