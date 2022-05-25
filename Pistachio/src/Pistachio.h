@@ -5,6 +5,8 @@
 #include "Pistachio/Application.h"
 #include "Pistachio/Log.h"
 
+#include "Pistachio/Core/Timestep.h"
+
 #include "Pistachio/Input.h"
 #include "Pistachio/KeyCodes.h"
 #include "Pistachio/MouseButtonCodes.h"

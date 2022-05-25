@@ -27,11 +27,10 @@ public:
 		vertexBuffer.reset(Pistachio::VertexBuffer::Create(vertices, sizeof(vertices)));
 
 		// Layout
-		Pistachio::VertexBufferLayout layout = {
+		vertexBuffer->SetLayout({
 			{ Pistachio::ShaderDataType::Float3, "a_Position" },
 			{ Pistachio::ShaderDataType::Float4, "a_Colour" },
-		};
-		vertexBuffer->SetLayout(layout);
+		});
 		m_VertexArray->AddVertexBuffer(vertexBuffer);
 
 		// Index Buffer
@@ -139,9 +138,11 @@ void main () {
 		m_ShaderBlue.reset(Pistachio::Shader::Create(vertexSourceBlue, fragmentSourceBlue));
 	}
 
-	void OnUpdate() override {
-		constexpr float cameraMoveSpeed = 0.05f;
-		constexpr float cameraRotationSpeed = 1.0f;
+	void OnUpdate(Pistachio::Timestep timestep) override {
+		PST_TRACE("Delta time: {}s ({}ms)", timestep.Seconds(), timestep.Milliseconds());
+
+		const float cameraMoveSpeed = 1.5f * timestep;
+		const float cameraRotationSpeed = 180.0f * timestep;
 
 		if (Pistachio::Input::IsKeyPressed(PST_KEY_A)) {
 			m_CameraPosition.x -= cameraMoveSpeed;
@@ -182,7 +183,6 @@ void main () {
 
 			Pistachio::Renderer::EndScene();
 		}
-
 	}
 
 	void OnImGuiRender() override {

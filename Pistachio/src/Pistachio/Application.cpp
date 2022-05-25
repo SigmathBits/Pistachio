@@ -4,9 +4,13 @@
 
 #include "Log.h"
 
+#include "Platform.h"
+
 #include "Input.h"
 
-#include "Pistachio/Renderer/Renderer.h"
+#include "Core/Timestep.h"
+#include "Renderer/Renderer.h"
+
 
 
 namespace Pistachio {
@@ -18,7 +22,6 @@ namespace Pistachio {
 		s_Instance = this;
 
 		m_Window = std::unique_ptr<Window>(Window::Create());
-
 		m_Window->SetEventCallback(PST_BIND_EVENT_FUNCTION(Application::OnEvent));
 
 		m_ImGuiLayer = new ImGuiLayer();
@@ -34,8 +37,12 @@ namespace Pistachio {
 
 	void Application::Run() {
 		while (m_Running) {
+			float time = Platform::Time();
+			Timestep timestemp = time - m_LastFrameTime;
+			m_LastFrameTime = time;
+
 			for (Layer* layer : m_LayerStack) {
-				layer->OnUpdate();
+				layer->OnUpdate(timestemp);
 			}
 
 			m_ImGuiLayer->Begin();

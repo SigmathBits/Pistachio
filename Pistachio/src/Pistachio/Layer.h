@@ -2,6 +2,8 @@
 
 #include "Pistachio/Core.h"
 
+#include "Pistachio/Core/Timestep.h"
+
 #include "Pistachio/Events/Event.h"
 #include "Pistachio/Events/ApplicationEvent.h"
 #include "Pistachio/Events/KeyEvent.h"
@@ -17,7 +19,7 @@ namespace Pistachio {
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
-		virtual void OnUpdate() {}
+		virtual void OnUpdate(Timestep timestep) {}
 
 		virtual void OnImGuiRender() {}
 

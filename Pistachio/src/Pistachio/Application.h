@@ -6,12 +6,13 @@
 
 #include "LayerStack.h"
 
+#include "Pistachio/ImGui/ImGuiLayer.h"
+
 #include "Events/Event.h"
 #include "Events/ApplicationEvent.h"
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
 
-#include "Pistachio/ImGui/ImGuiLayer.h"
 
 
 namespace Pistachio {
@@ -38,6 +39,8 @@ namespace Pistachio {
 		std::unique_ptr<Window> m_Window;
 
 		bool m_Running = true;
+
+		float m_LastFrameTime = 0.0f;
 
 		LayerStack m_LayerStack;
 		ImGuiLayer* m_ImGuiLayer;
