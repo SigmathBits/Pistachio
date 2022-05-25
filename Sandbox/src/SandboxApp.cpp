@@ -2,34 +2,38 @@
 
 #include "imgui/imgui.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "Platform/OpenGL/OpenGLShader.h"
+
 
 class ExampleLayer : public Pistachio::Layer {
 public:
 	ExampleLayer()
-		: Layer("Example"), m_Camera({ -1.6f, 1.6f, -0.9f, 0.9f }), m_CameraPosition(0.0f, 0.0f, 0.0f) { }
+		: Layer("Example"), m_Camera({ -1.6f, 1.6f, -0.9f, 0.9f }), m_CameraPosition(0.0f, 0.0f, 0.0f),
+		m_Position(0.0f, 0.0f, 0.0f) {}
 
 	void OnAttach() {
 		/// Rendering objects
 
 		// Vertex Array
-		//m_VertexArray = std::make_shared<VertexArray>(VertexArray::Create());
-		m_VertexArray.reset(Pistachio::VertexArray::Create());
+		m_VertexArray = Pistachio::VertexArray::Create();
 
 		// Vertex Buffer
 		float vertices[] = {
-			-0.5f, -0.5f, 0.0f, 0.804f, 0.914f, 0.29f, 1.0f,
-			 0.5f, -0.5f, 0.0f, 0.263, 0.392, 0.09, 1.0f,
-			 0.5f,  0.5f, 0.0f, 0.804f, 0.914f, 0.29f, 1.0f,
-			-0.5f,  0.5f, 0.0f, 0.263, 0.392, 0.09, 1.0f,
+			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+			 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
+			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
 		};
-		//m_VertexBuffer = std::make_shared<VertexBuffer>(VertexBuffer::Create(vertices, sizeof(vertices)));
-		std::shared_ptr<Pistachio::VertexBuffer> vertexBuffer;
-		vertexBuffer.reset(Pistachio::VertexBuffer::Create(vertices, sizeof(vertices)));
+		Pistachio::Ref<Pistachio::VertexBuffer> vertexBuffer;
+		vertexBuffer = Pistachio::VertexBuffer::Create(vertices, sizeof(vertices));
 
 		// Layout
 		vertexBuffer->SetLayout({
 			{ Pistachio::ShaderDataType::Float3, "a_Position" },
-			{ Pistachio::ShaderDataType::Float4, "a_Colour" },
+			{ Pistachio::ShaderDataType::Float2, "a_TextureCoords" },
 		});
 		m_VertexArray->AddVertexBuffer(vertexBuffer);
 
@@ -38,108 +42,80 @@ public:
 			0, 1, 2,
 			2, 3, 0,
 		};
-		//m_IndexBuffer = std::make_shared<IndexBuffer>(IndexBuffer::Create(indices, sizeof(indices)));
-		std::shared_ptr<Pistachio::IndexBuffer> indexBuffer;
-		indexBuffer.reset(Pistachio::IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int)));
+		Pistachio::Ref<Pistachio::IndexBuffer> indexBuffer;
+		indexBuffer = Pistachio::IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int));
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
-		// Triangle Vertex Array
-		m_VertexArrayTriangle.reset(Pistachio::VertexArray::Create());
-
-		// Vertex Buffer
-		float verticesTriangle[] = {
-			-0.4f, -0.4f, 0.0f,
-			 0.4f, -0.4f, 0.0f,
-			 0.0f,  0.4f, 0.0f,
-		};
-		std::shared_ptr<Pistachio::VertexBuffer> vertexBufferTriangle;
-		vertexBufferTriangle.reset(Pistachio::VertexBuffer::Create(verticesTriangle, sizeof(verticesTriangle)));
-		// Layout
-		vertexBufferTriangle->SetLayout({
-			{ Pistachio::ShaderDataType::Float3, "a_Position" },
-		});
-		m_VertexArrayTriangle->AddVertexBuffer(vertexBufferTriangle);
-
-		// Index Buffer
-		unsigned int indicesTriangle[3] = {
-			0, 1, 2,
-		};
-		std::shared_ptr<Pistachio::IndexBuffer> indexBufferTriangle;
-		indexBufferTriangle.reset(Pistachio::IndexBuffer::Create(indicesTriangle, sizeof(indicesTriangle) / sizeof(unsigned int)));
-		m_VertexArrayTriangle->SetIndexBuffer(indexBufferTriangle);
-
 		/// Shaders
-		std::string vertexSource = R"glsl(
+		std::string colourShaderVertexSource = R"glsl(
 #version 330 core
 
-layout(location = 0) in vec4 a_Position;
-layout(location = 1) in vec4 a_Colour;
-
 uniform mat4 u_ProjectionViewMatrix;
+uniform mat4 u_Transform;
 
-out vec4 v_Position;
-out vec4 v_Colour;
+layout(location = 0) in vec4 a_Position;
 
 void main() {
-	v_Position = a_Position;
-	v_Colour = a_Colour;
-
-	gl_Position = u_ProjectionViewMatrix * a_Position;
+	gl_Position = u_ProjectionViewMatrix * u_Transform * a_Position;
 }
 )glsl";
 
-		std::string fragmentSource = R"glsl(
+		std::string colourShaderFragmentSource = R"glsl(
 #version 330 core
 
-in vec4 v_Position;
-in vec4 v_Colour;
+uniform vec4 u_Colour;
 
 layout(location = 0) out vec4 colour;
 
 void main () {
-	//colour = vec4(0.075f, 0.22f, 0.247f, 1.0f);
-	//colour = 0.5f + v_Position;
-	colour = v_Colour;
+	colour = u_Colour;
 }
 )glsl";
 
-		//m_Shader = std::make_shared<Shader>(Shader::Create(vertexSource, fragmentSource));
-		m_Shader.reset(Pistachio::Shader::Create(vertexSource, fragmentSource));
+		m_FlatColourShader = Pistachio::Shader::Create(colourShaderVertexSource, colourShaderFragmentSource);
 
-		std::string vertexSourceBlue = R"glsl(
+		std::string textureShaderVertexSource = R"glsl(
 #version 330 core
-
-layout(location = 0) in vec4 a_Position;
 
 uniform mat4 u_ProjectionViewMatrix;
+uniform mat4 u_Transform;
 
-out vec4 v_Position;
+layout(location = 0) in vec4 a_Position;
+layout(location = 1) in vec2 a_TextureCoords;
+
+out vec2 v_TextureCoords;
 
 void main() {
-	v_Position = a_Position;
+	v_TextureCoords = a_TextureCoords;
 
-	gl_Position = u_ProjectionViewMatrix * a_Position;
+	gl_Position = u_ProjectionViewMatrix * u_Transform * a_Position;
 }
 )glsl";
 
-		std::string fragmentSourceBlue = R"glsl(
+		std::string textureShaderFragmentSource = R"glsl(
 #version 330 core
 
-in vec4 v_Position;
+uniform sampler2D u_Texture;
+
+in vec2 v_TextureCoords;
 
 layout(location = 0) out vec4 colour;
 
 void main () {
-	colour = vec4(0.075f, 0.22f, 0.247f, 1.0f);
+	colour = texture(u_Texture, v_TextureCoords);
 }
 )glsl";
 
-		//m_Shader = std::make_shared<Shader>(Shader::Create(vertexSource, fragmentSource));
-		m_ShaderBlue.reset(Pistachio::Shader::Create(vertexSourceBlue, fragmentSourceBlue));
+		m_TextureShader = Pistachio::Shader::Create(textureShaderVertexSource, textureShaderFragmentSource);
+
+		m_Texture = Pistachio::Texture2D::Create("assets/textures/Pistachio.png");
+
+		m_TextureShader->Bind();
+		std::dynamic_pointer_cast<Pistachio::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
 	}
 
 	void OnUpdate(Pistachio::Timestep timestep) override {
-		PST_TRACE("Delta time: {}s ({}ms)", timestep.Seconds(), timestep.Milliseconds());
+		const float moveSpeed = 0.5f * timestep;
 
 		const float cameraMoveSpeed = 1.5f * timestep;
 		const float cameraRotationSpeed = 180.0f * timestep;
@@ -165,6 +141,21 @@ void main () {
 		if (Pistachio::Input::IsKeyPressed(PST_KEY_R)) {
 			m_CameraPosition = { 0.0f, 0.0f, 0.0f };
 			m_CameraRotation = 0.0f;
+
+			m_Position = { 0.0f, 0.0f, 0.0f };
+		}
+		
+		if (Pistachio::Input::IsKeyPressed(PST_KEY_LEFT)) {
+			m_Position.x -= moveSpeed;
+		}
+		if (Pistachio::Input::IsKeyPressed(PST_KEY_RIGHT)) {
+			m_Position.x += moveSpeed;
+		}
+		if (Pistachio::Input::IsKeyPressed(PST_KEY_DOWN)) {
+			m_Position.y -= moveSpeed;
+		}
+		if (Pistachio::Input::IsKeyPressed(PST_KEY_UP)) {
+			m_Position.y += moveSpeed;
 		}
 
 
@@ -177,61 +168,48 @@ void main () {
 		{
 			Pistachio::Renderer::BeginScene(m_Camera);
 
-			Pistachio::Renderer::Submit(m_Shader, m_VertexArray);
+			// Grid
+			glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
-			Pistachio::Renderer::Submit(m_ShaderBlue, m_VertexArrayTriangle);
+			m_FlatColourShader->Bind();
+			std::dynamic_pointer_cast<Pistachio::OpenGLShader>(m_FlatColourShader)->UploadUniformFloat4("u_Colour", m_Colour);
+
+			for (int y = 0; y < 20; y++) {
+				for (int x = 0; x < 20; x++) {
+					glm::vec3 pos(x * 0.11f, y * 0.11f, 0.0f);
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
+					Pistachio::Renderer::Submit(m_FlatColourShader, m_VertexArray, transform);
+				}
+			}
+
+			// Square
+			m_Texture->Bind(0);
+			glm::mat4 transform2 = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)), m_Position);
+			Pistachio::Renderer::Submit(m_TextureShader, m_VertexArray, transform2);
 
 			Pistachio::Renderer::EndScene();
 		}
 	}
 
 	void OnImGuiRender() override {
-		ImGui::Begin("Greetings, Equestria!");
-		ImGui::Text("Ponies!");
+		ImGui::Begin("Set Colour!");
+		ImGui::ColorEdit4("Colour", glm::value_ptr(m_Colour));
 		ImGui::End();
-	}
-
-	bool OnKeyPressed(Pistachio::KeyPressedEvent& event) override {
-		//switch (event.KeyCode()) {
-		//	case PST_KEY_A:
-		//		m_CameraPosition.x -= 0.05f;
-		//		break;
-		//	case PST_KEY_D:
-		//		m_CameraPosition.x += 0.05f;
-		//		break;
-		//	case PST_KEY_S:
-		//		m_CameraPosition.y -= 0.05f;
-		//		break;
-		//	case PST_KEY_W:
-		//		m_CameraPosition.y += 0.05f;
-		//		break;
-		//	case PST_KEY_E:
-		//		m_CameraRotation -= 1.0f;
-		//		break;
-		//	case PST_KEY_Q:
-		//		m_CameraRotation += 1.0f;
-		//		break;
-		//	case PST_KEY_R:
-		//		m_CameraPosition = { 0.0f, 0.0f, 0.0f };
-		//		m_CameraRotation = 0.0f;
-		//	default: 
-		//		break;
-		//}
-
-		return false;
 	}
 
 private:
 	Pistachio::OrthographicCamera m_Camera;
 
-	std::shared_ptr<Pistachio::VertexArray> m_VertexArray;
-	std::shared_ptr<Pistachio::VertexArray> m_VertexArrayTriangle;
+	Pistachio::Ref<Pistachio::VertexArray> m_VertexArray;
 
-	std::shared_ptr<Pistachio::Shader> m_Shader;
-	std::shared_ptr<Pistachio::Shader> m_ShaderBlue;
+	Pistachio::Ref<Pistachio::Texture2D> m_Texture;
+	Pistachio::Ref<Pistachio::Shader> m_FlatColourShader, m_TextureShader;
 
 	glm::vec3 m_CameraPosition;
 	float m_CameraRotation = 0.0f;
+
+	glm::vec3 m_Position;
+	glm::vec4 m_Colour { 0.486f, 0.686f, 0.255f, 1.0f };
 };
 
 

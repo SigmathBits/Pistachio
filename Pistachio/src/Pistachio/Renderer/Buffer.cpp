@@ -50,26 +50,26 @@ namespace Pistachio {
 		}
 	}
 
-	VertexBuffer* VertexBuffer::Create(float* vertices, size_t size) {
+	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, size_t size) {
 		switch (Renderer::RenderAPI()) {
 			case RendererAPI::RenderAPI::None:
 				PST_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
 				return nullptr;
 			case RendererAPI::RenderAPI::OpenGL:
-				return new OpenGLVertexBuffer(vertices, size);
+				return std::make_shared<OpenGLVertexBuffer>(vertices, size);
 			default:
 				PST_CORE_ASSERT(false, "Unrecognised RendererAPI");
 				return nullptr;
 		}
 	}
 
-	IndexBuffer* IndexBuffer::Create(unsigned int* indices, unsigned int count) {
+	Ref<IndexBuffer> IndexBuffer::Create(unsigned int* indices, unsigned int count) {
 		switch (Renderer::RenderAPI()) {
 			case RendererAPI::RenderAPI::None:
 				PST_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
 				return nullptr;
 			case RendererAPI::RenderAPI::OpenGL:
-				return new OpenGLIndexBuffer(indices, count);
+				return std::make_shared<OpenGLIndexBuffer>(indices, count);
 			default:
 				PST_CORE_ASSERT(false, "Unrecognised RendererAPI");
 				return nullptr;

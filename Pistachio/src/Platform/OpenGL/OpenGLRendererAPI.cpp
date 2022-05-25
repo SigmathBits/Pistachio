@@ -7,6 +7,11 @@
 
 namespace Pistachio {
 
+	void OpenGLRendererAPI::Init() {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+
 	void OpenGLRendererAPI::SetClearColour(const glm::vec4& colour) const {
 		glClearColor(colour.r, colour.g, colour.b, colour.a);
 	}
@@ -15,7 +20,7 @@ namespace Pistachio {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray) const {
+	void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray) const {
 		glDrawElements(GL_TRIANGLES, vertexArray->CurrentIndexBuffer()->Count(), GL_UNSIGNED_INT, nullptr);
 	}
 

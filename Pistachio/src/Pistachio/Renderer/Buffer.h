@@ -56,7 +56,7 @@ namespace Pistachio {
 
 	class VertexBufferLayout {
 	public:
-		VertexBufferLayout() {}
+		VertexBufferLayout() = default;
 
 		VertexBufferLayout(const std::initializer_list<VertexBufferElement> elements);
 
@@ -77,7 +77,7 @@ namespace Pistachio {
 
 	class VertexBuffer {
 	public:
-		virtual ~VertexBuffer() {}
+		virtual ~VertexBuffer() = default;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -85,20 +85,20 @@ namespace Pistachio {
 		virtual void SetLayout(const VertexBufferLayout& layout) = 0;
 		virtual const VertexBufferLayout& Layout() const = 0;
 
-		static VertexBuffer* Create(float* vertices, size_t size);
+		static Ref<VertexBuffer> Create(float* vertices, size_t size);
 	};
 
 
 	class IndexBuffer {
 	public:
-		virtual ~IndexBuffer() {}
+		virtual ~IndexBuffer() = default;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
 		virtual unsigned int Count() const = 0;
 
-		static IndexBuffer* Create(unsigned int* indices, unsigned int count);
+		static Ref<IndexBuffer> Create(unsigned int* indices, unsigned int count);
 	};
 
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 
 #define BIT(x) (1 << x)
 
@@ -31,3 +33,14 @@
 	#define PST_CORE_ASSERT(x, ...) 
 	#define PST_ASSERT(x, ...)      
 #endif
+
+
+namespace Pistachio {
+
+	template<typename T>
+	using Scoped = std::unique_ptr<T>;
+
+	template<typename T>
+	using Ref = std::shared_ptr<T>;
+
+}

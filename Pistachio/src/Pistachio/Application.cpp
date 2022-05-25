@@ -12,7 +12,6 @@
 #include "Renderer/Renderer.h"
 
 
-
 namespace Pistachio {
 
 	Application* Application::s_Instance = nullptr;
@@ -21,8 +20,10 @@ namespace Pistachio {
 		PST_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		m_Window = std::unique_ptr<Window>(Window::Create());
+		m_Window = Scoped<Window>(Window::Create());
 		m_Window->SetEventCallback(PST_BIND_EVENT_FUNCTION(Application::OnEvent));
+
+		Renderer::Init();
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
@@ -56,8 +57,6 @@ namespace Pistachio {
 	}
 
 	void Application::OnEvent(Event& event) {
-		PST_CORE_TRACE(event);
-
 		m_EventDispatcher.Dispatch(event);
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); ) {

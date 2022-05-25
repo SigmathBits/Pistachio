@@ -1,0 +1,61 @@
+#include "pstpch.h"
+
+#include "OpenGLTexture.h"
+
+#include <glad/glad.h>
+
+#include "stb_image.h"
+
+
+namespace Pistachio {
+
+	OpenGLTexture2D::OpenGLTexture2D(const std::string& filepath)
+		: m_Filepath(filepath) {
+		int width, height, channels;
+		// Need to flip our PNG texture as OpenGL expects image data starting from the bottom left (not the top left, like PNG)
+		stbi_set_flip_vertically_on_load(1);
+		stbi_uc* data = stbi_load(filepath.c_str(), &width, &height, &channels, 0);
+		PST_CORE_ASSERT(data, "Failed to load image");
+
+		m_Width = width;
+		m_Height = height;
+
+		GLenum internalFormat = 0, dataFormat = 0;
+		switch (channels) {
+			case 4:
+				internalFormat = GL_RGBA8;
+				dataFormat = GL_RGBA;
+				break;
+			case 3:
+				internalFormat = GL_RGB8;
+				dataFormat = GL_RGB8;
+				break;
+			default:
+				PST_CORE_ASSERT(false, "Format not supported");
+				return;
+		}
+
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+		glTextureStorage2D(m_RendererID, 1, internalFormat, width, height);
+
+		// How we scale the texture
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+
+		glTextureSubImage2D(m_RendererID, 0, 0, 0, width, height, dataFormat, GL_UNSIGNED_BYTE, data);
+
+		stbi_image_free(data);
+	}
+
+	OpenGLTexture2D::~OpenGLTexture2D() {
+		glDeleteTextures(1, &m_RendererID);
+	}
+
+	void OpenGLTexture2D::Bind(unsigned int slot) const {
+		glBindTextureUnit(slot, m_RendererID);
+	}
+
+}

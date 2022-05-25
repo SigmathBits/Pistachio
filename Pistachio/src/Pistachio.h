@@ -21,6 +21,7 @@
 #include "Pistachio/Renderer/OrthographicCamera.h"
 
 #include "Pistachio/Renderer/Shader.h"
+#include "Pistachio/Renderer/Texture.h"
 #include "Pistachio/Renderer/VertexArray.h"
 #include "Pistachio/Renderer/Buffer.h"
 /// -----------------------
