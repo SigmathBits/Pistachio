@@ -16,7 +16,7 @@ namespace Pistachio {
 		// Key Events
 		KeyPressed, KeyReleased, KeyTyped,
 		// Mouse Events
-		MouseMoved, MouseScrolled, MouseButtonPressed, MouseButtonReleased,
+		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled,
 	};
 
 	// For easy subscribing based on  the kind of event
@@ -27,6 +27,7 @@ namespace Pistachio {
 		EVENT_CATEGORY_KEYBOARD        = BIT(2),
 		EVENT_CATEGORY_MOUSE           = BIT(3),
 		EVENT_CATEGORY_MOUSE_BUTTON    = BIT(4),
+		EVENT_CATEGORY_ALL             = 0b11111,
 	};
 
 
@@ -34,7 +35,8 @@ namespace Pistachio {
 	virtual EventType Type() const override { return StaticType(); } \
 	virtual const char* Name() const override { return #type "Event"; }
 
-#define EVENT_CATEGORY(category) virtual int CategoryFlags() const override { return category; }
+#define EVENT_CATEGORY(category) static EventCategory StaticCategoryFlags() { return (EventCategory)(category); } \
+	virtual EventCategory CategoryFlags() const override { return (EventCategory)(category); }
 
 
 	class PISTACHIO_API Event {
@@ -42,7 +44,7 @@ namespace Pistachio {
 		bool Handled = false;
 
 		virtual EventType Type() const = 0;
-		virtual int CategoryFlags() const = 0;
+		virtual EventCategory CategoryFlags() const = 0;
 		virtual const char* Name() const = 0;
 		virtual std::string ToString() const { return Name(); }
 
@@ -64,6 +66,8 @@ namespace Pistachio {
 		}
 
 		bool Dispatch(Event& event) const {
+			if (event.Handled) return false;
+
 			auto pair = m_EventCallbacks.find(event.Type());
 			if (pair == m_EventCallbacks.end()) {
 				return false;

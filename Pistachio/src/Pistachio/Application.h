@@ -8,23 +8,20 @@
 
 #include "Pistachio/ImGui/ImGuiLayer.h"
 
-#include "Events/Event.h"
-#include "Events/ApplicationEvent.h"
-#include "Events/KeyEvent.h"
-#include "Events/MouseEvent.h"
+#include "Pistachio/Events/EventListener.h"
 
 
 
 namespace Pistachio {
 	
-	class Application {
+	class Application : public EventListener {
 	public:
 		Application();
 		virtual ~Application();
 
 		void Run();
 
-		void OnEvent(Event& event);
+		virtual void SendEvent(Event& event) override;
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
@@ -35,17 +32,17 @@ namespace Pistachio {
 
 	private:
 		bool OnWindowClose(WindowCloseEvent& event);
+		bool OnWindowResize(WindowResizeEvent& event);
 
 		std::unique_ptr<Window> m_Window;
 
 		bool m_Running = true;
+		bool m_Minimised = false;
 
 		float m_LastFrameTime = 0.0f;
 
 		LayerStack m_LayerStack;
 		ImGuiLayer* m_ImGuiLayer;
-
-		EventDispatcher m_EventDispatcher;
 
 	private:
 		static Application* s_Instance;

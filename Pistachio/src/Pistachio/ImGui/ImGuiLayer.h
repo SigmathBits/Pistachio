@@ -24,6 +24,8 @@ namespace Pistachio {
 		void End();
 
 	private:
+		void OnEvent(Event& event);
+
 		static void ImGuiStylesPsistachio();
 		static void ImGuiStyleColoursPistachio();
 

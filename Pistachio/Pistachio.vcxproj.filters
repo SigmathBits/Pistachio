@@ -78,6 +78,9 @@
     <ClInclude Include="src\Pistachio\Events\Event.h">
       <Filter>src\Pistachio\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\Pistachio\Events\EventListener.h">
+      <Filter>src\Pistachio\Events</Filter>
+    </ClInclude>
     <ClInclude Include="src\Pistachio\Events\KeyEvent.h">
       <Filter>src\Pistachio\Events</Filter>
     </ClInclude>
@@ -103,6 +106,9 @@
       <Filter>src\Pistachio</Filter>
     </ClInclude>
     <ClInclude Include="src\Pistachio\MouseButtonCodes.h">
+      <Filter>src\Pistachio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pistachio\OrthographicCameraController.h">
       <Filter>src\Pistachio</Filter>
     </ClInclude>
     <ClInclude Include="src\Pistachio\Platform.h">
@@ -1430,19 +1436,22 @@
     <ClCompile Include="src\Pistachio\Application.cpp">
       <Filter>src\Pistachio</Filter>
     </ClCompile>
+    <ClCompile Include="src\Pistachio\Events\EventListener.cpp">
+      <Filter>src\Pistachio\Events</Filter>
+    </ClCompile>
     <ClCompile Include="src\Pistachio\ImGui\ImGuiBuild.cpp">
       <Filter>src\Pistachio\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\Pistachio\ImGui\ImGuiLayer.cpp">
       <Filter>src\Pistachio\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="src\Pistachio\Layer.cpp">
-      <Filter>src\Pistachio</Filter>
-    </ClCompile>
     <ClCompile Include="src\Pistachio\LayerStack.cpp">
       <Filter>src\Pistachio</Filter>
     </ClCompile>
     <ClCompile Include="src\Pistachio\Log.cpp">
+      <Filter>src\Pistachio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pistachio\OrthographicCameraController.cpp">
       <Filter>src\Pistachio</Filter>
     </ClCompile>
     <ClCompile Include="src\Pistachio\Platform.cpp">

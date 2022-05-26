@@ -13,6 +13,10 @@ namespace Pistachio {
 		RenderCommand::Init();
 	}
 
+	void Renderer::ResizeWindow(unsigned int width, unsigned int height) {
+		RenderCommand::SetViewPort(0, 0, width, height);
+	}
+
 	void Renderer::BeginScene(const OrthographicCamera& camera) {
 		m_SceneData->ProjectionViewMatrix = camera.ProjectionViewMatrix();
 	}

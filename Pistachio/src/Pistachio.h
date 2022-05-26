@@ -14,11 +14,11 @@
 #include "Pistachio/Layer.h"
 #include "Pistachio/ImGui/ImGuiLayer.h"
 
+#include "Pistachio/OrthographicCameraController.h"
+
 /// ------ Renderer ------
 #include "Pistachio/Renderer/Renderer.h"
 #include "Pistachio/Renderer/RenderCommand.h"
-
-#include "Pistachio/Renderer/OrthographicCamera.h"
 
 #include "Pistachio/Renderer/Shader.h"
 #include "Pistachio/Renderer/Texture.h"

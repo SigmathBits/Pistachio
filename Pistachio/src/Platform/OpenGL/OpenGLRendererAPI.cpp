@@ -12,6 +12,10 @@ namespace Pistachio {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
+	void OpenGLRendererAPI::SetViewPort(unsigned int x, unsigned int y, unsigned int width, unsigned int height) const {
+		glViewport(x, y, width, height);
+	}
+
 	void OpenGLRendererAPI::SetClearColour(const glm::vec4& colour) const {
 		glClearColor(colour.r, colour.g, colour.b, colour.a);
 	}

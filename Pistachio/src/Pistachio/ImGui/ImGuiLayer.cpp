@@ -18,7 +18,7 @@
 namespace Pistachio {
 
 	ImGuiLayer::ImGuiLayer() 
-		: Layer("ImGui") {
+		: Layer("ImGui", EVENT_CATEGORY_NONE) {
 
 	}
 
@@ -93,6 +93,13 @@ namespace Pistachio {
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent(backup_current_context);
+		}
+	}
+
+	void ImGuiLayer::OnEvent(Event& event) {
+		ImGuiIO& io = ImGui::GetIO();
+		if (event.IsInCategory(EVENT_CATEGORY_INPUT) && (io.WantCaptureMouse || io.WantCaptureKeyboard)) {
+			event.Handled = true;
 		}
 	}
 

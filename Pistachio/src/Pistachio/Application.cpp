@@ -16,20 +16,18 @@ namespace Pistachio {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application() {
+	Application::Application() 
+		: EventListener(EVENT_CATEGORY_APPLICATION) {
 		PST_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
 		m_Window = Scoped<Window>(Window::Create());
-		m_Window->SetEventCallback(PST_BIND_EVENT_FUNCTION(Application::OnEvent));
+		m_Window->SetEventCallback(PST_BIND_EVENT_FUNCTION(Application::SendEvent));
 
 		Renderer::Init();
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
-
-		// Set callbacks
-		m_EventDispatcher.SetEventCallback<WindowCloseEvent>(PST_BIND_EVENT_FUNCTION(Application::OnWindowClose));
 	}
 
 	Application::~Application() {
@@ -42,8 +40,10 @@ namespace Pistachio {
 			Timestep timestemp = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
-			for (Layer* layer : m_LayerStack) {
-				layer->OnUpdate(timestemp);
+			if (!m_Minimised) {
+				for (Layer* layer : m_LayerStack) {
+					layer->OnUpdate(timestemp);
+				}
 			}
 
 			m_ImGuiLayer->Begin();
@@ -56,11 +56,12 @@ namespace Pistachio {
 		}
 	}
 
-	void Application::OnEvent(Event& event) {
-		m_EventDispatcher.Dispatch(event);
+	void Application::SendEvent(Event& event) {
+		EventListener::SendEvent(event);
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); ) {
-			(*--it)->OnEvent(event);
+			EventType eventType = event.Type();
+			(*--it)->SendEvent(event);
 			if (event.Handled) {
 				break;
 			}
@@ -71,6 +72,22 @@ namespace Pistachio {
 	{
 		m_Running = false;
 		return true;
+	}
+
+	bool Application::OnWindowResize(WindowResizeEvent& event) {
+		unsigned int width = event.Width();
+		unsigned int height = event.Height();
+
+		if (width == 0 || height == 0) {
+			m_Minimised = true;
+			return false;
+		}
+
+		m_Minimised = false;
+
+		Renderer::ResizeWindow(width, height);
+
+		return false;
 	}
 
 	void Application::PushLayer(Layer* layer) {

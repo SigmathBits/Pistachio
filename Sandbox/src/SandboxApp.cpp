@@ -10,10 +10,21 @@
 
 
 class ExampleLayer : public Pistachio::Layer {
+private:
+	Pistachio::OrthographicCameraController m_CameraController;
+
+	Pistachio::Ref<Pistachio::VertexArray> m_VertexArray;
+
+	Pistachio::Ref<Pistachio::Texture2D> m_Texture;
+
+	Pistachio::ShaderLibrary m_ShaderLibrary;
+
+	glm::vec3 m_Position{ 0.0f, 0.0f, 0.0f };
+	glm::vec4 m_Colour{ 0.486f, 0.686f, 0.255f, 1.0f };
+
 public:
 	ExampleLayer()
-		: Layer("Example"), m_Camera({ -1.6f, 1.6f, -0.9f, 0.9f }), m_CameraPosition(0.0f, 0.0f, 0.0f),
-		m_Position(0.0f, 0.0f, 0.0f) {}
+		: Layer("Example", Pistachio::EVENT_CATEGORY_NONE), m_CameraController(1280, 720, true) {}
 
 	void OnAttach() {
 		/// Rendering objects
@@ -57,35 +68,10 @@ public:
 	}
 
 	void OnUpdate(Pistachio::Timestep timestep) override {
+		// Update
+		m_CameraController.OnUpdate(timestep);
+
 		const float moveSpeed = 0.5f * timestep;
-
-		const float cameraMoveSpeed = 1.5f * timestep;
-		const float cameraRotationSpeed = 180.0f * timestep;
-
-		if (Pistachio::Input::IsKeyPressed(PST_KEY_A)) {
-			m_CameraPosition.x -= cameraMoveSpeed;
-		}
-		if (Pistachio::Input::IsKeyPressed(PST_KEY_D)) {
-			m_CameraPosition.x += cameraMoveSpeed;
-		}
-		if (Pistachio::Input::IsKeyPressed(PST_KEY_S)) {
-			m_CameraPosition.y -= cameraMoveSpeed;
-		}
-		if (Pistachio::Input::IsKeyPressed(PST_KEY_W)) {
-			m_CameraPosition.y += cameraMoveSpeed;
-		}
-		if (Pistachio::Input::IsKeyPressed(PST_KEY_E)) {
-			m_CameraRotation -= cameraRotationSpeed;
-		}
-		if (Pistachio::Input::IsKeyPressed(PST_KEY_Q)) {
-			m_CameraRotation += cameraRotationSpeed;
-		}
-		if (Pistachio::Input::IsKeyPressed(PST_KEY_R)) {
-			m_CameraPosition = { 0.0f, 0.0f, 0.0f };
-			m_CameraRotation = 0.0f;
-
-			m_Position = { 0.0f, 0.0f, 0.0f };
-		}
 		
 		if (Pistachio::Input::IsKeyPressed(PST_KEY_LEFT)) {
 			m_Position.x -= moveSpeed;
@@ -100,15 +86,12 @@ public:
 			m_Position.y += moveSpeed;
 		}
 
-
+		// Render
 		Pistachio::RenderCommand::SetClearColour({ .03f, 0.1f, 0.15f, 1 });
 		Pistachio::RenderCommand::Clear();
 
-		m_Camera.SetPosition(m_CameraPosition);
-		m_Camera.SetRotation(m_CameraRotation);
-
 		{
-			Pistachio::Renderer::BeginScene(m_Camera);
+			Pistachio::Renderer::BeginScene(m_CameraController.Camera());
 
 			// Grid
 			glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
@@ -137,29 +120,17 @@ public:
 		}
 	}
 
+	void OnEvent(Pistachio::Event& event) {
+		m_CameraController.SendEvent(event);
+	}
+
 	void OnImGuiRender() override {
 		ImGui::Begin("Set Colour!");
 		ImGui::ColorEdit4("Colour", glm::value_ptr(m_Colour));
 		ImGui::End();
 
-		ImGui::ShowStyleEditor();
 		ImGui::ShowDemoWindow();
 	}
-
-private:
-	Pistachio::OrthographicCamera m_Camera;
-
-	Pistachio::Ref<Pistachio::VertexArray> m_VertexArray;
-
-	Pistachio::Ref<Pistachio::Texture2D> m_Texture;
-
-	Pistachio::ShaderLibrary m_ShaderLibrary;
-
-	glm::vec3 m_CameraPosition;
-	float m_CameraRotation = 0.0f;
-
-	glm::vec3 m_Position;
-	glm::vec4 m_Colour { 0.486f, 0.686f, 0.255f, 1.0f };
 };
 
 

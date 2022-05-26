@@ -12,15 +12,17 @@ namespace Pistachio {
 		OrthographicCamera();
 		~OrthographicCamera();
 
+		void SetProjection(glm::vec4 culling);
+
 		const glm::mat4& ProjectionMatrix() const { return m_ProjectionMatrix;  }
 		const glm::mat4& CameraViewMatrix() const { return m_CameraViewMatrix;  }
 		const glm::mat4& ViewMatrix() const { return glm::inverse(m_CameraViewMatrix);  }
 		const glm::mat4& ProjectionViewMatrix() const { return m_ProjectionViewMatrix;  }
 
 		inline const glm::vec3& Position() const { return m_Position; };
-		inline void SetPosition(const glm::vec3& position) { m_Position = position; RecalculateProjectionViewMatrix(); };
-
 		inline float Rotation() const { return m_Rotation; };
+
+		inline void SetPosition(const glm::vec3& position) { m_Position = position; RecalculateProjectionViewMatrix(); };
 		inline void SetRotation(float rotation) { m_Rotation = rotation; RecalculateProjectionViewMatrix(); };
 
 	private:

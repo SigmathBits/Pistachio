@@ -13,6 +13,8 @@ namespace Pistachio {
 	public:
 		static void Init();
 
+		static void ResizeWindow(unsigned int width, unsigned int height);
+
 		static void BeginScene(const OrthographicCamera& camera);
 		static void EndScene();
 

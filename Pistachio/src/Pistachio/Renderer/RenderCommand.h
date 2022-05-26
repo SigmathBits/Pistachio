@@ -11,6 +11,10 @@ namespace Pistachio {
 			s_RendererAPI->Init();
 		}
 
+		inline static void SetViewPort(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+			s_RendererAPI->SetViewPort(x, y, width, height);
+		}
+
 		inline static void SetClearColour(const glm::vec4& colour) {
 			s_RendererAPI->SetClearColour(colour);
 		};

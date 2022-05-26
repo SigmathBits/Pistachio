@@ -16,6 +16,8 @@ namespace Pistachio {
 	public:
 		virtual void Init() = 0;
 
+		virtual void SetViewPort(unsigned int x, unsigned int y, unsigned int width, unsigned int height) const = 0;
+
 		virtual void SetClearColour(const glm::vec4& colour) const = 0;
 		virtual void Clear() const = 0;
 

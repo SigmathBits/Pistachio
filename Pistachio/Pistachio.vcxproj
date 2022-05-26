@@ -147,6 +147,7 @@
     <ClInclude Include="src\Pistachio\EntryPoint.h" />
     <ClInclude Include="src\Pistachio\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Pistachio\Events\Event.h" />
+    <ClInclude Include="src\Pistachio\Events\EventListener.h" />
     <ClInclude Include="src\Pistachio\Events\KeyEvent.h" />
     <ClInclude Include="src\Pistachio\Events\MouseEvent.h" />
     <ClInclude Include="src\Pistachio\ImGui\ImGuiLayer.h" />
@@ -156,6 +157,7 @@
     <ClInclude Include="src\Pistachio\LayerStack.h" />
     <ClInclude Include="src\Pistachio\Log.h" />
     <ClInclude Include="src\Pistachio\MouseButtonCodes.h" />
+    <ClInclude Include="src\Pistachio\OrthographicCameraController.h" />
     <ClInclude Include="src\Pistachio\Platform.h" />
     <ClInclude Include="src\Pistachio\Renderer\Buffer.h" />
     <ClInclude Include="src\Pistachio\Renderer\GraphicsContext.h" />
@@ -599,11 +601,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pistachio\Application.cpp" />
+    <ClCompile Include="src\Pistachio\Events\EventListener.cpp" />
     <ClCompile Include="src\Pistachio\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\Pistachio\ImGui\ImGuiLayer.cpp" />
-    <ClCompile Include="src\Pistachio\Layer.cpp" />
     <ClCompile Include="src\Pistachio\LayerStack.cpp" />
     <ClCompile Include="src\Pistachio\Log.cpp" />
+    <ClCompile Include="src\Pistachio\OrthographicCameraController.cpp" />
     <ClCompile Include="src\Pistachio\Platform.cpp" />
     <ClCompile Include="src\Pistachio\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Pistachio\Renderer\OrthographicCamera.cpp" />
