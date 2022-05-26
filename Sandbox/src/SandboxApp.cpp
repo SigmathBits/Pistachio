@@ -28,8 +28,7 @@ public:
 			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
 			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
 		};
-		Pistachio::Ref<Pistachio::VertexBuffer> vertexBuffer;
-		vertexBuffer = Pistachio::VertexBuffer::Create(vertices, sizeof(vertices));
+		Pistachio::Ref<Pistachio::VertexBuffer> vertexBuffer = Pistachio::VertexBuffer::Create(vertices, sizeof(vertices));
 
 		// Layout
 		vertexBuffer->SetLayout({
@@ -43,8 +42,7 @@ public:
 			0, 1, 2,
 			2, 3, 0,
 		};
-		Pistachio::Ref<Pistachio::IndexBuffer> indexBuffer;
-		indexBuffer = Pistachio::IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int));
+		Pistachio::Ref<Pistachio::IndexBuffer> indexBuffer = Pistachio::IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int));
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
 		// Shaders
@@ -143,6 +141,9 @@ public:
 		ImGui::Begin("Set Colour!");
 		ImGui::ColorEdit4("Colour", glm::value_ptr(m_Colour));
 		ImGui::End();
+
+		ImGui::ShowStyleEditor();
+		ImGui::ShowDemoWindow();
 	}
 
 private:

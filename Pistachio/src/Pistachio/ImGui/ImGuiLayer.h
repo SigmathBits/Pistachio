@@ -10,7 +10,7 @@
 
 namespace Pistachio {
 
-	class PISTACHIO_API ImGuiLayer : public Layer {
+	class ImGuiLayer : public Layer {
 	public:
 		ImGuiLayer();
 		~ImGuiLayer() override;
@@ -22,6 +22,10 @@ namespace Pistachio {
 
 		void Begin();
 		void End();
+
+	private:
+		static void ImGuiStylesPsistachio();
+		static void ImGuiStyleColoursPistachio();
 
 	private:
 		float m_Time = 0.0f;
