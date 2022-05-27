@@ -1,14 +1,12 @@
 #pragma once
 
-#include "Core.h"
-
-#include "Window.h"
-
-#include "LayerStack.h"
-
-#include "Pistachio/ImGui/ImGuiLayer.h"
+#include "Pistachio/Core/Core.h"
+#include "Pistachio/Core/Window.h"
+#include "Pistachio/Core/LayerStack.h"
 
 #include "Pistachio/Events/EventListener.h"
+
+#include "Pistachio/ImGui/ImGuiLayer.h"
 
 
 

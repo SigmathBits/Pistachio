@@ -2,14 +2,12 @@
 
 #include "Application.h"
 
-#include "Log.h"
+#include "Pistachio/Core/Log.h"
+#include "Pistachio/Core/Input.h"
+#include "Pistachio/Core/Timestep.h"
+#include "Pistachio/Core/Platform.h"
 
-#include "Platform.h"
-
-#include "Input.h"
-
-#include "Core/Timestep.h"
-#include "Renderer/Renderer.h"
+#include "Pistachio/Renderer/Renderer.h"
 
 
 namespace Pistachio {

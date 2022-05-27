@@ -4,8 +4,10 @@
 
 #include "Pistachio/Renderer/Shader.h"
 
+
 // TODO: Remove
 typedef unsigned int GLenum;
+
 
 namespace Pistachio {
 

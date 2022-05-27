@@ -2,9 +2,9 @@
 
 #include "WindowsInput.h"
 
-#include "Pistachio/Application.h"
-
 #include <GLFW/glfw3.h>
+
+#include "Pistachio/Core/Application.h"
 
 
 namespace Pistachio {

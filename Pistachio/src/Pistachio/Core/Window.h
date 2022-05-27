@@ -1,10 +1,6 @@
 #pragma once
 
-#include "pstpch.h"
-
-#include "Core.h"
-
-#include "Events/Event.h"
+#include "Pistachio/Events/Event.h"
 
 
 namespace Pistachio {
@@ -22,7 +18,7 @@ namespace Pistachio {
 	};
 
 	// Interface representing a desktop system based window
-	class PISTACHIO_API Window {
+	class Window {
 	public:
 		using EventCallbackFunction = std::function<void(Event&)>;
 

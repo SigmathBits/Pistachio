@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Pistachio/Renderer/OrthographicCamera.h"
 #include "Pistachio/Core/Timestep.h"
 
 #include "Pistachio/Events/EventListener.h"
+
+#include "Pistachio/Renderer/OrthographicCamera.h"
 
 
 namespace Pistachio {

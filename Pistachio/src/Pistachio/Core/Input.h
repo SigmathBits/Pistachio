@@ -1,14 +1,12 @@
 #pragma once
 
-#include "Pistachio/Core.h"
-
-#include "Pistachio/KeyCodes.h"
-#include "Pistachio/MouseButtonCodes.h"
+#include "Pistachio/Core/KeyCodes.h"
+#include "Pistachio/Core/MouseButtonCodes.h"
 
 
 namespace Pistachio {
 
-	class PISTACHIO_API Input {
+	class Input {
 	public:
 		inline static bool IsKeyPressed(PistachioKey keyCode) { return s_Instance->IsKeyPressedImpl(keyCode); }
 

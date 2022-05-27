@@ -4,7 +4,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "Pistachio/Core.h"
+#include "Pistachio/Core/Core.h"
 
 #include "Pistachio/Events/ApplicationEvent.h"
 #include "Pistachio/Events/MouseEvent.h"

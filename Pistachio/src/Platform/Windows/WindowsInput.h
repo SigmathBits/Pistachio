@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Pistachio/Input.h"
-
-#include "Pistachio/KeyCodes.h"
-#include "Pistachio/MouseButtonCodes.h"
+#include "Pistachio/Core/Input.h"
+#include "Pistachio/Core/KeyCodes.h"
+#include "Pistachio/Core/MouseButtonCodes.h"
 
 
 namespace Pistachio {

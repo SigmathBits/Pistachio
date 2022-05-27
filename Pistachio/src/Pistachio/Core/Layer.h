@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Pistachio/Core.h"
+#include "pstpch.h"
 
 #include "Pistachio/Core/Timestep.h"
 
@@ -14,10 +14,10 @@ namespace Pistachio {
 		Layer(const std::string& name = "Layer") : m_DebugName(name) {}
 
 		Layer(const std::string& name, EventCategory categories) : EventListener({}, categories), m_DebugName(name) {}
-		Layer(const std::string& name, std::set<EventType> events, EventCategory categories = EVENT_CATEGORY_ALL) : EventListener(events, categories), m_DebugName(name) {}
+		Layer(const std::string& name, std::unordered_set<EventType> events, EventCategory categories = EVENT_CATEGORY_ALL) : EventListener(events, categories), m_DebugName(name) {}
 
 		Layer(EventCategory categories) : EventListener({}, categories), m_DebugName("Layer") {}
-		Layer(std::set<EventType> events, EventCategory categories = EVENT_CATEGORY_ALL) : EventListener(events, categories), m_DebugName("Layer") {}
+		Layer(std::unordered_set<EventType> events, EventCategory categories = EVENT_CATEGORY_ALL) : EventListener(events, categories), m_DebugName("Layer") {}
 
 		virtual ~Layer() {}
 

@@ -2,7 +2,7 @@
 
 #include <glm/vec4.hpp>
 
-#include "VertexArray.h"
+#include "Pistachio/Renderer/VertexArray.h"
 
 
 namespace Pistachio {

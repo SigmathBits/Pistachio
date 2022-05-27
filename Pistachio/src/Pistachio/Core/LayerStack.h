@@ -1,13 +1,11 @@
 #pragma once
 
-#include "Pistachio/Core.h"
-
 #include "Layer.h"
 
 
 namespace Pistachio {
 	
-	class PISTACHIO_API LayerStack {
+	class LayerStack {
 	public:
 		LayerStack();
 		~LayerStack();

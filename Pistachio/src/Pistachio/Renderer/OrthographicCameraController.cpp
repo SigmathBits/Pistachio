@@ -2,13 +2,11 @@
 
 #include "OrthographicCameraController.h"
 
-#include <set>
-
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
-#include "Input.h"
+#include "Pistachio/Core/Input.h"
 
 
 namespace Pistachio {
@@ -85,7 +83,7 @@ namespace Pistachio {
 			m_Camera.SetRotation(m_CameraRotationSpeed * std::round((m_Camera.Rotation() + m_CameraRotationSpeed * event.YOffset()) / m_CameraRotationSpeed));
 		} else {
 			m_ZoomLevel -= event.YOffset() * 0.25f;
-			m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
+			m_ZoomLevel = std::max(m_ZoomLevel, 0.10f);
 
 			m_Camera.SetProjection({ m_ZoomLevel * -m_AspectRatio, m_ZoomLevel * m_AspectRatio, -m_ZoomLevel, m_ZoomLevel });
 		}

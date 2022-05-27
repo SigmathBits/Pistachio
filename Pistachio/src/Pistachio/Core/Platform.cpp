@@ -1,6 +1,4 @@
 #include "pstpch.h"
-#include "Platform.h"
-#include "pstpch.h"
 
 #include "Platform.h"
 

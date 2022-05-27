@@ -2,12 +2,12 @@
 
 #include "Event.h"
 
-#include "Pistachio/MouseButtonCodes.h"
+#include "Pistachio/Core/MouseButtonCodes.h"
 
 
 namespace Pistachio {
 
-	class PISTACHIO_API MouseButtonEvent : public Event {
+	class MouseButtonEvent : public Event {
 	public:
 		inline PistachioMouseButton MouseButton() const { return m_Button; }
 
@@ -26,7 +26,7 @@ namespace Pistachio {
 		PistachioMouseButton m_Button;
 	};
 
-	class PISTACHIO_API MouseButtonPressedEvent : public MouseButtonEvent {
+	class MouseButtonPressedEvent : public MouseButtonEvent {
 	public:
 		MouseButtonPressedEvent(PistachioMouseButton button)
 			: MouseButtonEvent(button) {}
@@ -34,7 +34,7 @@ namespace Pistachio {
 		EVENT_TYPE(MouseButtonPressed)
 	};
 	
-	class PISTACHIO_API MouseButtonReleasedEvent : public MouseButtonEvent {
+	class MouseButtonReleasedEvent : public MouseButtonEvent {
 	public:
 		MouseButtonReleasedEvent(PistachioMouseButton button)
 			: MouseButtonEvent(button) {}
@@ -42,7 +42,7 @@ namespace Pistachio {
 		EVENT_TYPE(MouseButtonReleased)
 	};
 
-	class PISTACHIO_API MouseMovedEvent : public Event {
+	class MouseMovedEvent : public Event {
 	public:
 		MouseMovedEvent(float x, float y)
 			: m_MouseX(x), m_MouseY(y) {}
@@ -63,7 +63,7 @@ namespace Pistachio {
 		float m_MouseX, m_MouseY;
 	};
 
-	class PISTACHIO_API MouseScrolledEvent : public Event {
+	class MouseScrolledEvent : public Event {
 	public:
 		MouseScrolledEvent(float xOffset, float yOffset)
 			: m_XOffset(xOffset), m_YOffset(yOffset) {}

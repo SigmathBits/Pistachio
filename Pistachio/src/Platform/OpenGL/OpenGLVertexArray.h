@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Pistachio/Core/Core.h"
+
 #include "Pistachio/Renderer/VertexArray.h"
 #include "Pistachio/Renderer/Buffer.h"
 

@@ -5,6 +5,8 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
+#include "Pistachio/Core/Core.h"
+
 
 namespace Pistachio {
 

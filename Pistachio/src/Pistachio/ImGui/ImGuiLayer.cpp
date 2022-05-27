@@ -4,20 +4,20 @@
 
 #include <GLFW/glfw3.h>
 
-#include "imgui.h"
+#include <imgui.h>
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_glfw.h"
 
-#include "Pistachio/Application.h"
+#include "Pistachio/Core/Application.h"
+#include "Pistachio/Core/KeyCodes.h"
 
 #include "Platform/Windows/WindowsWindow.h"
 
-#include "Pistachio/KeyCodes.h"
 
 
 namespace Pistachio {
 
-	ImGuiLayer::ImGuiLayer() 
+	ImGuiLayer::ImGuiLayer()
 		: Layer("ImGui", EVENT_CATEGORY_NONE) {
 
 	}

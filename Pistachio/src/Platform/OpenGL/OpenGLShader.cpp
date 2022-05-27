@@ -8,6 +8,8 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Pistachio/Core/Core.h"
+
 
 namespace Pistachio {
 

@@ -3,8 +3,6 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
 
-#include "Core.h"
-
 
 // Core log macros
 #define PST_CORE_TRACE(...)     Pistachio::Log::CoreLogger()->trace(__VA_ARGS__)
@@ -23,7 +21,7 @@
 
 namespace Pistachio {
 
-	class PISTACHIO_API Log {
+	class Log {
 	public:
 		static void Init();
 

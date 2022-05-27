@@ -2,7 +2,9 @@
 
 #include "Buffer.h"
 
-#include "Renderer.h"
+#include "Pistachio/Core/Core.h"
+
+#include "Pistachio/Renderer/Renderer.h"
 
 #include "Platform/OpenGL/OpenGLBuffer.h"
 

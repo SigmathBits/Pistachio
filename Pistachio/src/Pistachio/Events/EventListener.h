@@ -1,9 +1,5 @@
 #pragma once
 
-#include <set>
-
-#include "Pistachio/Core.h"
-
 #include "Pistachio/Core/Timestep.h"
 
 #include "Pistachio/Events/Event.h"
@@ -17,7 +13,7 @@ namespace Pistachio {
 	class EventListener {
 	public:
 		EventListener(EventCategory categories = EVENT_CATEGORY_ALL);
-		EventListener(const std::set<EventType>& events, EventCategory categories = EVENT_CATEGORY_ALL);
+		EventListener(const std::unordered_set<EventType>& events, EventCategory categories = EVENT_CATEGORY_ALL);
 		virtual ~EventListener();
 
 		virtual void SendEvent(Event& event);
@@ -41,7 +37,7 @@ namespace Pistachio {
 		virtual bool OnKeyTyped(KeyTypedEvent& event) { return false; }
 
 	private:
-		void RegisterMatchingEventCallbacks(const std::set<EventType>& events, EventCategory categories);
+		void RegisterMatchingEventCallbacks(const std::unordered_set<EventType>& events, EventCategory categories);
 
 	private:
 		EventDispatcher m_EventDispatcher;

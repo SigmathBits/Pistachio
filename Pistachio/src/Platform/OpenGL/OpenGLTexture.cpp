@@ -6,6 +6,8 @@
 
 #include "stb_image.h"
 
+#include "Pistachio/Core/Core.h"
+
 
 namespace Pistachio {
 

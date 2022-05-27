@@ -1,10 +1,11 @@
 #pragma once
 
-#include "RendererAPI.h"
-#include "RenderCommand.h"
+#include "Pistachio/Renderer/RendererAPI.h"
+#include "Pistachio/Renderer/RenderCommand.h"
 
-#include "OrthographicCamera.h"
-#include "Shader.h"
+#include "Pistachio/Renderer/OrthographicCamera.h"
+
+#include "Pistachio/Renderer/Shader.h"
 
 
 namespace Pistachio {

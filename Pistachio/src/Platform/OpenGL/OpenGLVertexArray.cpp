@@ -1,9 +1,8 @@
 #include "pstpch.h"
 
-#include <glad/glad.h>
-
 #include "OpenGLVertexArray.h"
 
+#include <glad/glad.h>
 
 
 namespace Pistachio {
@@ -69,7 +68,7 @@ namespace Pistachio {
 				element.ComponentCount(),
 				ShaderDataTypeToOpenGLBaseType(element.Type),
 				element.Normalised ? GL_TRUE : GL_FALSE,
-				layout.Stride(), (void*)element.Offset
+				(GLsizei)layout.Stride(), (void*)element.Offset
 			);
 			index++;
 		}

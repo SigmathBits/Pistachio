@@ -2,6 +2,8 @@
 
 #include "EventListener.h"
 
+#include "Pistachio/Core/Core.h"
+
 
 namespace Pistachio {
 
@@ -10,12 +12,12 @@ namespace Pistachio {
         RegisterMatchingEventCallbacks({}, categories);
     }
 
-    EventListener::EventListener(const std::set<EventType>& events, EventCategory categories /*= EVENT_CATEGORY_ALL*/) 
+    EventListener::EventListener(const std::unordered_set<EventType>& events, EventCategory categories /*= EVENT_CATEGORY_ALL*/)
         : m_Categories(categories) {
         RegisterMatchingEventCallbacks(events, categories);
     }
 
-    void EventListener::RegisterMatchingEventCallbacks(const std::set<EventType>& events, EventCategory categories) {
+    void EventListener::RegisterMatchingEventCallbacks(const std::unordered_set<EventType>& events, EventCategory categories) {
         /// Set Event Dispatch Callbacks
         // Application Events
         if (events.find(WindowResizeEvent::StaticType()) != events.end() || WindowResizeEvent::StaticCategoryFlags() & categories) {

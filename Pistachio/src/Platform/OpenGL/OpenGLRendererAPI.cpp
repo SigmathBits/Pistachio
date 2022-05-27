@@ -4,6 +4,8 @@
 
 #include <glad/glad.h>
 
+#include "Pistachio/Core/Core.h"
+
 
 namespace Pistachio {
 

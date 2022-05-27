@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Pistachio/Core.h"
+#include "pstpch.h"
+
+#include "Pistachio/Core/Core.h"
 
 
 namespace Pistachio {
@@ -27,7 +29,8 @@ namespace Pistachio {
 		EVENT_CATEGORY_KEYBOARD        = BIT(2),
 		EVENT_CATEGORY_MOUSE           = BIT(3),
 		EVENT_CATEGORY_MOUSE_BUTTON    = BIT(4),
-		EVENT_CATEGORY_ALL             = 0b11111,
+		EVENT_CATEGORY_ALL             = EVENT_CATEGORY_APPLICATION | EVENT_CATEGORY_INPUT | EVENT_CATEGORY_KEYBOARD
+			                              | EVENT_CATEGORY_MOUSE | EVENT_CATEGORY_MOUSE_BUTTON,
 	};
 
 
@@ -39,7 +42,7 @@ namespace Pistachio {
 	virtual EventCategory CategoryFlags() const override { return (EventCategory)(category); }
 
 
-	class PISTACHIO_API Event {
+	class Event {
 		friend class EventDispatcher;
 		friend class EventListener;
 

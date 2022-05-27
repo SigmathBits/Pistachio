@@ -2,12 +2,12 @@
 
 #include "Event.h"
 
-#include "Pistachio/KeyCodes.h"
+#include "Pistachio/Core/KeyCodes.h"
 
 
 namespace Pistachio {
 
-	class PISTACHIO_API KeyEvent : public Event {
+	class KeyEvent : public Event {
 	public:
 		inline PistachioKey KeyCode() const { return m_KeyCode;  }
 
@@ -26,7 +26,7 @@ namespace Pistachio {
 		PistachioKey m_KeyCode;
 	};
 
-	class PISTACHIO_API KeyPressedEvent : public KeyEvent {
+	class KeyPressedEvent : public KeyEvent {
 	public:
 		KeyPressedEvent(PistachioKey keycode, unsigned int repeatCount)
 			: KeyEvent(keycode), m_RepeatCount(repeatCount) {}
@@ -45,7 +45,7 @@ namespace Pistachio {
 		unsigned int m_RepeatCount;
 	};
 	
-	class PISTACHIO_API KeyReleasedEvent : public KeyEvent {
+	class KeyReleasedEvent : public KeyEvent {
 	public:
 		KeyReleasedEvent(PistachioKey keycode)
 			: KeyEvent(keycode) {}
@@ -54,7 +54,7 @@ namespace Pistachio {
 
 	};
 		
-	class PISTACHIO_API KeyTypedEvent : public Event {
+	class KeyTypedEvent : public Event {
 	public:
 		KeyTypedEvent(char character)
 			: m_Character(character) {}
