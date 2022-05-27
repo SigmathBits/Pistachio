@@ -4,8 +4,6 @@
 
 #include "Pistachio/Renderer/Renderer2D.h"
 
-#include "Platform/OpenGL/OpenGLShader.h"
-
 
 namespace Pistachio {
 
@@ -30,8 +28,8 @@ namespace Pistachio {
 
 	void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const glm::mat4& transform) {
 		shader->Bind();
-		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_ProjectionViewMatrix", m_SceneData->ProjectionViewMatrix);
-		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_Transform", transform);
+		shader->SetMat4("u_ProjectionViewMatrix", m_SceneData->ProjectionViewMatrix);
+		shader->SetMat4("u_Transform", transform);
 
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);

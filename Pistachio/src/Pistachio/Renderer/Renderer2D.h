@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Pistachio/Renderer/OrthographicCamera.h"
+#include "Pistachio/Renderer/Texture.h"
 
 
 namespace Pistachio {
@@ -16,6 +17,9 @@ namespace Pistachio {
 		// Primitives
 		static void DrawQuad(const glm::vec2& position, float rotation, const glm::vec2 size, const glm::vec4& colour);
 		static void DrawQuad(const glm::vec3& position, float rotation, const glm::vec2 size, const glm::vec4& colour);
+		
+		static void DrawQuad(const glm::vec2& position, float rotation, const glm::vec2 size, const Ref<Texture>& texture);
+		static void DrawQuad(const glm::vec3& position, float rotation, const glm::vec2 size, const Ref<Texture>& texture);
 	};
 
 }
