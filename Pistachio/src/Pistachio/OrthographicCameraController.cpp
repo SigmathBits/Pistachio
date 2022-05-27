@@ -59,11 +59,6 @@ namespace Pistachio {
 	}
 
 	bool OrthographicCameraController::OnMouseMoved(MouseMovedEvent& event) {
-		// Fix for if OnMouseButtonPressed wasn't triggered on an ImGui defocus: double-check if the left mouse button is held
-		if (!m_MouseLeftButtonHeld && Input::IsMouseButtonPressed(PST_MOUSE_BUTTON_LEFT)) {
-			OnMouseButtonPressed(MouseButtonPressedEvent(PST_MOUSE_BUTTON_LEFT));
-		}
-
 		if (!m_MouseLeftButtonHeld) return false;
 
 		glm::vec2 mousePosition = { event.X(), -event.Y() };
