@@ -21,9 +21,11 @@ namespace Pistachio {
 		virtual ~EventListener();
 
 		virtual void SendEvent(Event& event);
-		virtual void OnEvent(Event& event) {}
 
 	protected:
+		virtual bool OnEvent(Event& event) { return false; }
+		virtual bool OnEventAfter(Event& event) { return false; }
+
 		virtual bool OnWindowResize(WindowResizeEvent& event) { return false; }
 		virtual bool OnWindowClose(WindowCloseEvent& event) { return false; }
 		virtual bool OnWindowFocus(WindowFocusEvent& event) { return false; }

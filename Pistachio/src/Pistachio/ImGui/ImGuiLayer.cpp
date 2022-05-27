@@ -96,11 +96,10 @@ namespace Pistachio {
 		}
 	}
 
-	void ImGuiLayer::OnEvent(Event& event) {
+	bool ImGuiLayer::OnEvent(Event& event) {
+		// Capture input if ImGui is using it
 		ImGuiIO& io = ImGui::GetIO();
-		if (event.IsInCategory(EVENT_CATEGORY_INPUT) && (io.WantCaptureMouse || io.WantCaptureKeyboard)) {
-			event.Handled = true;
-		}
+		return event.IsInCategory(EVENT_CATEGORY_INPUT) && (io.WantCaptureMouse || io.WantCaptureKeyboard);
 	}
 
 	void ImGuiLayer::ImGuiStylesPsistachio() {

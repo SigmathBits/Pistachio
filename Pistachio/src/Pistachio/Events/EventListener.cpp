@@ -58,9 +58,14 @@ namespace Pistachio {
     }
 
     void EventListener::SendEvent(Event& event) {
-        if (!event.Handled) {
-            OnEvent(event);
-            m_EventDispatcher.Dispatch(event);
+        if (!event.m_Handled) {
+            event.m_Handled = OnEvent(event);
+        }
+
+        m_EventDispatcher.Dispatch(event);
+
+        if (!event.m_Handled) {
+            event.m_Handled = OnEventAfter(event);
         }
     }
 

@@ -120,8 +120,9 @@ public:
 		}
 	}
 
-	void OnEvent(Pistachio::Event& event) {
+	bool OnEvent(Pistachio::Event& event) {
 		m_CameraController.SendEvent(event);
+		return false;
 	}
 
 	void OnImGuiRender() override {

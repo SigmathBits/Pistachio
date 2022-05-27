@@ -56,20 +56,18 @@ namespace Pistachio {
 		}
 	}
 
-	void Application::SendEvent(Event& event) {
-		EventListener::SendEvent(event);
-
+	bool Application::OnEventAfter(Event& event) {
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); ) {
 			EventType eventType = event.Type();
 			(*--it)->SendEvent(event);
-			if (event.Handled) {
+			if (event.IsHandled()) {
 				break;
 			}
 		}
+		return false;
 	}
 
-	bool Application::OnWindowClose(WindowCloseEvent& event)
-	{
+	bool Application::OnWindowClose(WindowCloseEvent& event) {
 		m_Running = false;
 		return true;
 	}

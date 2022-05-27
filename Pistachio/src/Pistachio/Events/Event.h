@@ -40,17 +40,23 @@ namespace Pistachio {
 
 
 	class PISTACHIO_API Event {
-	public:
-		bool Handled = false;
+		friend class EventDispatcher;
+		friend class EventListener;
 
+	public:
 		virtual EventType Type() const = 0;
 		virtual EventCategory CategoryFlags() const = 0;
 		virtual const char* Name() const = 0;
 		virtual std::string ToString() const { return Name(); }
 
+		inline bool IsHandled() const { return m_Handled; }
+
 		inline bool IsInCategory(EventCategory category) const {
 			return CategoryFlags() & category;
 		}
+
+	private:
+		bool m_Handled = false;
 	};
 		
 	class EventDispatcher {
@@ -66,14 +72,14 @@ namespace Pistachio {
 		}
 
 		bool Dispatch(Event& event) const {
-			if (event.Handled) return false;
+			if (event.m_Handled) return false;
 
 			auto pair = m_EventCallbacks.find(event.Type());
 			if (pair == m_EventCallbacks.end()) {
 				return false;
 			}
 
-			event.Handled = pair->second(event);
+			event.m_Handled = pair->second(event);
 
 			return true;
 		}

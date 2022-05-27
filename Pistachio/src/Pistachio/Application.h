@@ -21,8 +21,6 @@ namespace Pistachio {
 
 		void Run();
 
-		virtual void SendEvent(Event& event) override;
-
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
 
@@ -31,10 +29,13 @@ namespace Pistachio {
 		static inline Application& Instance() { return *s_Instance; }
 
 	private:
+		bool OnEventAfter(Event& event);
+
 		bool OnWindowClose(WindowCloseEvent& event);
 		bool OnWindowResize(WindowResizeEvent& event);
 
-		std::unique_ptr<Window> m_Window;
+	private:
+		Scoped<Window> m_Window;
 
 		bool m_Running = true;
 		bool m_Minimised = false;
