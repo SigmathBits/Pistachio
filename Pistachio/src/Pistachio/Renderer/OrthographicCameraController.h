@@ -18,6 +18,8 @@ namespace Pistachio {
 		OrthographicCamera& Camera() { return m_Camera; }
 		const OrthographicCamera& Camera() const { return m_Camera; }
 
+		void SetZoom(float zoom);
+
 	private:
 		bool OnWindowResize(WindowResizeEvent& event);
 

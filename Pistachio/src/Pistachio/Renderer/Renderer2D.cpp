@@ -13,8 +13,8 @@ namespace Pistachio {
 
 	struct Renderer2DData {
 		Ref<VertexArray> VertexArray;
-		Ref<Shader> FlatColourShader;
-		Ref<Shader> TextureShader;
+		Ref<Shader> ColourTextureShader;
+		Ref<Texture> WhiteTexture;
 	};
 
 	static Renderer2DData* s_Data;
@@ -50,12 +50,16 @@ namespace Pistachio {
 		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int));
 		s_Data->VertexArray->SetIndexBuffer(indexBuffer);
 
-		// Shaders
-		s_Data->FlatColourShader = Shader::Create("assets/shaders/FlatColour.glsl");
-		s_Data->TextureShader = Shader::Create("assets/shaders/Texture.glsl");
+		// Default White Texture
+		s_Data->WhiteTexture = Texture2D::Create(1, 1);
+		unsigned int whiteTextureData = 0xFFFFFFFF;
+		s_Data->WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
-		s_Data->TextureShader->Bind();
-		s_Data->TextureShader->SetInt("u_Texture", 0);
+		// Shader
+		s_Data->ColourTextureShader = Shader::Create("assets/shaders/ColourTexture.glsl");
+
+		s_Data->ColourTextureShader->Bind();
+		s_Data->ColourTextureShader->SetInt("u_Texture", 0);
 	}
 
 	void Renderer2D::Shutdown() {
@@ -63,11 +67,8 @@ namespace Pistachio {
 	}
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera) {
-		s_Data->FlatColourShader->Bind();
-		s_Data->FlatColourShader->SetMat4("u_ProjectionViewMatrix", camera.ProjectionViewMatrix());
-		
-		s_Data->TextureShader->Bind();
-		s_Data->TextureShader->SetMat4("u_ProjectionViewMatrix", camera.ProjectionViewMatrix());
+		s_Data->ColourTextureShader->Bind();
+		s_Data->ColourTextureShader->SetMat4("u_ProjectionViewMatrix", camera.ProjectionViewMatrix());
 	}
 
 	void Renderer2D::EndScene() {
@@ -83,9 +84,10 @@ namespace Pistachio {
 		transform = glm::rotate(transform, glm::radians(rotation), { 0.0f, 0.0f, 1.0f });
 		transform = glm::scale(transform, glm::vec3(size, 1.0f));
 
-		s_Data->FlatColourShader->Bind();
-		s_Data->FlatColourShader->SetFloat4("u_Colour", colour);
-		s_Data->FlatColourShader->SetMat4("u_Transform", transform);
+		s_Data->ColourTextureShader->SetFloat4("u_Colour", colour);
+		s_Data->ColourTextureShader->SetMat4("u_Transform", transform);
+
+		s_Data->WhiteTexture->Bind(0);
 
 		s_Data->VertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data->VertexArray);
@@ -100,8 +102,8 @@ namespace Pistachio {
 		transform = glm::rotate(transform, glm::radians(rotation), { 0.0f, 0.0f, 1.0f });
 		transform = glm::scale(transform, glm::vec3(size, 1.0f));
 
-		s_Data->TextureShader->Bind();
-		s_Data->TextureShader->SetMat4("u_Transform", transform);
+		s_Data->ColourTextureShader->SetFloat4("u_Colour", { 1.0f, 1.0f, 1.0f, 1.0f });
+		s_Data->ColourTextureShader->SetMat4("u_Transform", transform);
 
 		texture->Bind(0);
 

@@ -15,7 +15,7 @@ namespace Pistachio {
 				PST_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
 				return nullptr;
 			case RendererAPI::RenderAPI::OpenGL:
-				return std::make_shared<OpenGLShader>(filepath);
+				return CreateRef<OpenGLShader>(filepath);
 			default:
 				PST_CORE_ASSERT(false, "Unrecognised RendererAPI");
 				return nullptr;
@@ -28,7 +28,7 @@ namespace Pistachio {
 				PST_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
 				return nullptr;
 			case RendererAPI::RenderAPI::OpenGL:
-				return std::make_shared<OpenGLShader>(name, filepath);
+				return CreateRef<OpenGLShader>(name, filepath);
 			default:
 				PST_CORE_ASSERT(false, "Unrecognised RendererAPI");
 				return nullptr;
@@ -41,7 +41,7 @@ namespace Pistachio {
 				PST_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
 				return nullptr;
 			case RendererAPI::RenderAPI::OpenGL:
-				return std::make_shared<OpenGLShader>(name, vertexSource, fragmentSource);
+				return CreateRef<OpenGLShader>(name, vertexSource, fragmentSource);
 			default: 
 				PST_CORE_ASSERT(false, "Unrecognised RendererAPI");
 				return nullptr;

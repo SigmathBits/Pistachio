@@ -22,6 +22,11 @@ namespace Pistachio {
 
 	}
 
+	void OrthographicCameraController::SetZoom(float zoom) {
+		m_ZoomLevel = std::max(zoom, 0.10f);
+		m_Camera.SetProjection({ m_ZoomLevel * -m_AspectRatio, m_ZoomLevel * m_AspectRatio, -m_ZoomLevel, m_ZoomLevel });
+	}
+
 	bool OrthographicCameraController::OnWindowResize(WindowResizeEvent& event) {
 		m_Width = event.Width();
 		m_Height = event.Height();
@@ -82,10 +87,7 @@ namespace Pistachio {
 		if (m_Rotation && Input::IsKeyPressed(PST_KEY_LEFT_CONTROL)) {
 			m_Camera.SetRotation(m_CameraRotationSpeed * std::round((m_Camera.Rotation() + m_CameraRotationSpeed * event.YOffset()) / m_CameraRotationSpeed));
 		} else {
-			m_ZoomLevel -= event.YOffset() * 0.25f;
-			m_ZoomLevel = std::max(m_ZoomLevel, 0.10f);
-
-			m_Camera.SetProjection({ m_ZoomLevel * -m_AspectRatio, m_ZoomLevel * m_AspectRatio, -m_ZoomLevel, m_ZoomLevel });
+			SetZoom(m_ZoomLevel - event.YOffset() / 4.0f);
 		}
 
 		return false;
@@ -97,6 +99,7 @@ namespace Pistachio {
 		if (event.KeyCode() == PST_KEY_R && event.RepeatCount() == 0) {
 			m_Camera.SetPosition({ 0.0f, 0.0f, 0.0f });
 			m_Camera.SetRotation(0.0f);
+			SetZoom(1.0f);
 		}
 
 		return false;

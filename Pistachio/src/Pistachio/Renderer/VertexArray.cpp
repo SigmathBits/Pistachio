@@ -15,7 +15,7 @@ namespace Pistachio {
 				PST_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
 				return nullptr;
 			case RendererAPI::RenderAPI::OpenGL:
-				return std::make_shared<OpenGLVertexArray>();
+				return CreateRef<OpenGLVertexArray>();
 			default:
 				PST_CORE_ASSERT(false, "Unrecognised RendererAPI");
 				return nullptr;
