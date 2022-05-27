@@ -5,7 +5,8 @@
 #include <set>
 
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/vector_angle.hpp>
 
 #include "Input.h"
 
@@ -13,30 +14,14 @@
 namespace Pistachio {
 
 	OrthographicCameraController::OrthographicCameraController(unsigned int width, unsigned int height, bool rotation /*= false*/)
-		: EventListener({ EventType::WindowResize }, EVENT_CATEGORY_MOUSE),
+		: EventListener({ EventType::WindowResize, EventType::KeyPressed }, EVENT_CATEGORY_MOUSE),
 		m_Width(width), m_Height(height), m_AspectRatio((float)width / (float)height),
 		m_Camera({ m_ZoomLevel * -m_AspectRatio, m_ZoomLevel * m_AspectRatio, -m_ZoomLevel, m_ZoomLevel }), m_Rotation(rotation) {
 
 	}
 
 	void OrthographicCameraController::OnUpdate(Timestep timestep) {
-		if (m_Rotation && !Input::IsMouseButtonPressed(PST_MOUSE_BUTTON_LEFT)) {
-			const float cameraRotationSpeed = m_CameraRotationSpeed * timestep;
-			if (Input::IsKeyPressed(PST_KEY_E)) {
-				m_CameraRotation -= cameraRotationSpeed;
-			}
-			if (Input::IsKeyPressed(PST_KEY_Q)) {
-				m_CameraRotation += cameraRotationSpeed;
-			}
-		}
 
-		if (Input::IsKeyPressed(PST_KEY_R)) {
-			m_CameraPosition = { 0.0f, 0.0f, 0.0f };
-			m_CameraRotation = 0.0f;
-		}
-
-		m_Camera.SetPosition(m_CameraPosition);
-		m_Camera.SetRotation(m_CameraRotation);
 	}
 
 	bool OrthographicCameraController::OnWindowResize(WindowResizeEvent& event) {
@@ -52,9 +37,13 @@ namespace Pistachio {
 	bool OrthographicCameraController::OnMouseButtonPressed(MouseButtonPressedEvent& event) {
 		if (event.MouseButton() != PST_MOUSE_BUTTON_LEFT) return false;
 
-		m_MousePressedPosition = Input::MousePosition();
-		glm::vec3 position = m_Camera.Position();
-		m_MousePressedCameraPosition = { position.x, position.y };
+		m_CameraModePan = !Input::IsKeyPressed(PST_KEY_LEFT_CONTROL);
+
+		auto& [x, y] = Input::MousePosition();
+		m_MousePressedPosition = { x, -y };
+
+		m_MousePressedCameraPosition = m_Camera.Position();
+		m_MousePressedRotation = m_Camera.Rotation();
 
 		m_MouseLeftButtonHeld = true;
 
@@ -72,37 +61,50 @@ namespace Pistachio {
 	bool OrthographicCameraController::OnMouseMoved(MouseMovedEvent& event) {
 		// Fix for if OnMouseButtonPressed wasn't triggered on an ImGui defocus: double-check if the left mouse button is held
 		if (!m_MouseLeftButtonHeld && Input::IsMouseButtonPressed(PST_MOUSE_BUTTON_LEFT)) {
-			m_MousePressedPosition = Input::MousePosition();
-			glm::vec3 position = m_Camera.Position();
-			m_MousePressedCameraPosition = { position.x, position.y };
-
-			m_MouseLeftButtonHeld = true;
+			OnMouseButtonPressed(MouseButtonPressedEvent(PST_MOUSE_BUTTON_LEFT));
 		}
 
-		if (m_MouseLeftButtonHeld) {
-			auto& [x, y] = m_MousePressedPosition;
+		if (!m_MouseLeftButtonHeld) return false;
 
-			float dX = 2 * m_ZoomLevel * m_AspectRatio * (x - event.X()) / (float)m_Width;
-			float dY = -2 * m_ZoomLevel * (y - event.Y()) / (float)m_Height;
+		glm::vec2 mousePosition = { event.X(), -event.Y() };
 
-			glm::vec4 dPosition =
-				glm::rotate(glm::mat4(1.0f), glm::radians(m_Camera.Rotation()), { 0.0f, 0.0f, 1.0f })
-				* glm::vec4(dX, dY, 0.0f, 1.0f);
+		if (m_CameraModePan) {
+			glm::vec3 dPosition(2 * m_ZoomLevel * (m_MousePressedPosition - mousePosition) / (float)m_Height, 0.0f);
+			dPosition = glm::rotate(dPosition, glm::radians(m_Camera.Rotation()), { 0.0f, 0.0f, 1.0f });
 
-			auto& [camX, camY] = m_MousePressedCameraPosition;
-			m_CameraPosition = { camX + dPosition.x, camY + dPosition.y, 1.0f };
-			m_Camera.SetPosition(m_CameraPosition);
+			m_Camera.SetPosition(m_MousePressedCameraPosition + dPosition);
+		} else {
+			glm::vec2 centre = { (float)m_Width / 2, -(float)m_Height / 2 };
+			float angle = glm::orientedAngle(glm::normalize(mousePosition - centre), glm::normalize(m_MousePressedPosition - centre));
+
+			m_Camera.SetRotation(m_MousePressedRotation + glm::degrees(angle));
 		}
 
 		return false;
 	}
 
 	bool OrthographicCameraController::OnMouseScrolled(MouseScrolledEvent& event) {
-		m_ZoomLevel -= event.YOffset() * 0.25f;
-		m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
+		if (Input::IsMouseButtonPressed(PST_MOUSE_BUTTON_LEFT)) return false;
 
-		m_Camera.SetProjection({ m_ZoomLevel * -m_AspectRatio, m_ZoomLevel * m_AspectRatio, -m_ZoomLevel, m_ZoomLevel });
-		m_CameraMoveSpeed = m_ZoomLevel;
+		if (m_Rotation && Input::IsKeyPressed(PST_KEY_LEFT_CONTROL)) {
+			m_Camera.SetRotation(m_CameraRotationSpeed * std::round((m_Camera.Rotation() + m_CameraRotationSpeed * event.YOffset()) / m_CameraRotationSpeed));
+		} else {
+			m_ZoomLevel -= event.YOffset() * 0.25f;
+			m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
+
+			m_Camera.SetProjection({ m_ZoomLevel * -m_AspectRatio, m_ZoomLevel * m_AspectRatio, -m_ZoomLevel, m_ZoomLevel });
+		}
+
+		return false;
+	}
+
+	bool OrthographicCameraController::OnKeyPressed(KeyPressedEvent& event) {
+		if (Input::IsMouseButtonPressed(PST_MOUSE_BUTTON_LEFT)) return false;
+
+		if (event.KeyCode() == PST_KEY_R && event.RepeatCount() == 0) {
+			m_Camera.SetPosition({ 0.0f, 0.0f, 0.0f });
+			m_Camera.SetRotation(0.0f);
+		}
 
 		return false;
 	}

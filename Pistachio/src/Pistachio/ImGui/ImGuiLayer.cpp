@@ -149,9 +149,9 @@ namespace Pistachio {
 		colors[ImGuiCol_Header] = ImVec4(0.53f, 0.80f, 0.16f, 0.40f);
 		colors[ImGuiCol_HeaderHovered] = ImVec4(0.53f, 0.80f, 0.16f, 0.70f);
 		colors[ImGuiCol_HeaderActive] = ImVec4(0.53f, 0.80f, 0.16f, 0.83f);
-		colors[ImGuiCol_Separator] = ImVec4(0.37f, 0.58f, 0.61f, 0.52f);
-		colors[ImGuiCol_SeparatorHovered] = ImVec4(0.51f, 0.69f, 0.76f, 1.00f);
-		colors[ImGuiCol_SeparatorActive] = ImVec4(0.67f, 0.84f, 0.88f, 1.00f);
+		colors[ImGuiCol_Separator] = ImVec4(0.28f, 0.43f, 0.43f, 1.00f);
+		colors[ImGuiCol_SeparatorHovered] = ImVec4(0.31f, 0.50f, 0.50f, 1.00f);
+		colors[ImGuiCol_SeparatorActive] = ImVec4(0.43f, 0.63f, 0.63f, 1.00f);
 		colors[ImGuiCol_ResizeGrip] = ImVec4(0.59f, 0.87f, 0.93f, 0.20f);
 		colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.59f, 0.87f, 0.93f, 0.39f);
 		colors[ImGuiCol_ResizeGripActive] = ImVec4(0.13f, 0.36f, 0.40f, 0.89f);

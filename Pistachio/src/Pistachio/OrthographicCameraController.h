@@ -25,6 +25,8 @@ namespace Pistachio {
 		bool OnMouseMoved(MouseMovedEvent& event);
 		bool OnMouseScrolled(MouseScrolledEvent& event);
 
+		bool OnKeyPressed(KeyPressedEvent& event);
+
 	private:
 		unsigned int m_Width, m_Height;
 		float m_AspectRatio;
@@ -33,14 +35,14 @@ namespace Pistachio {
 		OrthographicCamera m_Camera;
 
 		bool m_Rotation;
-		glm::vec3 m_CameraPosition = { 0.0f, 0.0f, 0.0f };
-		float m_CameraRotation = 0.0f;
 
-		float m_CameraMoveSpeed = 5.0f, m_CameraRotationSpeed = 180.0f;
+		const float m_CameraRotationSpeed = 15.0f;
 
+		bool m_CameraModePan = true;
 		bool m_MouseLeftButtonHeld = false;
-		std::pair<float, float> m_MousePressedPosition = {0.0f, 0.0f};
-		std::pair<float, float> m_MousePressedCameraPosition = { 0.0f, 0.0f };
+		glm::vec2 m_MousePressedPosition = { 0.0f, 0.0f };
+		glm::vec3 m_MousePressedCameraPosition = { 0.0f, 0.0f, 0.0f };
+		float m_MousePressedRotation = 0.0f;
 	};
 
 }
