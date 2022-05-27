@@ -27,6 +27,8 @@ namespace Pistachio {
 	}
 
 	void ImGuiLayer::OnAttach() {
+		PST_PROFILE_FUNCTION();
+
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -40,7 +42,11 @@ namespace Pistachio {
 		ImGuiStyleColoursPistachio();
 
 		// Don't know how to properly load files which are only local to Pistachio
-		io.Fonts->AddFontFromFileTTF("../Pistachio/assets/fonts/GidoleFont/Gidole-Regular.ttf", 16.0f);
+		{
+			PST_PROFILE_SCOPE("io.Fonts->AddFontFromFileTTF - Pistachio::ImGuiLayer::OnAttach");
+
+			io.Fonts->AddFontFromFileTTF("../Pistachio/assets/fonts/GidoleFont/Gidole-Regular.ttf", 16.0f);
+		}
 
 		// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 		ImGuiStyle& style = ImGui::GetStyle();
@@ -59,6 +65,8 @@ namespace Pistachio {
 	}
 
 	void ImGuiLayer::OnDetach() {
+		PST_PROFILE_FUNCTION();
+
 		// Cleanup
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
@@ -70,6 +78,8 @@ namespace Pistachio {
 	}
 
 	void ImGuiLayer::Begin() {
+		PST_PROFILE_FUNCTION();
+
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -77,6 +87,8 @@ namespace Pistachio {
 	}
 
 	void ImGuiLayer::End() {
+		PST_PROFILE_FUNCTION();
+
 		ImGuiIO& io = ImGui::GetIO();
 
 		Application& app = Application::Instance();
@@ -104,6 +116,8 @@ namespace Pistachio {
 	}
 
 	void ImGuiLayer::ImGuiStylesPsistachio() {
+		PST_PROFILE_FUNCTION();
+
 		ImGuiStyle& style = ImGui::GetStyle();
 
 		style.WindowBorderSize = 0.0f;
@@ -118,6 +132,8 @@ namespace Pistachio {
 	}
 
 	void ImGuiLayer::ImGuiStyleColoursPistachio() {
+		PST_PROFILE_FUNCTION();
+
 		// Fallback style
 		ImGui::StyleColorsClassic();
 

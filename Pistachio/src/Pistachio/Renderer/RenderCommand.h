@@ -11,6 +11,10 @@ namespace Pistachio {
 			s_RendererAPI->Init();
 		}
 
+		inline static void Shutdown() {
+			s_RendererAPI->Shutdown();
+		}
+
 		inline static void SetViewPort(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 			s_RendererAPI->SetViewPort(x, y, width, height);
 		}

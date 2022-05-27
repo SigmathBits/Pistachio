@@ -10,8 +10,15 @@ namespace Pistachio {
 	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData;
 
 	void Renderer::Init() {
+		PST_PROFILE_FUNCTION();
+
 		RenderCommand::Init();
 		Renderer2D::Init();
+	}
+
+	void Renderer::Shutdown() {
+		RenderCommand::Shutdown();
+		Renderer2D::Shutdown();
 	}
 
 	void Renderer::ResizeWindow(unsigned int width, unsigned int height) {

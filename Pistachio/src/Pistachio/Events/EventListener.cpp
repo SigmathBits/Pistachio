@@ -18,6 +18,8 @@ namespace Pistachio {
     }
 
     void EventListener::RegisterMatchingEventCallbacks(const std::unordered_set<EventType>& events, EventCategory categories) {
+        PST_PROFILE_FUNCTION();
+
         /// Set Event Dispatch Callbacks
         // Application Events
         if (events.find(WindowResizeEvent::StaticType()) != events.end() || WindowResizeEvent::StaticCategoryFlags() & categories) {
@@ -60,6 +62,8 @@ namespace Pistachio {
     }
 
     void EventListener::SendEvent(Event& event) {
+        PST_PROFILE_FUNCTION();
+
         if (!event.m_Handled) {
             event.m_Handled = OnEvent(event);
         }

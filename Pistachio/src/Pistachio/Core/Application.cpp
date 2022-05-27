@@ -16,6 +16,8 @@ namespace Pistachio {
 
 	Application::Application() 
 		: EventListener(EVENT_CATEGORY_APPLICATION) {
+		PST_PROFILE_FUNCTION();
+
 		PST_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
@@ -29,32 +31,67 @@ namespace Pistachio {
 	}
 
 	Application::~Application() {
+		PST_PROFILE_FUNCTION();
 
+		for (auto& layer : m_LayerStack) {
+			layer->OnDetach();
+		}
+
+		Renderer::Shutdown();
 	}
 
 	void Application::Run() {
+		PST_PROFILE_FUNCTION();
+
 		while (m_Running) {
+			PST_PROFILE_SCOPE("RunLoop Iteration");
+
 			float time = Platform::Time();
 			Timestep timestemp = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
 			if (!m_Minimised) {
-				for (Layer* layer : m_LayerStack) {
-					layer->OnUpdate(timestemp);
+				{
+					PST_PROFILE_SCOPE("LayerStack OnUpdate");
+
+					for (Layer* layer : m_LayerStack) {
+						layer->OnUpdate(timestemp);
+					}
 				}
+
+				m_ImGuiLayer->Begin();
+				{
+					PST_PROFILE_SCOPE("LayerStack OnImGuiRender");
+
+					for (Layer* layer : m_LayerStack) {
+						layer->OnImGuiRender();
+					}
+				}
+				m_ImGuiLayer->End();
 			}
 
-			m_ImGuiLayer->Begin();
-			for (Layer* layer : m_LayerStack) {
-				layer->OnImGuiRender();
-			}
-			m_ImGuiLayer->End();
 
 			m_Window->OnUpdate();
 		}
 	}
 
+	void Application::PushLayer(Layer* layer) {
+		PST_PROFILE_FUNCTION();
+
+		m_LayerStack.PushLayer(layer);
+		layer->OnAttach();
+	}
+
+	void Application::PushOverlay(Layer* overlay) {
+		PST_PROFILE_FUNCTION();
+
+		m_LayerStack.PushOverlay(overlay);
+		overlay->OnAttach();
+	}
+
 	bool Application::OnEventAfter(Event& event) {
+		PST_PROFILE_FUNCTION();
+
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); ) {
 			EventType eventType = event.Type();
 			(*--it)->SendEvent(event);
@@ -71,6 +108,8 @@ namespace Pistachio {
 	}
 
 	bool Application::OnWindowResize(WindowResizeEvent& event) {
+		PST_PROFILE_FUNCTION();
+
 		unsigned int width = event.Width();
 		unsigned int height = event.Height();
 
@@ -84,14 +123,6 @@ namespace Pistachio {
 		Renderer::ResizeWindow(width, height);
 
 		return false;
-	}
-
-	void Application::PushLayer(Layer* layer) {
-		m_LayerStack.PushLayer(layer);
-	}
-
-	void Application::PushOverlay(Layer* overlay) {
-		m_LayerStack.PushOverlay(overlay);
 	}
 
 }

@@ -152,6 +152,7 @@
     <ClInclude Include="src\Pistachio\Core\MouseButtonCodes.h" />
     <ClInclude Include="src\Pistachio\Core\Timestep.h" />
     <ClInclude Include="src\Pistachio\Core\Window.h" />
+    <ClInclude Include="src\Pistachio\Debug\Instrumentor.h" />
     <ClInclude Include="src\Pistachio\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Pistachio\Events\Event.h" />
     <ClInclude Include="src\Pistachio\Events\EventListener.h" />

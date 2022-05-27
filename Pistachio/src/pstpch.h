@@ -15,6 +15,8 @@
 
 #include "Pistachio/Core/Log.h"
 
+#include "Pistachio/Debug/Instrumentor.h"
+
 
 #ifdef PST_PLATFORM_WINDOWS
 	#include <Windows.h>

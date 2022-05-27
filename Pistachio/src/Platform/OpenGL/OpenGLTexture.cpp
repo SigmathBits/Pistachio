@@ -13,6 +13,8 @@ namespace Pistachio {
 
 	OpenGLTexture2D::OpenGLTexture2D(unsigned int width, unsigned int height) 
 		: m_Width(width), m_Height(height), m_InternalFormat(GL_RGBA8), m_DataFormat(GL_RGBA) {
+		PST_PROFILE_FUNCTION();
+
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, width, height);
 
@@ -26,10 +28,19 @@ namespace Pistachio {
 
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& filepath)
 		: m_Filepath(filepath) {
+		PST_PROFILE_FUNCTION();
+
 		int width, height, channels;
 		// Need to flip our PNG texture as OpenGL expects image data starting from the bottom left (not the top left, like PNG)
 		stbi_set_flip_vertically_on_load(1);
-		stbi_uc* data = stbi_load(filepath.c_str(), &width, &height, &channels, 0);
+
+		stbi_uc* data = nullptr;
+		{
+			PST_PROFILE_SCOPE("stbi_load - Pistachio::OpenGLTexture2D::OpenGLTexture2D(const std::string& filepath)");
+
+			data = stbi_load(filepath.c_str(), &width, &height, &channels, 0);
+		}
+
 		PST_CORE_ASSERT(data, "Failed to load image");
 
 		m_Width = width;
@@ -65,10 +76,14 @@ namespace Pistachio {
 	}
 
 	OpenGLTexture2D::~OpenGLTexture2D() {
+		PST_PROFILE_FUNCTION();
+
 		glDeleteTextures(1, &m_RendererID);
 	}
 
 	void OpenGLTexture2D::SetData(void* data, size_t size) {
+		PST_PROFILE_FUNCTION();
+
 		unsigned int bytesPerPixel = m_DataFormat == GL_RGBA ? 4 : 3;
 		PST_CORE_ASSERT(size == m_Width * m_Height * bytesPerPixel, "Data size must match entire texture dimensions");
 
@@ -76,6 +91,8 @@ namespace Pistachio {
 	}
 
 	void OpenGLTexture2D::Bind(unsigned int slot) const {
+		PST_PROFILE_FUNCTION();
+
 		glBindTextureUnit(slot, m_RendererID);
 	}
 

@@ -354,3 +354,4 @@ MigrationBackup/
 intermediates/
 bin-int/
 **/imgui.ini
+**/*.json

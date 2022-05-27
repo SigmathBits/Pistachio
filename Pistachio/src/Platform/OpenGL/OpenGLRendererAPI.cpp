@@ -10,10 +10,16 @@
 namespace Pistachio {
 
 	void OpenGLRendererAPI::Init() {
+		PST_PROFILE_FUNCTION();
+
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		glEnable(GL_DEPTH_TEST);
+	}
+
+	void OpenGLRendererAPI::Shutdown() {
+
 	}
 
 	void OpenGLRendererAPI::SetViewPort(unsigned int x, unsigned int y, unsigned int width, unsigned int height) const {

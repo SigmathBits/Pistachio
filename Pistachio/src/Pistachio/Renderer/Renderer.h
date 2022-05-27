@@ -13,6 +13,7 @@ namespace Pistachio {
 	class Renderer {
 	public:
 		static void Init();
+		static void Shutdown();
 
 		static void ResizeWindow(unsigned int width, unsigned int height);
 

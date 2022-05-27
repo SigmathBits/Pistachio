@@ -16,6 +16,8 @@ namespace Pistachio {
 	}
 
 	void OpenGLContext::Init() {
+		PST_PROFILE_FUNCTION();
+
 		glfwMakeContextCurrent(m_WindowHandle);
 
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -28,6 +30,8 @@ namespace Pistachio {
 	}
 
 	void OpenGLContext::SwapBuffers() {
+		PST_PROFILE_FUNCTION();
+
 		glfwSwapBuffers(m_WindowHandle);
 	}
 

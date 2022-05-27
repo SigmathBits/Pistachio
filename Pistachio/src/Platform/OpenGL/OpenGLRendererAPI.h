@@ -8,6 +8,7 @@ namespace Pistachio {
 	class OpenGLRendererAPI : public RendererAPI {
 	public:
 		virtual void Init() override;
+		virtual void Shutdown() override;
 
 		virtual void SetViewPort(unsigned int x, unsigned int y, unsigned int width, unsigned int height) const override;
 

@@ -15,6 +15,7 @@ namespace Pistachio {
 
 	public:
 		virtual void Init() = 0;
+		virtual void Shutdown() = 0;
 
 		virtual void SetViewPort(unsigned int x, unsigned int y, unsigned int width, unsigned int height) const = 0;
 

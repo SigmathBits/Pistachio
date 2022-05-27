@@ -26,6 +26,8 @@ namespace Pistachio {
 	}
 
 	WindowsWindow::WindowsWindow(const WindowProperties& properties) {
+		PST_PROFILE_FUNCTION();
+
 		Init(properties);
 	}
 
@@ -34,6 +36,8 @@ namespace Pistachio {
 	}
 
 	void WindowsWindow::Init(const WindowProperties& properties) {
+		PST_PROFILE_FUNCTION();
+
 		m_Data.Title = properties.Title;
 		m_Data.Width = properties.Width;
 		m_Data.Height = properties.Height;
@@ -41,15 +45,20 @@ namespace Pistachio {
 		PST_CORE_INFO("Creating window {0} ({1}, {2})", properties.Title, properties.Width, properties.Height);
 
 		if (!s_GLFWInitialised) {
+			PST_PROFILE_SCOPE("glfwInit - Pistachio::WindowsWindow::Init");
+
 			int success = glfwInit();
 			PST_CORE_ASSERT(success, "Could not initialise GLFW!");
 
 			glfwSetErrorCallback(GLFWErrorCallback);
-
-			s_GLFWInitialised = true;
 		}
 
-		m_Window = glfwCreateWindow(properties.Width, properties.Height, properties.Title.c_str(), nullptr, nullptr);
+		{
+			PST_PROFILE_SCOPE("glfwCreateWindow - Pistachio::WindowsWindow::Init");
+
+			m_Window = glfwCreateWindow(properties.Width, properties.Height, properties.Title.c_str(), nullptr, nullptr);
+			s_GLFWInitialised = true;
+		}
 
 		m_Context = new OpenGLContext(m_Window);
 		m_Context->Init();
@@ -162,15 +171,22 @@ namespace Pistachio {
 	}
 
 	void WindowsWindow::Shutdown() {
+		PST_PROFILE_FUNCTION();
+
 		glfwDestroyWindow(m_Window);
+		glfwTerminate();
 	}
 
 	void WindowsWindow::OnUpdate() {
+		PST_PROFILE_FUNCTION();
+
 		glfwPollEvents();
 		m_Context->SwapBuffers();
 	}
 
 	void WindowsWindow::SetVSync(bool enabled) {
+		PST_PROFILE_FUNCTION();
+
 		if (enabled) {
 			glfwSwapInterval(1);
 		} else {

@@ -20,6 +20,8 @@ namespace Pistachio {
 	static Renderer2DData* s_Data;
 
 	void Renderer2D::Init() {
+		PST_PROFILE_FUNCTION();
+
 		/// Rendering objects
 		s_Data = new Renderer2DData();
 
@@ -63,15 +65,20 @@ namespace Pistachio {
 	}
 
 	void Renderer2D::Shutdown() {
+		PST_PROFILE_FUNCTION();
+
 		delete s_Data;
 	}
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera) {
+		PST_PROFILE_FUNCTION();
+
 		s_Data->ColourTextureShader->Bind();
 		s_Data->ColourTextureShader->SetMat4("u_ProjectionViewMatrix", camera.ProjectionViewMatrix());
 	}
 
 	void Renderer2D::EndScene() {
+		PST_PROFILE_FUNCTION();
 
 	}
 
@@ -80,6 +87,8 @@ namespace Pistachio {
 	}
 
 	void Renderer2D::DrawQuad(const glm::vec3& position, float rotation, const glm::vec2 size, const glm::vec4& colour) {
+		PST_PROFILE_FUNCTION();
+
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position);
 		transform = glm::rotate(transform, glm::radians(rotation), { 0.0f, 0.0f, 1.0f });
 		transform = glm::scale(transform, glm::vec3(size, 1.0f));
@@ -98,6 +107,8 @@ namespace Pistachio {
 	}
 
 	void Renderer2D::DrawQuad(const glm::vec3& position, float rotation, const glm::vec2 size, const Ref<Texture>& texture) {
+		PST_PROFILE_FUNCTION();
+
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position);
 		transform = glm::rotate(transform, glm::radians(rotation), { 0.0f, 0.0f, 1.0f });
 		transform = glm::scale(transform, glm::vec3(size, 1.0f));
