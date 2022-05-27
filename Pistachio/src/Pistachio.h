@@ -17,6 +17,7 @@
 
 /// ------ Renderer ------
 #include "Pistachio/Renderer/Renderer.h"
+#include "Pistachio/Renderer/Renderer2D.h"
 #include "Pistachio/Renderer/RenderCommand.h"
 
 #include "Pistachio/Renderer/OrthographicCameraController.h"
@@ -26,8 +27,3 @@
 #include "Pistachio/Renderer/VertexArray.h"
 #include "Pistachio/Renderer/Buffer.h"
 /// -----------------------
-
-
-/// ------ ENTRY POINT ------
-#include "Pistachio/Core/EntryPoint.h"
-/// -------------------------

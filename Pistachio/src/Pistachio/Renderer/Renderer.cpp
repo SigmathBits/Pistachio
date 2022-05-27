@@ -2,6 +2,8 @@
 
 #include "Renderer.h"
 
+#include "Pistachio/Renderer/Renderer2D.h"
+
 #include "Platform/OpenGL/OpenGLShader.h"
 
 
@@ -11,6 +13,7 @@ namespace Pistachio {
 
 	void Renderer::Init() {
 		RenderCommand::Init();
+		Renderer2D::Init();
 	}
 
 	void Renderer::ResizeWindow(unsigned int width, unsigned int height) {

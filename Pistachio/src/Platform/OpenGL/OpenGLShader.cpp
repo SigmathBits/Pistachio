@@ -78,34 +78,44 @@ namespace Pistachio {
 		glUseProgram(0);
 	}
 
+	void OpenGLShader::SetInt(const std::string& name, int value) {
+		UploadUniformInt(name, value);
+	}
+
+	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& vector) {
+		UploadUniformFloat3(name, vector);
+	}
+
+	void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& vector) {
+		UploadUniformFloat4(name, vector);
+	}
+
+	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& matrix) {
+		UploadUniformMat4(name, matrix);
+	}
+
 	void OpenGLShader::UploadUniformInt(const std::string& name, int value) const {
-		int location = glGetUniformLocation(m_RendererID, name.c_str());
-		glUniform1i(location, value);
+		glUniform1i(UniformLocation(name), value);
 	}
 
 	void OpenGLShader::UploadUniformFloat1(const std::string& name, float value) const {
-		int location = glGetUniformLocation(m_RendererID, name.c_str());
-		glUniform1f(location, value);
+		glUniform1f(UniformLocation(name), value);
 	}
 
-	void OpenGLShader::UploadUniformFloat2(const std::string& name, const glm::vec2& value) const {
-		int location = glGetUniformLocation(m_RendererID, name.c_str());
-		glUniform2f(location, value.x, value.y);
+	void OpenGLShader::UploadUniformFloat2(const std::string& name, const glm::vec2& vector) const {
+		glUniform2f(UniformLocation(name), vector.x, vector.y);
 	}
 
-	void OpenGLShader::UploadUniformFloat3(const std::string& name, const glm::vec3& value) const {
-		int location = glGetUniformLocation(m_RendererID, name.c_str());
-		glUniform3f(location, value.x, value.y, value.z);
+	void OpenGLShader::UploadUniformFloat3(const std::string& name, const glm::vec3& vector) const {
+		glUniform3f(UniformLocation(name), vector.x, vector.y, vector.z);
 	}
 
 	void OpenGLShader::UploadUniformMat3(const std::string& name, const glm::mat3& matrix) const {
-		int location = glGetUniformLocation(m_RendererID, name.c_str());
-		glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
+		glUniformMatrix3fv(UniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 
 	void OpenGLShader::UploadUniformMat4(const std::string& name, const glm::mat4& matrix) const {
-		int location = glGetUniformLocation(m_RendererID, name.c_str());
-		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
+		glUniformMatrix4fv(UniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 
 	std::string OpenGLShader::ReadFile(const std::string& filepath) {
@@ -236,6 +246,21 @@ namespace Pistachio {
 		for (GLuint ID : shaderIDs) {
 			glDetachShader(programID, ID);
 		}
+	}
+
+	GLint OpenGLShader::UniformLocation(const std::string& name) const {
+		auto locationSearch = m_UniformLocationCache.find(name);
+		if (locationSearch != m_UniformLocationCache.end()) {
+			return locationSearch->second;
+		}
+
+		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+		if (location == -1) {
+			std::cout << "Warning: uniform '" << name << "' doesn't exist!" << std::endl;
+		}
+
+		m_UniformLocationCache[name] = location;
+		return location;
 	}
 
 	void OpenGLShader::UploadUniformFloat4(const std::string& name, const glm::vec4& value) const {

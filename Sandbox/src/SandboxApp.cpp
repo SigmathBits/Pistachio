@@ -1,12 +1,12 @@
 #include <Pistachio.h>
+#include <Pistachio/Core/EntryPoint.h>
 
 #include <imgui/imgui.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Platform/OpenGL/OpenGLShader.h"
-#include "Pistachio/Renderer/Shader.h"
+#include "Sandbox2DLayer.h"
 
 
 class ExampleLayer : public Pistachio::Layer {
@@ -64,7 +64,7 @@ public:
 		m_Texture = Pistachio::Texture2D::Create("assets/textures/Pistachio.png");
 
 		textureShader->Bind();
-		std::dynamic_pointer_cast<Pistachio::OpenGLShader>(textureShader)->UploadUniformInt("u_Texture", 0);
+		textureShader->SetInt("u_Texture", 0);
 	}
 
 	void OnUpdate(Pistachio::Timestep timestep) override {
@@ -73,16 +73,16 @@ public:
 
 		const float moveSpeed = 0.5f * timestep;
 		
-		if (Pistachio::Input::IsKeyPressed(PST_KEY_LEFT)) {
+		if (Pistachio::Input::IsKeyPressed(PST_KEY_A)) {
 			m_Position.x -= moveSpeed;
 		}
-		if (Pistachio::Input::IsKeyPressed(PST_KEY_RIGHT)) {
+		if (Pistachio::Input::IsKeyPressed(PST_KEY_D)) {
 			m_Position.x += moveSpeed;
 		}
-		if (Pistachio::Input::IsKeyPressed(PST_KEY_DOWN)) {
+		if (Pistachio::Input::IsKeyPressed(PST_KEY_S)) {
 			m_Position.y -= moveSpeed;
 		}
-		if (Pistachio::Input::IsKeyPressed(PST_KEY_UP)) {
+		if (Pistachio::Input::IsKeyPressed(PST_KEY_W)) {
 			m_Position.y += moveSpeed;
 		}
 
@@ -99,7 +99,7 @@ public:
 			auto flatColourShader = m_ShaderLibrary.Get("FlatColour");
 
 			flatColourShader->Bind();
-			std::dynamic_pointer_cast<Pistachio::OpenGLShader>(flatColourShader)->UploadUniformFloat4("u_Colour", m_Colour);
+			flatColourShader->SetFloat4("u_Colour", m_Colour);
 
 			for (int y = 0; y < 20; y++) {
 				for (int x = 0; x < 20; x++) {
@@ -138,7 +138,8 @@ public:
 class Sandbox : public Pistachio::Application {
 public:
 	Sandbox() {
-		PushLayer(new ExampleLayer());
+		//PushLayer(new ExampleLayer());
+		PushLayer(new Sandbox2DLayer());
 	}
 
 	~Sandbox() override {

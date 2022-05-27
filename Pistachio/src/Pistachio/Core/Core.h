@@ -8,6 +8,41 @@
 #define PST_BIND_EVENT_FUNCTION(function) std::bind(&function, this, std::placeholders::_1)
 
 
+#ifdef _WIN32
+	#ifdef _WIN64
+		#define PST_PLATFORM_WINDOWS
+	#else
+		#error "x86 Builds are not supported!"
+	#endif
+#elif defined(__APPLE__) || defined(__MACH__)
+	#include <TargetConditionals.h>
+	/* TARGET_OS_MAC exists on all platforms,
+	 * so we must check all of them (in this order)
+	 * to ensure that we're running on MacOS */
+	#if TARGET_IPHONE_SIMULATOR === 1
+		#error "IOS simulator is not supported!"
+	#elif TARGET_OS_IPHONE == 1
+		#define PST_PLATFORM_IOS
+		#error "IOS is currently not supported!"
+	#elif TARGET_OS_MAC == 1
+		#define PST_PLATFORM_MACOS
+		#error "MacOS is currently not supported!"
+	#else
+		#error "Unrecognised Apple platform!"
+	#endif
+
+// Must check __ANDROID__ before __linux__ since Android runs on linux
+#elif defined(__ANDROID__)
+	#define PST_PLATFORM_ANDROID
+	#error "Android is currently not supported!"
+#elif defined(__linux__)
+	#define PST_PLATFORM_LINUX
+	#error "Linux is currently not supported!"
+#else
+	#error "Unrecognised platform!"
+#endif
+
+
 #ifdef PST_DEBUG
 	#define PST_ENABLE_ASSERTS
 #endif

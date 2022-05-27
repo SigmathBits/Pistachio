@@ -7,6 +7,7 @@
 
 // TODO: Remove
 typedef unsigned int GLenum;
+typedef int GLint;
 
 
 namespace Pistachio {
@@ -24,12 +25,19 @@ namespace Pistachio {
 
 		virtual const std::string& Name() const override { return m_Name; };
 
+		virtual void SetInt(const std::string& name, int value) override;
+
+		virtual void SetFloat3(const std::string& name, const glm::vec3& vector) override;
+		virtual void SetFloat4(const std::string& name, const glm::vec4& vector) override;
+
+		virtual void SetMat4(const std::string& name, const glm::mat4& matrix) override;
+
 		void UploadUniformInt(const std::string& name, int value) const;
 
 		void UploadUniformFloat1(const std::string& name, float value) const;
-		void UploadUniformFloat2(const std::string& name, const glm::vec2& value) const;
-		void UploadUniformFloat3(const std::string& name, const glm::vec3& value) const;
-		void UploadUniformFloat4(const std::string& name, const glm::vec4& value) const;
+		void UploadUniformFloat2(const std::string& name, const glm::vec2& vector) const;
+		void UploadUniformFloat3(const std::string& name, const glm::vec3& vector) const;
+		void UploadUniformFloat4(const std::string& name, const glm::vec4& vector) const;
 
 		void UploadUniformMat3(const std::string& name, const glm::mat3& matrix) const;
 		void UploadUniformMat4(const std::string& name, const glm::mat4& matrix) const;
@@ -39,9 +47,13 @@ namespace Pistachio {
 		std::unordered_map<GLenum, std::string> Preprocess(const std::string& source);
 		void Compile(const std::unordered_map<GLenum, std::string> shaderSources);
 
+		GLint UniformLocation(const std::string& name) const;
+
 	private:
 		unsigned int m_RendererID;
 		std::string m_Name;
+
+		std::unordered_map<std::string, GLint> mutable m_UniformLocationCache;
 	};
 
 }
