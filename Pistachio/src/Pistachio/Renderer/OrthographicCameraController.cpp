@@ -2,11 +2,11 @@
 
 #include "OrthographicCameraController.h"
 
-#include <cmath>
-
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vector_angle.hpp>
+
+#include "Pistachio/Core/Common.h"
 
 #include "Pistachio/Core/Input.h"
 
@@ -22,13 +22,40 @@ namespace Pistachio {
 	}
 
 	void OrthographicCameraController::OnUpdate(Timestep timestep) {
-		SetZoom(m_ZoomLevel + (m_ZoomLevelTarget - m_ZoomLevel) * timestep / m_ReponseTime);
-		
-		float rotation = m_Camera.Rotation();
-		m_Camera.SetRotation(rotation + (m_RotationTarget - rotation) * timestep / m_ReponseTime);
+		constexpr float zoomThreshold = 0.01f;
+		constexpr float rotationThreshold = 0.001f * fpi;
+		constexpr float positionThreshold = 0.01f;
 
-		glm::vec3 position = m_Camera.Position();
-		m_Camera.SetPosition(position + (m_PositionTarget - position) * (float)timestep / m_ReponseTime);
+		const float delta = std::min(timestep / m_ReponseTime, 1.0f);
+
+		if (m_ZoomLevel != m_ZoomLevelTarget) {
+			const float zoomDiff = (m_ZoomLevelTarget - m_ZoomLevel);
+			if (std::abs(zoomDiff) < zoomThreshold) {
+				SetZoom(m_ZoomLevelTarget);
+			} else {
+				SetZoom(m_ZoomLevel + zoomDiff * delta);
+			}
+		}
+		
+		const float rotation = m_Camera.Rotation();
+		if (rotation != m_RotationTarget) {
+			const float rotationDiff = wrap_rotation(m_RotationTarget - rotation);
+			if (std::abs(rotationDiff) < rotationThreshold) {
+				m_Camera.SetRotation(m_RotationTarget);
+			} else {
+				m_Camera.SetRotation(rotation + rotationDiff * delta);
+			}
+		}
+
+		const glm::vec3 position = m_Camera.Position();
+		if (position != m_PositionTarget) {
+			const glm::vec3 positionDiff = (m_PositionTarget - position);
+			if (glm::length(positionDiff) < positionThreshold) {
+				m_Camera.SetPosition(m_PositionTarget);
+			} else {
+				m_Camera.SetPosition(position + positionDiff * delta);
+			}
+		}
 	}
 
 	void OrthographicCameraController::SetZoom(float zoom) {
@@ -106,12 +133,9 @@ namespace Pistachio {
 		if (Input::IsMouseButtonPressed(PST_MOUSE_BUTTON_LEFT)) return false;
 
 		if (m_Rotation && Input::IsKeyPressed(PST_KEY_LEFT_CONTROL)) {
-			//float newAngle = glm::degrees(m_Camera.Rotation()) + m_CameraAngleSpeed * event.YOffset();
-			// Round to nearest `m_CameraAngleSpeed`
-			//m_Camera.SetRotation(glm::radians(m_CameraAngleSpeed * std::round(newAngle / m_CameraAngleSpeed)));
 			float newAngle = glm::degrees(m_RotationTarget) + m_CameraAngleSpeed * event.YOffset();
 			// Round to nearest `m_CameraAngleSpeed`
-			m_RotationTarget = glm::radians(m_CameraAngleSpeed * std::round(newAngle / m_CameraAngleSpeed));
+			m_RotationTarget = wrap_rotation(glm::radians(m_CameraAngleSpeed * std::round(newAngle / m_CameraAngleSpeed)));
 		} else {
 			m_ZoomLevelTarget -= event.YOffset() / 4.0f;
 		}
@@ -125,9 +149,7 @@ namespace Pistachio {
 		if (Input::IsMouseButtonPressed(PST_MOUSE_BUTTON_LEFT)) return false;
 
 		if (event.KeyCode() == PST_KEY_R && event.RepeatCount() == 0) {
-			//m_Camera.SetPosition({ 0.0f, 0.0f, 0.0f });
 			m_PositionTarget = { 0.0f, 0.0f, 0.0f };
-			//m_Camera.SetRotation(0.0f);
 			m_RotationTarget = 0.0f;
 			m_ZoomLevelTarget = 1.0f;
 		}

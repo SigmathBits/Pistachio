@@ -5,12 +5,14 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 
+#include "Pistachio/Core/Common.h"
+
 
 namespace Pistachio {
 
 	OrthographicCamera::OrthographicCamera(glm::vec3 position, float rotation, glm::vec4 culling) 
 		: m_ProjectionMatrix(glm::ortho(culling.x, culling.y, culling.z, culling.w, 1.0f, -1.0f)),
-		m_Position(position), m_Rotation(rotation) {
+		m_Position(position), m_Rotation(wrap_rotation(rotation)) {
 		PST_PROFILE_FUNCTION();
 
 		RecalculateProjectionViewMatrix();

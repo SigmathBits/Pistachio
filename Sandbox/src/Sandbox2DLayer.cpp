@@ -51,17 +51,17 @@ void Sandbox2DLayer::OnUpdate(Pistachio::Timestep timestep) {
 		// Squares
 		Pistachio::Renderer2D::BeginScene(m_CameraController.Camera());
 
-		Pistachio::Renderer2D::DrawQuad({ { 0.0f, 0.0f, 0.9f }, { 10.0f, 10.0f } }, { m_CheckerboardTexture, { 0.6f, 0.8f, 0.9f, 1.0f }, 10.0f });
+		Pistachio::Renderer2D::DrawQuad({ { 0.0f, 0.0f, 0.9f }, { 10.0f, 10.0f } }, { m_CheckerboardTexture, { 0.6f, 0.8f, 0.9f, 0.1f }, 10.0f });
 
 		Pistachio::Renderer2D::DrawQuad({ { 0.5f, 0.5f, 0.2f } }, { 1.0f, 0.0f, 1.0f, 1.0f });
 
 		Pistachio::Renderer2D::DrawQuad({ { -0.5f, -0.5f, 0.2f } }, { 0.0f, 1.0f, 0.0f, 1.0f });
 
-		const float stride = 10.0f;
+		const float stride = 2.0f;
 		for (float y = -stride/2; y < stride/2; y += 0.1f) {
 			for (float x = -stride/2; x < stride/2; x += 0.1f) {
 				Pistachio::Renderer2D::DrawQuad({ { x, y, 0.1f }, { 0.09f, 0.09f } },
-					{ std::abs(x/stride), std::abs(y/stride), 0.0f, 0.4f });
+					{ std::abs(x/stride), std::abs(y/stride), 0.0f, 0.8f });
 			}
 		}
 

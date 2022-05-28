@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 
+#include "Pistachio/Core/Common.h"
+
 
 namespace Pistachio {
 
@@ -23,7 +25,7 @@ namespace Pistachio {
 		inline float Rotation() const { return m_Rotation; };
 
 		inline void SetPosition(const glm::vec3& position) { m_Position = position; RecalculateProjectionViewMatrix(); };
-		inline void SetRotation(float rotation) { m_Rotation = rotation; RecalculateProjectionViewMatrix(); };
+		inline void SetRotation(float rotation) { m_Rotation = wrap_rotation(rotation); RecalculateProjectionViewMatrix(); };
 
 	private:
 		void RecalculateProjectionViewMatrix();
