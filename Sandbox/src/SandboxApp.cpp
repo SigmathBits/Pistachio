@@ -68,6 +68,8 @@ public:
 	}
 
 	void OnUpdate(Pistachio::Timestep timestep) override {
+		m_CameraController.OnUpdate(timestep);
+
 		// Update
 		const float moveSpeed = 0.5f * timestep;
 		
@@ -108,7 +110,7 @@ public:
 			}
 
 			// Square
-			auto textureShader = m_ShaderLibrary.Get("Texture");
+			auto textureShader = m_ShaderLibrary.Get("RawTexture");
 
 			m_Texture->Bind(0);
 			glm::mat4 transform2 = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)), m_Position);

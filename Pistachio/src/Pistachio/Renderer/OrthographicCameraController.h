@@ -46,6 +46,11 @@ namespace Pistachio {
 		glm::vec2 m_MousePressedPosition = { 0.0f, 0.0f };
 		glm::vec3 m_MousePressedCameraPosition = { 0.0f, 0.0f, 0.0f };
 		float m_MousePressedRotation = 0.0f;
+
+		const float m_ReponseTime = 1.0f / 15.0f;
+		float m_ZoomLevelTarget = 1.0f;
+		glm::vec3 m_PositionTarget = { 0.0f, 0.0f, 0.0f };
+		float m_RotationTarget = 0.0f;
 	};
 
 }

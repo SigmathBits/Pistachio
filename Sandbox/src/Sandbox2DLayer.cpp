@@ -28,6 +28,12 @@ void Sandbox2DLayer::OnDetach() {
 void Sandbox2DLayer::OnUpdate(Pistachio::Timestep timestep) {
 	PST_PROFILE_FUNCTION();
 
+	{
+		PST_PROFILE_SCOPE("CameraController.OnUpdate");
+
+		m_CameraController.OnUpdate(timestep);
+	}
+
 	// Render
 	{
 		PST_PROFILE_SCOPE("Renderer Screen Clear");
