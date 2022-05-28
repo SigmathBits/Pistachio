@@ -22,7 +22,7 @@ namespace Pistachio {
 		virtual void SetClearColour(const glm::vec4& colour) const = 0;
 		virtual void Clear() const = 0;
 
-		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray) const = 0;
+		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount = 0) const = 0;
 
 		inline static RenderAPI API() { return s_RenderAPI; }
 

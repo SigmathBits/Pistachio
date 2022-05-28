@@ -53,7 +53,7 @@ namespace Pistachio {
 				break;
 			case 3:
 				m_InternalFormat = GL_RGB8;
-				m_DataFormat = GL_RGB8;
+				m_DataFormat = GL_RGB;
 				break;
 			default:
 				PST_CORE_ASSERT(false, "Format not supported");

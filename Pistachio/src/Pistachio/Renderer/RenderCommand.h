@@ -28,8 +28,8 @@ namespace Pistachio {
 			s_RendererAPI->Clear();
 		};
 
-		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray) {
-			s_RendererAPI->DrawIndexed(vertexArray);
+		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int count = 0) {
+			s_RendererAPI->DrawIndexed(vertexArray, count);
 		}
 
 	private:

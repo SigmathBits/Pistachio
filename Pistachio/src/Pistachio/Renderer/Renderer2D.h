@@ -15,13 +15,29 @@ namespace Pistachio {
 
 		static void BeginScene(const OrthographicCamera& camera);
 		static void EndScene();
+		static void Flush();
 
 		// Primitives
 		static void DrawQuad(const Transform& transform, const glm::vec4& colour);
-		static void DrawQuad(const Transform& transform, const Sprite& sprite);
-
 		static void DrawQuad(const RotatedTransform& transform, const glm::vec4& colour);
+
+		static void DrawQuad(const Transform& transform, const Sprite& sprite);
 		static void DrawQuad(const RotatedTransform& transform, const Sprite& sprite);
+
+		// Stats
+		struct Statistics {
+			unsigned int DrawCalls = 0;
+			unsigned int QuadCount = 0;
+
+			unsigned int TotalVertexCount() { return 4 * QuadCount; }
+			unsigned int TotalIndexCount() { return 6 * QuadCount; }
+		};
+
+		static void ResetStats();
+		static Statistics RetrieveStats();
+
+	private:
+		static void FlushAndReset();
 	};
 
 }

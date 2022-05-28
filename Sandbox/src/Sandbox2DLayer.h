@@ -19,9 +19,11 @@ public:
 private:
 	Pistachio::OrthographicCameraController m_CameraController;
 
-	Pistachio::Ref<Pistachio::Texture2D> m_Texture;
+	Pistachio::Ref<Pistachio::Texture2D> m_PistachioTexture;
+	Pistachio::Ref<Pistachio::Texture2D> m_RainbowDashTexture;
+	Pistachio::Ref<Pistachio::Texture2D> m_CheckerboardTexture;
 
-	Pistachio::RotatedTransform m_RotatedTransform{ { 0.0f, 0.0f, 0.5f }, 0.0f };
+	Pistachio::RotatedTransform m_RotatedTransform{ { 0.0f, 0.0f, -0.51f }, 0.0f };
 	float m_Angle = 0.0f;
 	glm::vec4 m_Colour{ 0.486f, 0.686f, 0.255f, 1.0f };
 };

@@ -17,6 +17,7 @@ namespace Pistachio {
 		virtual const std::string& Name() const = 0;
 
 		virtual void SetInt(const std::string& name, int value) = 0;
+		virtual void SetIntArray(const std::string& name, int* values, unsigned int count) = 0;
 
 		virtual void SetFloat(const std::string& name, float value) = 0;
 		virtual void SetFloat2(const std::string& name, const glm::vec2& vector) = 0;

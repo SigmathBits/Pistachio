@@ -96,6 +96,12 @@ namespace Pistachio {
 		UploadUniformInt(name, value);
 	}
 
+	void OpenGLShader::SetIntArray(const std::string& name, int* values, unsigned int count) {
+		PST_PROFILE_FUNCTION();
+
+		UploadUniformIntArray(name, values, count);
+	}
+
 	void OpenGLShader::SetFloat(const std::string& name, float value) {
 		PST_PROFILE_FUNCTION();
 
@@ -136,6 +142,10 @@ namespace Pistachio {
 		glUniform1i(UniformLocation(name), value);
 	}
 
+	void OpenGLShader::UploadUniformIntArray(const std::string& name, int* values, unsigned int count) const {
+		glUniform1iv(UniformLocation(name), count, values);
+	}
+
 	void OpenGLShader::UploadUniformFloat(const std::string& name, float value) const {
 		glUniform1f(UniformLocation(name), value);
 	}
@@ -146,6 +156,11 @@ namespace Pistachio {
 
 	void OpenGLShader::UploadUniformFloat3(const std::string& name, const glm::vec3& vector) const {
 		glUniform3f(UniformLocation(name), vector.x, vector.y, vector.z);
+	}
+
+	void OpenGLShader::UploadUniformFloat4(const std::string& name, const glm::vec4& value) const {
+		int location = glGetUniformLocation(m_RendererID, name.c_str());
+		glUniform4f(location, value.x, value.y, value.z, value.w);
 	}
 
 	void OpenGLShader::UploadUniformMat3(const std::string& name, const glm::mat3& matrix) const {
@@ -302,16 +317,11 @@ namespace Pistachio {
 
 		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 		if (location == -1) {
-			std::cout << "Warning: uniform '" << name << "' doesn't exist!" << std::endl;
+			PST_CORE_WARN("Warning: uniform '{}' doesn't exist!", name);
 		}
 
 		m_UniformLocationCache[name] = location;
 		return location;
-	}
-
-	void OpenGLShader::UploadUniformFloat4(const std::string& name, const glm::vec4& value) const {
-		int location = glGetUniformLocation(m_RendererID, name.c_str());
-		glUniform4f(location, value.x, value.y, value.z, value.w);
 	}
 
 }

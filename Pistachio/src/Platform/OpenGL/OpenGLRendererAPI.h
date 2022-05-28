@@ -15,7 +15,7 @@ namespace Pistachio {
 		virtual void SetClearColour(const glm::vec4& colour) const override;
 		virtual void Clear() const override;
 
-		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray) const override;
+		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount = 0) const override;
 	};
 
 }

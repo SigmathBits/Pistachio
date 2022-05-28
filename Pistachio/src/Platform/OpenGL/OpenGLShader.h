@@ -26,6 +26,7 @@ namespace Pistachio {
 		virtual const std::string& Name() const override { return m_Name; };
 
 		virtual void SetInt(const std::string& name, int value) override;
+		virtual void SetIntArray(const std::string& name, int* values, unsigned int count) override;
 
 		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetFloat2(const std::string& name, const glm::vec2& vector) override;
@@ -36,6 +37,7 @@ namespace Pistachio {
 		virtual void SetMat4(const std::string& name, const glm::mat4& matrix) override;
 
 		void UploadUniformInt(const std::string& name, int value) const;
+		void UploadUniformIntArray(const std::string& name, int* values, unsigned int count) const;
 
 		void UploadUniformFloat(const std::string& name, float value) const;
 		void UploadUniformFloat2(const std::string& name, const glm::vec2& vector) const;

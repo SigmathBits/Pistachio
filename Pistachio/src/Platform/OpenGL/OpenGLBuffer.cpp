@@ -11,6 +11,14 @@ namespace Pistachio {
 	/// VertexBuffer ///
 	////////////////////
 
+	OpenGLVertexBuffer::OpenGLVertexBuffer(size_t size) {
+		PST_PROFILE_FUNCTION();
+
+		glCreateBuffers(1, &m_RendererID);
+		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+	}
+
 	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, size_t size) {
 		PST_PROFILE_FUNCTION();
 
@@ -35,6 +43,13 @@ namespace Pistachio {
 		PST_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	void OpenGLVertexBuffer::SetData(void* data, size_t size) {
+		PST_PROFILE_FUNCTION();
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 	}
 
 	//////////////////

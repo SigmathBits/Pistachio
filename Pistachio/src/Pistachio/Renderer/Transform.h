@@ -16,14 +16,6 @@ namespace Pistachio {
 		Transform(glm::vec2 position, glm::vec2 size = { 1.0f, 1.0f })
 			: Position(position, 0.0f), Size(size) {
 		}
-
-		Transform(glm::vec3 position, float size)
-			: Position(position), Size(size, size) {
-		}
-
-		Transform(glm::vec2 position, float size)
-			: Position(position, 0.0f), Size(size, size) {
-		}
 	};
 
 	struct RotatedTransform : Transform {
@@ -34,14 +26,6 @@ namespace Pistachio {
 		}
 
 		RotatedTransform(glm::vec2 position, float rotation, glm::vec2 size = { 1.0f, 1.0f })
-			: Transform(position, size), Rotation(rotation) {
-		}
-
-		RotatedTransform(glm::vec3 position, float rotation, float size)
-			: Transform(position, size), Rotation(rotation) {
-		}
-
-		RotatedTransform(glm::vec2 position, float rotation, float size)
 			: Transform(position, size), Rotation(rotation) {
 		}
 	};
