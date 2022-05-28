@@ -96,6 +96,18 @@ namespace Pistachio {
 		UploadUniformInt(name, value);
 	}
 
+	void OpenGLShader::SetFloat(const std::string& name, float value) {
+		PST_PROFILE_FUNCTION();
+
+		UploadUniformFloat(name, value);
+	}
+
+	void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& vector) {
+		PST_PROFILE_FUNCTION();
+
+		UploadUniformFloat2(name, vector);
+	}
+
 	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& vector) {
 		PST_PROFILE_FUNCTION();
 
@@ -108,6 +120,12 @@ namespace Pistachio {
 		UploadUniformFloat4(name, vector);
 	}
 
+	void OpenGLShader::SetMat3(const std::string& name, const glm::mat3& matrix) {
+		PST_PROFILE_FUNCTION();
+
+		UploadUniformMat3(name, matrix);
+	}
+
 	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& matrix) {
 		PST_PROFILE_FUNCTION();
 
@@ -118,7 +136,7 @@ namespace Pistachio {
 		glUniform1i(UniformLocation(name), value);
 	}
 
-	void OpenGLShader::UploadUniformFloat1(const std::string& name, float value) const {
+	void OpenGLShader::UploadUniformFloat(const std::string& name, float value) const {
 		glUniform1f(UniformLocation(name), value);
 	}
 

@@ -39,7 +39,7 @@ namespace Pistachio {
 
 		bool m_Rotation;
 
-		const float m_CameraRotationSpeed = 15.0f;
+		const float m_CameraAngleSpeed = 15.0f;
 
 		bool m_CameraModePan = true;
 		bool m_MouseLeftButtonHeld = false;

@@ -27,14 +27,17 @@ namespace Pistachio {
 
 		virtual void SetInt(const std::string& name, int value) override;
 
+		virtual void SetFloat(const std::string& name, float value) override;
+		virtual void SetFloat2(const std::string& name, const glm::vec2& vector) override;
 		virtual void SetFloat3(const std::string& name, const glm::vec3& vector) override;
 		virtual void SetFloat4(const std::string& name, const glm::vec4& vector) override;
 
+		virtual void SetMat3(const std::string& name, const glm::mat3& matrix) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& matrix) override;
 
 		void UploadUniformInt(const std::string& name, int value) const;
 
-		void UploadUniformFloat1(const std::string& name, float value) const;
+		void UploadUniformFloat(const std::string& name, float value) const;
 		void UploadUniformFloat2(const std::string& name, const glm::vec2& vector) const;
 		void UploadUniformFloat3(const std::string& name, const glm::vec3& vector) const;
 		void UploadUniformFloat4(const std::string& name, const glm::vec4& vector) const;

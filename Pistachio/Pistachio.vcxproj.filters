@@ -1433,6 +1433,8 @@
     </ClInclude>
     <ClInclude Include="src\Pistachio\Renderer\Renderer2D.h" />
     <ClInclude Include="src\Pistachio\Debug\Instrumentor.h" />
+    <ClInclude Include="src\Pistachio\Renderer\Transform.h" />
+    <ClInclude Include="src\Pistachio\Renderer\Sprite.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pistachio\Core\Application.cpp">

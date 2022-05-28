@@ -1,5 +1,3 @@
-// Basic texture shader
-
 #shader vertex
 #version 330 core
 
@@ -21,12 +19,14 @@ void main() {
 #shader fragment
 #version 330 core
 
+uniform vec4 u_Colour;
 uniform sampler2D u_Texture;
+uniform float u_TilingScale;
 
 in vec2 v_TextureCoords;
 
 layout(location = 0) out vec4 colour;
 
 void main () {
-	colour = texture(u_Texture, v_TextureCoords);
+	colour = texture(u_Texture, u_TilingScale * v_TextureCoords) * u_Colour;
 }

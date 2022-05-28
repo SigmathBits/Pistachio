@@ -21,8 +21,7 @@ private:
 
 	Pistachio::Ref<Pistachio::Texture2D> m_Texture;
 
-	glm::vec3 m_Position{ 0.0f, 0.0f, 0.0f };
-	float m_Rotation = 0.0f;
-	glm::vec2 m_Size{1.0f, 1.0f};
+	Pistachio::RotatedTransform m_RotatedTransform{ { 0.0f, 0.0f, 0.5f }, 0.0f };
+	float m_Angle = 0.0f;
 	glm::vec4 m_Colour{ 0.486f, 0.686f, 0.255f, 1.0f };
 };

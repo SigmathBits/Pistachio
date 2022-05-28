@@ -161,6 +161,8 @@
     <ClInclude Include="src\Pistachio\ImGui\ImGuiLayer.h" />
     <ClInclude Include="src\Pistachio\Renderer\Buffer.h" />
     <ClInclude Include="src\Pistachio\Renderer\GraphicsContext.h" />
+    <ClInclude Include="src\Pistachio\Renderer\Sprite.h" />
+    <ClInclude Include="src\Pistachio\Renderer\Transform.h" />
     <ClInclude Include="src\Pistachio\Renderer\OrthographicCamera.h" />
     <ClInclude Include="src\Pistachio\Renderer\OrthographicCameraController.h" />
     <ClInclude Include="src\Pistachio\Renderer\RenderCommand.h" />

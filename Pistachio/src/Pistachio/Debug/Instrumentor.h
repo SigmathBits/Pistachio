@@ -3,7 +3,8 @@
 #include <fstream>
 
 
-#define PST_PROFILE 1
+#define PST_PROFILE 0
+
 
 #if PST_PROFILE
 	#define PST_PROFILE_BEGIN_SESSION(name, filepath)  ::Pistachio::Instrumentor::Instance().BeginSession(name, filepath)
@@ -24,7 +25,6 @@ namespace Pistachio {
 		const char* Name;
 		long long int Start, End;
 	};
-
 
 	struct InstrumentationSession {
 		std::string Name;
@@ -62,13 +62,13 @@ namespace Pistachio {
 			std::replace(name.begin(), name.end(), '"', '\'');
 
 			m_OutputStream << "{";
-			m_OutputStream << "\"cat\": \"function\",";
-			m_OutputStream << "\"dur\": " << (result.End - result.Start) << ",";
-			m_OutputStream << "\"name\": \"" << name << "\",";
-			m_OutputStream << "\"ph\": \"X\",";
-			m_OutputStream << "\"pid\": 0,";
-			m_OutputStream << "\"tid\": 0,";
-			m_OutputStream << "\"ts\": " << result.Start;
+			m_OutputStream <<     "\"cat\":\"function\",";
+			m_OutputStream <<     "\"dur\":" << (result.End - result.Start) << ",";
+			m_OutputStream <<     "\"name\":\"" << name << "\",";
+			m_OutputStream <<     "\"ph\":\"X\",";
+			m_OutputStream <<     "\"pid\":0,";
+			m_OutputStream <<     "\"tid\":0,";
+			m_OutputStream <<     "\"ts\":" << result.Start;
 			m_OutputStream << "}";
 
 			m_OutputStream.flush();
@@ -84,6 +84,8 @@ namespace Pistachio {
 			m_OutputStream.flush();
 		}
 
+		bool IsProfiling() const { return m_CurrentSession; }
+
 		static Instrumentor& Instance() {
 			static Instrumentor* instance = new Instrumentor();
 			return *instance;
@@ -92,7 +94,7 @@ namespace Pistachio {
 	private:
 		InstrumentationSession* m_CurrentSession;
 		std::ofstream m_OutputStream;
-		int m_ProfileCount;
+		unsigned int m_ProfileCount;
 	};
 
 
@@ -100,10 +102,14 @@ namespace Pistachio {
 	public:
 		InstrumentationTimer(const char* name)
 			: m_Name(name), m_Stopped(false) {
+			if (!Instrumentor::Instance().IsProfiling()) return;
+
 			m_StartTimepoint = std::chrono::high_resolution_clock::now();
 		}
 
 		~InstrumentationTimer() {
+			if (!Instrumentor::Instance().IsProfiling()) return;
+
 			if (!m_Stopped) {
 				Stop();
 			}

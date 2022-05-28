@@ -58,7 +58,7 @@ public:
 
 		// Shaders
 		m_ShaderLibrary.Load("assets/shaders/FlatColour.glsl");
-		auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
+		auto textureShader = m_ShaderLibrary.Load("assets/shaders/RawTexture.glsl");
 
 		// Textures
 		m_Texture = Pistachio::Texture2D::Create("assets/textures/Pistachio.png");
@@ -69,8 +69,6 @@ public:
 
 	void OnUpdate(Pistachio::Timestep timestep) override {
 		// Update
-		m_CameraController.OnUpdate(timestep);
-
 		const float moveSpeed = 0.5f * timestep;
 		
 		if (Pistachio::Input::IsKeyPressed(PST_KEY_A)) {
@@ -139,6 +137,7 @@ class Sandbox : public Pistachio::Application {
 public:
 	Sandbox() {
 		//PushLayer(new ExampleLayer());
+
 		PushLayer(new Sandbox2DLayer());
 	}
 

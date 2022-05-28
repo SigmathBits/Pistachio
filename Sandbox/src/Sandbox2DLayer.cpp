@@ -16,7 +16,7 @@ Sandbox2DLayer::~Sandbox2DLayer() {
 
 void Sandbox2DLayer::OnAttach() {
 	PST_PROFILE_FUNCTION();
-
+	
 	m_Texture = Pistachio::Texture2D::Create("assets/textures/Pistachio.png");
 }
 
@@ -42,13 +42,14 @@ void Sandbox2DLayer::OnUpdate(Pistachio::Timestep timestep) {
 		// Square
 		Pistachio::Renderer2D::BeginScene(m_CameraController.Camera());
 
-		Pistachio::Renderer2D::DrawQuad({ 0.5f, -0.5f, 0.1f }, 60.0f, { 0.25f, 0.25f }, { 0.251f, 0.494f, 0.494f, 1.0f });
+		Pistachio::Renderer2D::DrawQuad({ { 0.5f, -0.5f, 0.1f }, 60.0f, { 0.25f, 0.25f } }, { 0.251f, 0.494f, 0.494f, 1.0f });
 
-		Pistachio::Renderer2D::DrawQuad({ -0.5f, -0.5f, -0.1f }, -60.0f, { 0.25f, 0.25f }, { 0.251f, 0.494f, 0.494f, 1.0f });
+		Pistachio::Renderer2D::DrawQuad({ { -0.5f, -0.5f, -0.1f }, -60.0f, { 0.25f, 0.25f } }, { 0.251f, 0.494f, 0.494f, 1.0f });
 
-		Pistachio::Renderer2D::DrawQuad(m_Position, m_Rotation, m_Size, m_Colour);
+		m_RotatedTransform.Rotation = glm::radians(m_Angle);
+		Pistachio::Renderer2D::DrawQuad(m_RotatedTransform, m_Colour);
 
-		Pistachio::Renderer2D::DrawQuad({ 0.0f, 0.5f, 0.0f }, 0.0f, { 1.0f, 1.0f }, m_Texture);
+		Pistachio::Renderer2D::DrawQuad({ { 0.0f, 0.5f, 0.0f } }, m_Texture);
 
 		Pistachio::Renderer2D::EndScene();
 	}
@@ -58,9 +59,9 @@ void Sandbox2DLayer::OnImGuiRender() {
 	PST_PROFILE_FUNCTION();
 
 	ImGui::Begin("Quad");
-	ImGui::DragFloat3("Position", glm::value_ptr(m_Position), 0.005f);
-	ImGui::DragFloat("Rotation", &m_Rotation, 1.0f, 0.0f, 360.0f);
-	ImGui::DragFloat2("Size", glm::value_ptr(m_Size), 0.01f, 0.01f, 10.0f);
+	ImGui::DragFloat3("Position", glm::value_ptr(m_RotatedTransform.Position), 0.005f);
+	ImGui::DragFloat("Angle", &m_Angle, 1.0f, 0.0f, 360.0f);
+	ImGui::DragFloat2("Size", glm::value_ptr(m_RotatedTransform.Size), 0.01f, 0.01f, 10.0f);
 	ImGui::ColorEdit4("Colour", glm::value_ptr(m_Colour));
 	ImGui::End();
 }
