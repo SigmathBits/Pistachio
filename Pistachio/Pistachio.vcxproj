@@ -163,6 +163,7 @@
     <ClInclude Include="src\Pistachio\Renderer\Buffer.h" />
     <ClInclude Include="src\Pistachio\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\Pistachio\Renderer\Sprite.h" />
+    <ClInclude Include="src\Pistachio\Renderer\SubTexture2D.h" />
     <ClInclude Include="src\Pistachio\Renderer\Transform.h" />
     <ClInclude Include="src\Pistachio\Renderer\OrthographicCamera.h" />
     <ClInclude Include="src\Pistachio\Renderer\OrthographicCameraController.h" />
@@ -620,6 +621,7 @@
     <ClCompile Include="src\Pistachio\Renderer\Renderer2D.cpp" />
     <ClCompile Include="src\Pistachio\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Pistachio\Renderer\Shader.cpp" />
+    <ClCompile Include="src\Pistachio\Renderer\SubTexture2D.cpp" />
     <ClCompile Include="src\Pistachio\Renderer\Texture.cpp" />
     <ClCompile Include="src\Pistachio\Renderer\VertexArray.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />

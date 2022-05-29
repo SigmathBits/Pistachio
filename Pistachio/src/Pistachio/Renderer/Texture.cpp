@@ -8,6 +8,7 @@
 
 
 namespace Pistachio {
+
 	Ref<Texture2D> Texture2D::Create(unsigned int width, unsigned int height) {
 		switch (Renderer::RenderAPI()) {
 			case RendererAPI::RenderAPI::None:
@@ -20,6 +21,7 @@ namespace Pistachio {
 				return nullptr;
 		}
 	}
+
 	Ref<Texture2D> Texture2D::Create(const std::string& filepath) {
 		switch (Renderer::RenderAPI()) {
 			case RendererAPI::RenderAPI::None:

@@ -1436,6 +1436,7 @@
     <ClInclude Include="src\Pistachio\Renderer\Transform.h" />
     <ClInclude Include="src\Pistachio\Renderer\Sprite.h" />
     <ClInclude Include="src\Pistachio\Core\Common.h" />
+    <ClInclude Include="src\Pistachio\Renderer\SubTexture2D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pistachio\Core\Application.cpp">
@@ -1521,5 +1522,6 @@
     </ClCompile>
     <ClCompile Include="src\Pistachio\Renderer\Renderer2D.cpp" />
     <ClCompile Include="src\Pistachio\Core\Common.cpp" />
+    <ClCompile Include="src\Pistachio\Renderer\SubTexture2D.cpp" />
   </ItemGroup>
 </Project>

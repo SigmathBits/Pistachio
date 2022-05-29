@@ -20,12 +20,24 @@ namespace Pistachio {
 	};
 
 	struct Renderer2DData {
-		static const unsigned int MaxQuads = 10000;
-		static const unsigned int MaxVertices = 4 * MaxQuads;
-		static const unsigned int MaxIndices = 6 * MaxQuads;
-		static const unsigned int MaxTextureSlots = 32;  // TODO: Get from Renderer Capabilities
+		static constexpr unsigned int MaxQuads = 10000;
+		static constexpr unsigned int MaxVertices = 4 * MaxQuads;
+		static constexpr unsigned int MaxIndices = 6 * MaxQuads;
+		static constexpr unsigned int MaxTextureSlots = 32;  // TODO: Get from Renderer Capabilities
 
-		glm::vec4 QuadVertexPositions[4];
+		static constexpr size_t QuadVertexCount = 4;
+		static constexpr glm::vec4 QuadVertexPositions[QuadVertexCount] = {
+			{ -0.5f, -0.5f, 0.0f, 1.0f },
+			{  0.5f, -0.5f, 0.0f, 1.0f },
+			{  0.5f,  0.5f, 0.0f, 1.0f },
+			{ -0.5f,  0.5f, 0.0f, 1.0f },
+		};
+		static constexpr glm::vec2 QuadTextureCoords[QuadVertexCount] = {
+			{ 0.0f, 0.0f },
+			{ 1.0f, 0.0f },
+			{ 1.0f, 1.0f },
+			{ 0.0f, 1.0f },
+		};
 
 		unsigned int QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr;
@@ -50,11 +62,6 @@ namespace Pistachio {
 		PST_PROFILE_FUNCTION();
 
 		/// Rendering objects
-		// Vertices
-		s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
-		s_Data.QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
-		s_Data.QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
-		s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
 		// Vertex Array
 		s_Data.QuadVertexArray = VertexArray::Create();
@@ -172,10 +179,9 @@ namespace Pistachio {
 		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
 		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
 
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[0], colour, { 0.0f, 0.0f }, 0, 1.0f };
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[1], colour, { 1.0f, 0.0f }, 0, 1.0f };
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[2], colour, { 1.0f, 1.0f }, 0, 1.0f };
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[3], colour, { 0.0f, 1.0f }, 0, 1.0f };
+		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
+			*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], colour, Renderer2DData::QuadTextureCoords[i], 0, 1.0f};
+		}
 
 		s_Data.QuadIndexCount += 6;
 
@@ -193,10 +199,9 @@ namespace Pistachio {
 		transformMatrix = glm::rotate(transformMatrix, transform.Rotation, { 0.0f, 0.0f, 1.0f });
 		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
 
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[0], colour, { 0.0f, 0.0f }, 0, 1.0f };
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[1], colour, { 1.0f, 0.0f }, 0, 1.0f };
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[2], colour, { 1.0f, 1.0f }, 0, 1.0f };
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[3], colour, { 0.0f, 1.0f }, 0, 1.0f };
+		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
+			*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], colour, Renderer2DData::QuadTextureCoords[i], 0, 1.0f };
+		}
 
 		s_Data.QuadIndexCount += 6;
 
@@ -213,7 +218,7 @@ namespace Pistachio {
 		unsigned int textureIndex = 0;
 		
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++) {
-			if (*sprite.Texture == *s_Data.TextureSlots[i]) {
+			if (*sprite.SubTexture->Texture() == *s_Data.TextureSlots[i]) {
 				textureIndex = (unsigned int)i;
 				break;
 			}
@@ -225,19 +230,19 @@ namespace Pistachio {
 			}
 
 			textureIndex = s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex++] = sprite.Texture;
+			s_Data.TextureSlots[s_Data.TextureSlotIndex++] = sprite.SubTexture->Texture();
 		}
 
 		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
 		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
 
 		glm::vec4 colour = sprite.TintColour;
+		const glm::vec2* textureCoords = sprite.SubTexture->TextureCoords();
 		float tilingScale = sprite.TilingScale;
 
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[0], colour, { 0.0f, 0.0f }, (float)textureIndex, tilingScale };
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[1], colour, { 1.0f, 0.0f }, (float)textureIndex, tilingScale };
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[2], colour, { 1.0f, 1.0f }, (float)textureIndex, tilingScale };
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[3], colour, { 0.0f, 1.0f }, (float)textureIndex, tilingScale };
+		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
+			*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], colour, textureCoords[i], (float)textureIndex, tilingScale };
+		}
 
 		s_Data.QuadIndexCount += 6;
 
@@ -254,7 +259,7 @@ namespace Pistachio {
 		unsigned int textureIndex = 0;
 
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++) {
-			if (*sprite.Texture == *s_Data.TextureSlots[i]) {
+			if (*sprite.SubTexture->Texture() == *s_Data.TextureSlots[i]) {
 				textureIndex = (unsigned int)i;
 				break;
 			}
@@ -266,7 +271,7 @@ namespace Pistachio {
 			}
 
 			textureIndex = s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex++] = sprite.Texture;
+			s_Data.TextureSlots[s_Data.TextureSlotIndex++] = sprite.SubTexture->Texture();
 		}
 
 		glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), transform.Rotation, { 0.0f, 0.0f, 1.0f });
@@ -276,12 +281,12 @@ namespace Pistachio {
 		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
 
 		glm::vec4 colour = sprite.TintColour;
+		const glm::vec2* textureCoords = sprite.SubTexture->TextureCoords();
 		float tilingScale = sprite.TilingScale;
 
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[0], colour, { 0.0f, 0.0f }, (float)textureIndex, tilingScale };
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[1], colour, { 1.0f, 0.0f }, (float)textureIndex, tilingScale };
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[2], colour, { 1.0f, 1.0f }, (float)textureIndex, tilingScale };
-		*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * s_Data.QuadVertexPositions[3], colour, { 0.0f, 1.0f }, (float)textureIndex, tilingScale };
+		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
+			*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], colour, textureCoords[i], (float)textureIndex, tilingScale };
+		}
 
 		s_Data.QuadIndexCount += 6;
 

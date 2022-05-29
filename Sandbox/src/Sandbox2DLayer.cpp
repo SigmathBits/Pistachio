@@ -5,6 +5,24 @@
 #include "imgui/imgui.h"
 
 
+static constexpr unsigned int s_MapWidth = 25;
+static const char s_MapTiles[] = 
+	"                         "
+	"     .NNNNNNNNNNNNN,     "
+	"    .JOOOOOOOOOOOOOL,    "
+	"   .JOOOOOOOOOF7OOOOL,   "
+	"  .JOOOOOOOOOOLJOOOOOL,  "
+	" .JOOOOOOOOOOOOOOOOOOOL, "
+	" COOOOOOOOOOOOOOOOOOOOOD "
+	" '7OOOOFUUUUU7OOOOOOOOF` "
+	"  '7OOOD     COOOOOOOF`  "
+	"   '7OOLNNNNNJOOOOOOF`   "
+	"    '7OOOOOOOOOOOOOF`    "
+	"     'UUUUUUUUUUUUU`     "
+	"                         "
+;
+
+
 Sandbox2DLayer::Sandbox2DLayer()
 	: Layer("Sandbox2D", Pistachio::EVENT_CATEGORY_NONE), m_CameraController(1280, 720, true) {
 
@@ -20,6 +38,35 @@ void Sandbox2DLayer::OnAttach() {
 	m_PistachioTexture = Pistachio::Texture2D::Create("assets/textures/Pistachio.png");
 	m_RainbowDashTexture = Pistachio::Texture2D::Create("assets/textures/Rainbow-Dash.png");
 	m_CheckerboardTexture = Pistachio::Texture2D::Create("assets/textures/Checkerboard.png");
+
+	m_SpriteSheet = Pistachio::Texture2D::Create("assets/game/textures/RPGpack_sheet_2X.png");
+
+	m_MapWidth = s_MapWidth;
+	m_MapHeight = strlen(s_MapTiles) / m_MapWidth;
+
+	m_TextureMap['O'] = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {1, 11}, {128, 128});
+
+	m_TextureMap['U'] = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {11, 12}, {128, 128});
+	m_TextureMap['N'] = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {11, 10}, {128, 128});
+
+	m_TextureMap['C'] = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {12, 11}, {128, 128});
+	m_TextureMap['D'] = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {10, 11}, {128, 128});
+
+	m_TextureMap['J'] = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {12, 10}, {128, 128});
+	m_TextureMap['L'] = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {10, 10}, {128, 128});
+	m_TextureMap['F'] = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {10, 12}, {128, 128});
+	m_TextureMap['7'] = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {12, 12}, {128, 128});
+
+	m_TextureMap['.']  = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {13, 12}, {128, 128});
+	m_TextureMap[',']  = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {14, 12}, {128, 128});
+	m_TextureMap['\''] = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {13, 11}, {128, 128});
+	m_TextureMap['`']  = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {14, 11}, {128, 128});
+
+	m_TextureMap[' '] = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {11, 11}, {128, 128});
+
+	m_BarrelTexture = Pistachio::SubTexture2D::CreateFromCoords(m_SpriteSheet, {8, 2}, {128, 128});
+
+	m_CameraController.SetZoomLevel(4.0f);
 }
 
 void Sandbox2DLayer::OnDetach() {
@@ -45,8 +92,9 @@ void Sandbox2DLayer::OnUpdate(Pistachio::Timestep timestep) {
 		Pistachio::RenderCommand::Clear();
 	}
 
+#if 0
 	{
-		PST_PROFILE_SCOPE("Renderer Draw Call");
+		PST_PROFILE_SCOPE("Renderer Scene 1");
 
 		// Squares
 		Pistachio::Renderer2D::BeginScene(m_CameraController.Camera());
@@ -58,15 +106,18 @@ void Sandbox2DLayer::OnUpdate(Pistachio::Timestep timestep) {
 		Pistachio::Renderer2D::DrawQuad({ { -0.5f, -0.5f, 0.2f } }, { 0.0f, 1.0f, 0.0f, 1.0f });
 
 		const float stride = 2.0f;
-		for (float y = -stride/2; y < stride/2; y += 0.1f) {
-			for (float x = -stride/2; x < stride/2; x += 0.1f) {
+		for (float y = -stride / 2; y < stride / 2; y += 0.1f) {
+			for (float x = -stride / 2; x < stride / 2; x += 0.1f) {
 				Pistachio::Renderer2D::DrawQuad({ { x, y, 0.1f }, { 0.09f, 0.09f } },
-					{ std::abs(x/stride), std::abs(y/stride), 0.0f, 0.8f });
+					{ std::abs(x / stride), std::abs(y / stride), 0.0f, 0.8f });
 			}
 		}
 
 		Pistachio::Renderer2D::EndScene();
+	}
 
+	{
+		PST_PROFILE_SCOPE("Renderer Scene 2");
 
 		Pistachio::Renderer2D::BeginScene(m_CameraController.Camera());
 
@@ -84,6 +135,31 @@ void Sandbox2DLayer::OnUpdate(Pistachio::Timestep timestep) {
 		Pistachio::Renderer2D::DrawQuad({ { 0.0f, 0.0f, -0.52f }, glm::radians(rotation) }, { m_PistachioTexture, 2.0f });
 
 		Pistachio::Renderer2D::DrawQuad({ { 0.5f, 0.5f, -0.6f } }, m_RainbowDashTexture);
+
+		Pistachio::Renderer2D::EndScene();
+	}
+#endif
+
+	{
+		PST_PROFILE_SCOPE("Renderer Scene 3");
+
+		Pistachio::Renderer2D::BeginScene(m_CameraController.Camera());
+
+		for (size_t y = 0; y < m_MapHeight; y++) {
+			for (size_t x = 0; x < m_MapWidth; x++) {
+				char tile = s_MapTiles[m_MapWidth * y + x];
+
+				Pistachio::Ref<Pistachio::SubTexture2D> subtexture;
+
+				if (m_TextureMap.find(tile) == m_TextureMap.end()) {
+					subtexture = m_BarrelTexture;
+				} else {
+					 subtexture = m_TextureMap[tile];
+				}
+
+				Pistachio::Renderer2D::DrawQuad({ {(float)x - (float)m_MapWidth / 2.0f, (float)m_MapHeight / 2.0f - (float)y, 0.0f}}, subtexture);
+			}
+		}
 
 		Pistachio::Renderer2D::EndScene();
 	}

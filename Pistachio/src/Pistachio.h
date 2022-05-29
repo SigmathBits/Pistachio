@@ -24,6 +24,7 @@
 
 #include "Pistachio/Renderer/Shader.h"
 #include "Pistachio/Renderer/Texture.h"
+#include "Pistachio/Renderer/SubTexture2D.h"
 #include "Pistachio/Renderer/VertexArray.h"
 #include "Pistachio/Renderer/Buffer.h"
 /// -----------------------

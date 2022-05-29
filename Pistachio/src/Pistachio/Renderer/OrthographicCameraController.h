@@ -24,11 +24,14 @@ namespace Pistachio {
 		OrthographicCamera& Camera() { return m_Camera; }
 		const OrthographicCamera& Camera() const { return m_Camera; }
 
-		void SetZoom(float zoom);
+		void SetZoomLevel(float zoomlevel);
 
 		glm::vec4 WindowToCameraCoordinates(const glm::vec2& position);
 
 	private:
+		void UpdateZoomLevel(float zoomlevel);
+		void CalculateProjection();
+
 		bool OnWindowResize(WindowResizeEvent& event);
 
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& event);

@@ -30,9 +30,9 @@ namespace Pistachio {
 		if (m_ZoomLevel != m_ZoomLevelTarget) {
 			const float zoomDiff = (m_ZoomLevelTarget - m_ZoomLevel);
 			if (std::abs(zoomDiff) < zoomThreshold) {
-				SetZoom(m_ZoomLevelTarget);
+				UpdateZoomLevel(m_ZoomLevelTarget);
 			} else {
-				SetZoom(m_ZoomLevel + zoomDiff * delta);
+				UpdateZoomLevel(m_ZoomLevel + zoomDiff * delta);
 			}
 		}
 		
@@ -57,11 +57,32 @@ namespace Pistachio {
 		}
 	}
 
-	void OrthographicCameraController::SetZoom(float zoom) {
+	void OrthographicCameraController::SetZoomLevel(float zoomlevel) {
 		PST_PROFILE_FUNCTION();
 
-		m_ZoomLevel = std::max(zoom, 0.10f);
+		m_ZoomLevel = std::max(zoomlevel, 0.10f);
+		m_ZoomLevelTarget = m_ZoomLevel;
+		CalculateProjection();
+	}
+
+	void OrthographicCameraController::UpdateZoomLevel(float zoomlevel) {
+		PST_PROFILE_FUNCTION();
+
+		m_ZoomLevel = std::max(zoomlevel, 0.10f);
+		CalculateProjection();
+	}
+
+	void OrthographicCameraController::CalculateProjection() {
 		m_Camera.SetProjection({ m_ZoomLevel * -m_AspectRatio, m_ZoomLevel * m_AspectRatio, -m_ZoomLevel, m_ZoomLevel });
+	}
+
+	glm::vec4 OrthographicCameraController::WindowToCameraCoordinates(const glm::vec2& position) {
+		return {
+			 m_ZoomLevel * (2 * position.x / (float)m_Height - m_AspectRatio),
+			-m_ZoomLevel * (2 * position.y / (float)m_Height - 1),
+			0.0f,
+			1.0f,
+		};
 	}
 
 	bool OrthographicCameraController::OnWindowResize(WindowResizeEvent& event) {
@@ -71,7 +92,7 @@ namespace Pistachio {
 		m_Height = event.Height();
 		m_AspectRatio = (float)m_Width / (float)m_Height;
 
-		m_Camera.SetProjection({ m_ZoomLevel * -m_AspectRatio, m_ZoomLevel * m_AspectRatio, -m_ZoomLevel, m_ZoomLevel });
+		CalculateProjection();
 
 		return false;
 	}
@@ -143,7 +164,7 @@ namespace Pistachio {
 			// Round to nearest `m_CameraAngleSpeed`
 			m_RotationTarget = wrap_rotation(glm::radians(m_CameraAngleStep * std::round(newAngle / m_CameraAngleStep)));
 		} else {
-			m_ZoomLevelTarget -= event.YOffset() / 4.0f;
+			m_ZoomLevelTarget = std::max(m_ZoomLevelTarget - event.YOffset() / 4.0f, 0.10f);
 		}
 
 		return false;
@@ -161,15 +182,6 @@ namespace Pistachio {
 		}
 
 		return false;
-	}
-
-	glm::vec4 OrthographicCameraController::WindowToCameraCoordinates(const glm::vec2& position) {
-		return {
-			 m_ZoomLevel * (2 * position.x / (float)m_Height - m_AspectRatio),
-			-m_ZoomLevel * (2 * position.y / (float)m_Height - 1),
-			0.0f,
-			1.0f,
-		};
 	}
 
 }
