@@ -9,12 +9,12 @@ namespace Pistachio {
 
 	class OrthographicCamera {
 	public:
-		OrthographicCamera(glm::vec3 position, float rotation, glm::vec4 culling);
-		OrthographicCamera(glm::vec4 culling);
+		OrthographicCamera(glm::vec3 position, float rotation, glm::vec4 bounds);
+		OrthographicCamera(glm::vec4 bounds);
 		OrthographicCamera();
 		~OrthographicCamera();
 
-		void SetProjection(glm::vec4 culling);
+		void SetProjection(glm::vec4 bounds);
 
 		const glm::mat4& ProjectionMatrix() const { return m_ProjectionMatrix;  }
 		const glm::mat4& CameraViewMatrix() const { return m_CameraViewMatrix;  }

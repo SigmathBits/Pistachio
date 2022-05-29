@@ -12,7 +12,7 @@ namespace Pistachio {
 	}
 
 	float wrap_rotation(float rotation) {
-		return fmodulo(rotation + fpi, 2 * fpi) - fpi;
+		return fmodulo(rotation + pi, 2 * pi) - pi;
 	}
 
 }

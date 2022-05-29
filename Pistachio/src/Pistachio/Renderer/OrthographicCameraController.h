@@ -9,9 +9,15 @@
 
 namespace Pistachio {
 
+	enum CameraMoveMode : int {
+		CAMERA_NONE = -1,
+		CAMERA_PAN = 0,
+		CAMERA_ROTATE = 1,
+	};
+
 	class OrthographicCameraController : public EventListener {
 	public:
-		OrthographicCameraController(unsigned int width, unsigned int height, bool rotation = false);
+		OrthographicCameraController(unsigned int width, unsigned int height, bool allowRotation = false);
 
 		void OnUpdate(Timestep timestep);
 
@@ -19,6 +25,8 @@ namespace Pistachio {
 		const OrthographicCamera& Camera() const { return m_Camera; }
 
 		void SetZoom(float zoom);
+
+		glm::vec4 WindowToCameraCoordinates(const glm::vec2& position);
 
 	private:
 		bool OnWindowResize(WindowResizeEvent& event);
@@ -37,15 +45,13 @@ namespace Pistachio {
 
 		OrthographicCamera m_Camera;
 
-		bool m_Rotation;
+		bool m_AllowRotation;
 
-		const float m_CameraAngleSpeed = 15.0f;
+		const float m_CameraAngleStep = 20.0f;
 
-		bool m_CameraModePan = true;
-		bool m_MouseLeftButtonHeld = false;
-		glm::vec2 m_MousePressedPosition = { 0.0f, 0.0f };
-		glm::vec3 m_MousePressedCameraPosition = { 0.0f, 0.0f, 0.0f };
-		float m_MousePressedRotation = 0.0f;
+		CameraMoveMode m_CameraMoveMode = CAMERA_NONE;
+		glm::vec3 m_MousePressedPositionWorld = { 0.0f, 0.0f, 0.0f };
+		glm::vec2 m_MousePressedPositionWorldRotation = { 0.0f, 0.0f };
 
 		const float m_ReponseTime = 1.0f / 15.0f;
 		float m_ZoomLevelTarget = 1.0f;

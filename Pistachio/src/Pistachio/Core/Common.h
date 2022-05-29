@@ -8,7 +8,7 @@
 
 namespace Pistachio {
 
-	constexpr float fpi = glm::pi<float>();
+	constexpr float pi = glm::pi<float>();
 
 	float fmodulo(float value, float mod);
 

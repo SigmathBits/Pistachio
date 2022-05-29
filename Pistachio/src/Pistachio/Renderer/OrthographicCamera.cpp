@@ -10,17 +10,17 @@
 
 namespace Pistachio {
 
-	OrthographicCamera::OrthographicCamera(glm::vec3 position, float rotation, glm::vec4 culling) 
-		: m_ProjectionMatrix(glm::ortho(culling.x, culling.y, culling.z, culling.w, 1.0f, -1.0f)),
+	OrthographicCamera::OrthographicCamera(glm::vec3 position, float rotation, glm::vec4 bounds) 
+		: m_ProjectionMatrix(glm::ortho(bounds.x, bounds.y, bounds.z, bounds.w, 1.0f, -1.0f)),
 		m_Position(position), m_Rotation(wrap_rotation(rotation)) {
 		PST_PROFILE_FUNCTION();
 
 		RecalculateProjectionViewMatrix();
 	}
 	
-	OrthographicCamera::OrthographicCamera(glm::vec4 culling) 
+	OrthographicCamera::OrthographicCamera(glm::vec4 bounds) 
 		: m_CameraViewMatrix(1.0f),
-		m_ProjectionMatrix(glm::ortho(culling.x, culling.y, culling.z, culling.w, 1.0f, -1.0f)), 
+		m_ProjectionMatrix(glm::ortho(bounds.x, bounds.y, bounds.z, bounds.w, 1.0f, -1.0f)), 
 		m_Position(0.0f, 0.0f, 0.0f), m_Rotation(0.0f) {
 		PST_PROFILE_FUNCTION();
 
@@ -37,10 +37,10 @@ namespace Pistachio {
 	OrthographicCamera::~OrthographicCamera() {
 	}
 
-	void OrthographicCamera::SetProjection(glm::vec4 culling) {
+	void OrthographicCamera::SetProjection(glm::vec4 bounds) {
 		PST_PROFILE_FUNCTION();
 
-		m_ProjectionMatrix = glm::ortho(culling.x, culling.y, culling.z, culling.w, 1.0f, -1.0f);
+		m_ProjectionMatrix = glm::ortho(bounds.x, bounds.y, bounds.z, bounds.w, 1.0f, -1.0f);
 		m_ProjectionViewMatrix = m_ProjectionMatrix * glm::inverse(m_CameraViewMatrix);
 	}
 
