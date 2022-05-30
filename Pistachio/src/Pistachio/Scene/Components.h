@@ -5,6 +5,8 @@
 
 #include "Pistachio/Scene/SceneCamera.h"
 
+#include "Pistachio/Scene/ScriptableEntity.h"
+
 
 namespace Pistachio {
 
@@ -51,6 +53,22 @@ namespace Pistachio {
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
+	};
+
+	struct NativeScriptComponent {
+		ScriptableEntity* ScriptInstance = nullptr;
+
+		ScriptableEntity* (* CreateScriptInstance)();
+		void (* DestroyScriptInstance)(NativeScriptComponent*);
+
+		template<typename T>
+		void Bind() {
+			CreateScriptInstance = []() { return static_cast<ScriptableEntity*>(new T()); };
+			DestroyScriptInstance = [](NativeScriptComponent* scriptComponent) { 
+				delete scriptComponent->ScriptInstance; 
+				scriptComponent->ScriptInstance = nullptr; 
+			};
+		}
 	};
 
 }

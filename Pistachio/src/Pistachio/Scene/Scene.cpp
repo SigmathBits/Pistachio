@@ -27,6 +27,22 @@ namespace Pistachio {
 	}
 
 	void Scene::OnUpdate(Timestep timestep) {
+		// Update Scripts
+		{
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& script) {
+				// TODO: Move to Scene::OnScenePlay
+				if (!script.ScriptInstance) {
+					script.ScriptInstance = script.CreateScriptInstance();
+					script.ScriptInstance->m_Entity = Entity(entity, this);
+					script.ScriptInstance->OnCreate();
+				}
+
+				script.ScriptInstance->OnUpdate(timestep);
+
+				// TODO: Call OnDestroy in a Scene::OnSceneStop
+			});
+		}
+
 		// Render 2D 
 		glm::mat4* cameraTransform = nullptr;
 		Camera* mainCamera = nullptr;

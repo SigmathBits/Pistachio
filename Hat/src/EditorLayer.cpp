@@ -33,8 +33,20 @@ namespace Pistachio {
 
 		m_ActiveScene = CreateRef<Scene>();
 
+		class RandomColour : public ScriptableEntity {
+		public:
+			void OnCreate() {
+				auto& sprite = Component<SpriteRendererComponent>();
+
+				srand(static_cast<unsigned int>(time(0)));
+				auto random = []() { return static_cast<float>(rand()) / static_cast<float>(RAND_MAX); };
+				sprite.Colour = { random(), random(), random(), 1.0f};
+			}
+		};
+
 		m_SquareEntity = m_ActiveScene->CreateEntity("Square");
 		m_SquareEntity.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.7f, 1.0f, 0.6f, 1.0f });
+		m_SquareEntity.AddComponent<NativeScriptComponent>().Bind<RandomColour>();
 
 		m_CameraEntity = m_ActiveScene->CreateEntity("Camera");
 		m_CameraEntity.AddComponent<CameraComponent>();
@@ -42,6 +54,36 @@ namespace Pistachio {
 		m_SecondCameraEntity = m_ActiveScene->CreateEntity("Camera");
 		auto& cc = m_SecondCameraEntity.AddComponent<CameraComponent>();
 		cc.Primary = false;
+
+		class CameraController : public ScriptableEntity {
+		public:
+			void OnCreate() {
+				PST_TRACE("CameraController::OnCreate");
+			}
+
+			void OnDestroy() {}
+
+			void OnUpdate(Timestep timestep) {
+				auto& transform = Component<TransformComponent>();
+				
+				constexpr float speed = 5.0f;
+				if (Input::IsKeyPressed(PST_KEY_A)) {
+					transform.Transform[3][0] -= speed * timestep;
+				}
+				if (Input::IsKeyPressed(PST_KEY_D)) {
+					transform.Transform[3][0] += speed * timestep;
+				}
+				if (Input::IsKeyPressed(PST_KEY_S)) {
+					transform.Transform[3][1] -= speed * timestep;
+				}
+				if (Input::IsKeyPressed(PST_KEY_W)) {
+					transform.Transform[3][1] += speed * timestep;
+				}
+			}
+		};
+
+		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+		m_SecondCameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 	}
 
 	void EditorLayer::OnDetach() {
@@ -107,8 +149,9 @@ namespace Pistachio {
 		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
 			window_flags |= ImGuiWindowFlags_NoBackground;
 
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("Hat DockSpace", nullptr, window_flags);
-		ImGui::PopStyleVar(2);
+		ImGui::PopStyleVar(3);
 
 		// Submit the DockSpace
 		ImGuiIO& io = ImGui::GetIO();
