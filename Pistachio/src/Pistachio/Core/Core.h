@@ -19,7 +19,7 @@
 	/* TARGET_OS_MAC exists on all platforms,
 	 * so we must check all of them (in this order)
 	 * to ensure that we're running on MacOS */
-	#if TARGET_IPHONE_SIMULATOR === 1
+	#if TARGET_IPHONE_SIMULATOR == 1
 		#error "IOS simulator is not supported!"
 	#elif TARGET_OS_IPHONE == 1
 		#define PST_PLATFORM_IOS
@@ -44,12 +44,24 @@
 
 
 #ifdef PST_DEBUG
+	#if defined(PST_PLATFORM_WINDOWS)
+		#define PST_DEBUGBREAK() __debugbreak()
+	#elif defined(PST_PLATFORM_LINUX)
+		#include <signals.h>
+		#define PST_DEBUGBREAK() raise(SIGTRAP)
+	#else
+		#error "Platform doesn't support debugbreak"
+	#endif
 	#define PST_ENABLE_ASSERTS
+#else
+	#define PST_DEBUGBREAK()
 #endif
 
+
+// TODO: Allow Assert macro to take no varadic arguments
 #ifdef PST_ENABLE_ASSERTS
-	#define PST_CORE_ASSERT(x, ...) { if(!(x)) { PST_CORE_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
-	#define PST_ASSERT(x, ...)      { if(!(x)) { PST_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
+	#define PST_CORE_ASSERT(x, ...) { if(!(x)) { PST_CORE_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); PST_DEBUGBREAK(); } }
+	#define PST_ASSERT(x, ...)      { if(!(x)) { PST_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); PST_DEBUGBREAK(); } }
 #else
 	#define PST_CORE_ASSERT(x, ...) 
 	#define PST_ASSERT(x, ...)      

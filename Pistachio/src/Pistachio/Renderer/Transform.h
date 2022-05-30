@@ -8,7 +8,7 @@ namespace Pistachio {
 	struct Transform {
 		glm::vec3 Position;
 		glm::vec2 Size;
-
+		
 		Transform(const glm::vec3& position, const glm::vec2& size = { 1.0f, 1.0f })
 			: Position(position), Size(size) {
 		}

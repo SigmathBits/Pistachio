@@ -19,20 +19,20 @@ namespace Pistachio {
 	public:
 		OrthographicCameraController(unsigned int width, unsigned int height, bool allowRotation = false);
 
-		void OnUpdate(Timestep timestep);
-
 		OrthographicCamera& Camera() { return m_Camera; }
 		const OrthographicCamera& Camera() const { return m_Camera; }
+
+		void Resize(unsigned int width, unsigned int height);
 
 		void SetZoomLevel(float zoomlevel);
 
 		glm::vec4 WindowToCameraCoordinates(const glm::vec2& position);
 
+		void OnUpdate(Timestep timestep);
+
 	private:
 		void UpdateZoomLevel(float zoomlevel);
 		void CalculateProjection();
-
-		bool OnWindowResize(WindowResizeEvent& event);
 
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& event);
 		bool OnMouseButtonReleased(MouseButtonReleasedEvent& event);

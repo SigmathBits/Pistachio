@@ -13,6 +13,8 @@ namespace Pistachio {
 		OpenGLTexture2D(const std::string& filepath);
 		virtual ~OpenGLTexture2D();
 
+		virtual unsigned int RendererID() const override { return m_RendererID; };
+
 		virtual inline unsigned int Width() const override { return m_Width; }
 		virtual inline unsigned int Height() const override { return m_Height; }
 

@@ -14,14 +14,14 @@ namespace Pistachio {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application() 
+	Application::Application(const std::string& name /*= "Pistachio App"*/)
 		: EventListener(EVENT_CATEGORY_APPLICATION) {
 		PST_PROFILE_FUNCTION();
 
 		PST_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		m_Window = Scoped<Window>(Window::Create());
+		m_Window = Scoped<Window>(Window::Create(WindowProperties{ name }));
 		m_Window->SetEventCallback(PST_BIND_EVENT_FUNCTION(Application::SendEvent));
 
 		Renderer::Init();
@@ -89,12 +89,15 @@ namespace Pistachio {
 		overlay->OnAttach();
 	}
 
+	void Application::Close() {
+		m_Running = false;
+	}
+
 	bool Application::OnEventAfter(Event& event) {
 		PST_PROFILE_FUNCTION();
 
-		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); ) {
-			EventType eventType = event.Type();
-			(*--it)->SendEvent(event);
+		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
+			(*it)->SendEvent(event);
 			if (event.IsHandled()) {
 				break;
 			}

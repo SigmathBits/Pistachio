@@ -5,6 +5,8 @@
 #include "Pistachio/Core/Application.h"
 #include "Pistachio/Core/Log.h"
 
+#include "Pistachio/Core/Common.h"
+
 #include "Pistachio/Core/Input.h"
 #include "Pistachio/Core/KeyCodes.h"
 #include "Pistachio/Core/MouseButtonCodes.h"
@@ -23,6 +25,7 @@
 #include "Pistachio/Renderer/OrthographicCameraController.h"
 
 #include "Pistachio/Renderer/Shader.h"
+#include "Pistachio/Renderer/Framebuffer.h"
 #include "Pistachio/Renderer/Texture.h"
 #include "Pistachio/Renderer/SubTexture2D.h"
 #include "Pistachio/Renderer/VertexArray.h"

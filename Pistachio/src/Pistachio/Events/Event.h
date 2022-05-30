@@ -47,6 +47,8 @@ namespace Pistachio {
 		friend class EventListener;
 
 	public:
+		virtual ~Event() = default;
+
 		virtual EventType Type() const = 0;
 		virtual EventCategory CategoryFlags() const = 0;
 		virtual const char* Name() const = 0;

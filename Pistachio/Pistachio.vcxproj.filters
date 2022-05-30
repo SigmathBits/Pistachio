@@ -10,6 +10,9 @@
     <Filter Include="src\Pistachio\Core">
       <UniqueIdentifier>{D8EF930F-C4D3-5465-2D34-4FB819373FE7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Pistachio\Debug">
+      <UniqueIdentifier>{F6451E02-62A7-FB0F-EB14-42C2577532CF}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Pistachio\Events">
       <UniqueIdentifier>{64577149-50E6-FA12-F904-0F0EE5720BB9}</UniqueIdentifier>
     </Filter>
@@ -63,6 +66,9 @@
     <ClInclude Include="src\Pistachio\Core\Application.h">
       <Filter>src\Pistachio\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Pistachio\Core\Common.h">
+      <Filter>src\Pistachio\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\Pistachio\Core\Core.h">
       <Filter>src\Pistachio\Core</Filter>
     </ClInclude>
@@ -87,11 +93,17 @@
     <ClInclude Include="src\Pistachio\Core\MouseButtonCodes.h">
       <Filter>src\Pistachio\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Pistachio\Core\Platform.h">
+      <Filter>src\Pistachio\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\Pistachio\Core\Timestep.h">
       <Filter>src\Pistachio\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Pistachio\Core\Window.h">
       <Filter>src\Pistachio\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pistachio\Debug\Instrumentor.h">
+      <Filter>src\Pistachio\Debug</Filter>
     </ClInclude>
     <ClInclude Include="src\Pistachio\Events\ApplicationEvent.h">
       <Filter>src\Pistachio\Events</Filter>
@@ -114,6 +126,9 @@
     <ClInclude Include="src\Pistachio\Renderer\Buffer.h">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Pistachio\Renderer\Framebuffer.h">
+      <Filter>src\Pistachio\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Pistachio\Renderer\GraphicsContext.h">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClInclude>
@@ -129,19 +144,34 @@
     <ClInclude Include="src\Pistachio\Renderer\Renderer.h">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Pistachio\Renderer\Renderer2D.h">
+      <Filter>src\Pistachio\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Pistachio\Renderer\RendererAPI.h">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Pistachio\Renderer\Shader.h">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Pistachio\Renderer\Sprite.h">
+      <Filter>src\Pistachio\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pistachio\Renderer\SubTexture2D.h">
+      <Filter>src\Pistachio\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Pistachio\Renderer\Texture.h">
+      <Filter>src\Pistachio\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pistachio\Renderer\Transform.h">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Pistachio\Renderer\VertexArray.h">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLFramebuffer.h">
       <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLGraphicsContext.h">
@@ -161,12 +191,6 @@
     </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLVertexArray.h">
       <Filter>src\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Pistachio\Core\Platform.h">
-      <Filter>src\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Platform\Windows\WindowsInput.h">
-      <Filter>src\Platform\Windows</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
       <Filter>src\Platform\Windows</Filter>
@@ -1431,21 +1455,21 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Pistachio\Renderer\Renderer2D.h" />
-    <ClInclude Include="src\Pistachio\Debug\Instrumentor.h" />
-    <ClInclude Include="src\Pistachio\Renderer\Transform.h" />
-    <ClInclude Include="src\Pistachio\Renderer\Sprite.h" />
-    <ClInclude Include="src\Pistachio\Core\Common.h" />
-    <ClInclude Include="src\Pistachio\Renderer\SubTexture2D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pistachio\Core\Application.cpp">
+      <Filter>src\Pistachio\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pistachio\Core\Common.cpp">
       <Filter>src\Pistachio\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Pistachio\Core\LayerStack.cpp">
       <Filter>src\Pistachio\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Pistachio\Core\Log.cpp">
+      <Filter>src\Pistachio\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pistachio\Core\Platform.cpp">
       <Filter>src\Pistachio\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Pistachio\Events\EventListener.cpp">
@@ -1460,6 +1484,9 @@
     <ClCompile Include="src\Pistachio\Renderer\Buffer.cpp">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Pistachio\Renderer\Framebuffer.cpp">
+      <Filter>src\Pistachio\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Pistachio\Renderer\OrthographicCamera.cpp">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClCompile>
@@ -1472,10 +1499,16 @@
     <ClCompile Include="src\Pistachio\Renderer\Renderer.cpp">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Pistachio\Renderer\Renderer2D.cpp">
+      <Filter>src\Pistachio\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Pistachio\Renderer\RendererAPI.cpp">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Pistachio\Renderer\Shader.cpp">
+      <Filter>src\Pistachio\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pistachio\Renderer\SubTexture2D.cpp">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Pistachio\Renderer\Texture.cpp">
@@ -1485,6 +1518,9 @@
       <Filter>src\Pistachio\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp">
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLGraphicsContext.cpp">
@@ -1505,9 +1541,6 @@
     <ClCompile Include="src\Platform\OpenGL\OpenGLVertexArray.cpp">
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="src\Pistachio\Core\Platform.cpp">
-      <Filter>src\Platform</Filter>
-    </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
       <Filter>src\Platform\Windows</Filter>
     </ClCompile>
@@ -1520,8 +1553,5 @@
     <ClCompile Include="vendor\stb_image\std_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Pistachio\Renderer\Renderer2D.cpp" />
-    <ClCompile Include="src\Pistachio\Core\Common.cpp" />
-    <ClCompile Include="src\Pistachio\Renderer\SubTexture2D.cpp" />
   </ItemGroup>
 </Project>

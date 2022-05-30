@@ -111,8 +111,8 @@ namespace Pistachio {
 	bool ImGuiLayer::OnEvent(Event& event) {
 		// Capture input if ImGui is using it
 		ImGuiIO& io = ImGui::GetIO();
-		return event.IsInCategory(EVENT_CATEGORY_MOUSE) && io.WantCaptureMouseUnlessPopupClose
-			|| event.IsInCategory(EVENT_CATEGORY_KEYBOARD) && io.WantCaptureKeyboard;
+		return m_AllowMouseEventBlocking && event.IsInCategory(EVENT_CATEGORY_MOUSE) && io.WantCaptureMouseUnlessPopupClose
+			|| m_AllowKeyboardEventBlocking && event.IsInCategory(EVENT_CATEGORY_KEYBOARD) && io.WantCaptureKeyboard;
 	}
 
 	void ImGuiLayer::ImGuiStylesPsistachio() {

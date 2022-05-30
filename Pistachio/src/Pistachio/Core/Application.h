@@ -14,7 +14,7 @@ namespace Pistachio {
 	
 	class Application : public EventListener {
 	public:
-		Application();
+		Application(const std::string& name = "Pistachio App");
 		virtual ~Application();
 
 		void Run();
@@ -22,7 +22,11 @@ namespace Pistachio {
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
 
+		void Close();
+
 		inline Window& CurrentWindow() const { return *m_Window; }
+
+		inline ImGuiLayer* BaseImGuiLayer() { return m_ImGuiLayer; }
 
 		static inline Application& Instance() { return *s_Instance; }
 

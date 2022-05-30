@@ -1,6 +1,6 @@
 workspace "Pistachio"
 	architecture "x64"
-	startproject "Sandbox"
+	startproject "Hat"
 	
 	configurations {
 		"Debug",
@@ -96,6 +96,51 @@ project "Pistachio"
 		optimize "on"
 
 
+project "Hat"
+	location "Hat"
+	kind "ConsoleApp"
+	language "C++"
+	cppdialect "C++17"
+	staticruntime "off"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("intermediates/" .. outputdir .. "/%{prj.name}")
+
+	files {
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/**.cpp",
+	}
+
+	includedirs { 
+		"Pistachio/vendor/spdlog/include",
+		"Pistachio/src",
+		"Pistachio/vendor",
+		"%{IncludeDir.glm}",
+	}
+
+	links {
+		"Pistachio"
+	}
+
+	filter "system:windows"
+		systemversion "latest"
+
+	filter "configurations:Debug"
+		defines "PST_DEBUG"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		defines "PST_RELEASE"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		defines "PST_DIST"
+		runtime "Release"
+		optimize "on"
+  
+
 project "Sandbox"
 	location "Sandbox"
 	kind "ConsoleApp"
@@ -124,10 +169,6 @@ project "Sandbox"
 
 	filter "system:windows"
 		systemversion "latest"
-
-		defines {
-			"PST_PLATFORM_WINDOWS",
-		}
 
 	filter "configurations:Debug"
 		defines "PST_DEBUG"

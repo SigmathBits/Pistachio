@@ -14,7 +14,7 @@
 namespace Pistachio {
 
 	OrthographicCameraController::OrthographicCameraController(unsigned int width, unsigned int height, bool allowRotation /*= false*/)
-		: EventListener({ EventType::WindowResize, EventType::KeyPressed }, EVENT_CATEGORY_MOUSE),
+		: EventListener({ EventType::KeyPressed }, EVENT_CATEGORY_MOUSE),
 		m_Width(width), m_Height(height), m_AspectRatio((float)width / (float)height),
 		m_Camera({ m_ZoomLevel * -m_AspectRatio, m_ZoomLevel * m_AspectRatio, -m_ZoomLevel, m_ZoomLevel }), 
 		m_AllowRotation(allowRotation) {
@@ -57,6 +57,14 @@ namespace Pistachio {
 		}
 	}
 
+	void OrthographicCameraController::Resize(unsigned int width, unsigned int height) {
+		m_Width = width;
+		m_Height = height;
+		m_AspectRatio = (float)width / (float)height;
+
+		CalculateProjection();
+	}
+
 	void OrthographicCameraController::SetZoomLevel(float zoomlevel) {
 		PST_PROFILE_FUNCTION();
 
@@ -83,18 +91,6 @@ namespace Pistachio {
 			0.0f,
 			1.0f,
 		};
-	}
-
-	bool OrthographicCameraController::OnWindowResize(WindowResizeEvent& event) {
-		PST_PROFILE_FUNCTION();
-
-		m_Width = event.Width();
-		m_Height = event.Height();
-		m_AspectRatio = (float)m_Width / (float)m_Height;
-
-		CalculateProjection();
-
-		return false;
 	}
 
 	bool OrthographicCameraController::OnMouseButtonPressed(MouseButtonPressedEvent& event) {
@@ -124,6 +120,12 @@ namespace Pistachio {
 
 	bool OrthographicCameraController::OnMouseMoved(MouseMovedEvent& event) {
 		PST_PROFILE_FUNCTION();
+
+		// Fix mouse down still being sent, but not mouse released, when resizing the viewport
+		if (!Input::IsMouseButtonPressed(PST_MOUSE_BUTTON_LEFT)) {
+			m_CameraMoveMode = CAMERA_NONE;
+			return false;
+		}
 
 		if (m_CameraMoveMode == CAMERA_NONE) return false;
 

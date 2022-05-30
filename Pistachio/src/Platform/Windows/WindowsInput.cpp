@@ -1,6 +1,6 @@
 #include "pstpch.h"
 
-#include "WindowsInput.h"
+#include "Pistachio/Core/Input.h"
 
 #include <GLFW/glfw3.h>
 
@@ -9,23 +9,21 @@
 
 namespace Pistachio {
 
-	Input* Input::s_Instance = new WindowsInput();
-
-	bool WindowsInput::IsKeyPressedImpl(PistachioKey keyCode){
+	bool Input::IsKeyPressed(PistachioKey keyCode){
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Instance().CurrentWindow().NativeWindow());
 
 		int state = glfwGetKey(window, keyCode);
 		return state == GLFW_PRESS || state == GLFW_REPEAT;
 	}
 
-	bool WindowsInput::IsMouseButtonPressedImpl(PistachioMouseButton button) {
+	bool Input::IsMouseButtonPressed(PistachioMouseButton button) {
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Instance().CurrentWindow().NativeWindow());
 
 		int state = glfwGetMouseButton(window, button);
 		return state == GLFW_PRESS;
 	}
 
-	std::pair<float, float> WindowsInput::MousePositionImpl()
+	std::pair<float, float> Input::MousePosition()
 	{
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Instance().CurrentWindow().NativeWindow());
 
@@ -35,13 +33,13 @@ namespace Pistachio {
 		return { (float)x, (float)y };
 	}
 
-	float WindowsInput::MouseXImpl() {
-		auto [x, y] = MousePositionImpl();
+	float Input::MouseX() {
+		auto [x, y] = MousePosition();
 		return x;
 	}
 
-	float WindowsInput::MouseYImpl() {
-		auto [x, y] = MousePositionImpl();
+	float Input::MouseY() {
+		auto [x, y] = MousePosition();
 		return y;
 	}
 

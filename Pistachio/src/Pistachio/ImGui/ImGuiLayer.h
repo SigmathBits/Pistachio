@@ -23,6 +23,9 @@ namespace Pistachio {
 		void Begin();
 		void End();
 
+		void AllowMouseEventBlocking(bool block) { m_AllowMouseEventBlocking = block; }
+		void AllowKeyboardEventBlocking(bool block) { m_AllowKeyboardEventBlocking = block; }
+
 	private:
 		bool OnEvent(Event& event);
 
@@ -30,6 +33,9 @@ namespace Pistachio {
 		static void ImGuiStyleColoursPistachio();
 
 	private:
+		bool m_AllowMouseEventBlocking = true;
+		bool m_AllowKeyboardEventBlocking = true;
+
 		float m_Time = 0.0f;
 	};
 

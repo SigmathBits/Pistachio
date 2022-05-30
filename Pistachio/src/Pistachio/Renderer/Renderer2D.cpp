@@ -142,6 +142,8 @@ namespace Pistachio {
 	void Renderer2D::EndScene() {
 		PST_PROFILE_FUNCTION();
 
+		if (s_Data.QuadIndexCount == 0) return;
+
 		uint32_t dataSize = (uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase;
 		s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 
