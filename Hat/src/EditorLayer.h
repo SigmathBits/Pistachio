@@ -27,7 +27,14 @@ namespace Pistachio {
 		glm::vec2 m_ViewportSize{ 1280, 720 };
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
-		bool m_IsViewportDragging = false;
+		bool m_ViewportIsDragging = false;
+
+		Ref<Scene> m_ActiveScene;
+		Entity m_SquareEntity;
+		Entity m_CameraEntity;
+		Entity m_SecondCameraEntity;
+
+		bool m_UsePrimaryCamera = true;
 
 		Ref<Texture2D> m_PistachioTexture;
 		Ref<Texture2D> m_RainbowDashTexture;

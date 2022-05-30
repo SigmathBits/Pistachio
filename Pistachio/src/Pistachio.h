@@ -5,8 +5,6 @@
 #include "Pistachio/Core/Application.h"
 #include "Pistachio/Core/Log.h"
 
-#include "Pistachio/Core/Common.h"
-
 #include "Pistachio/Core/Input.h"
 #include "Pistachio/Core/KeyCodes.h"
 #include "Pistachio/Core/MouseButtonCodes.h"
@@ -16,6 +14,9 @@
 #include "Pistachio/Core/Layer.h"
 #include "Pistachio/ImGui/ImGuiLayer.h"
 
+#include "Pistachio/Scene/Scene.h"
+#include "Pistachio/Scene/Entity.h"
+#include "Pistachio/Scene/Components.h"
 
 /// ------ Renderer ------
 #include "Pistachio/Renderer/Renderer.h"

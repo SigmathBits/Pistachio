@@ -18,6 +18,7 @@ IncludeDir["Glad"] = "Pistachio/vendor/Glad/include"
 IncludeDir["ImGui"] = "Pistachio/vendor/imgui"
 IncludeDir["glm"] = "Pistachio/vendor/glm"
 IncludeDir["stb_image"] = "Pistachio/vendor/stb_image"
+IncludeDir["entt"] = "Pistachio/vendor/entt/include"
 
 
 group "Dependancies"
@@ -58,6 +59,7 @@ project "Pistachio"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.entt}",
 	}
 
 	links {
@@ -116,6 +118,7 @@ project "Hat"
 		"Pistachio/src",
 		"Pistachio/vendor",
 		"%{IncludeDir.glm}",
+		"%{IncludeDir.entt}",
 	}
 
 	links {

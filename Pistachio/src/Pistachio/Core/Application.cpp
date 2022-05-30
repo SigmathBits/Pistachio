@@ -22,7 +22,7 @@ namespace Pistachio {
 		s_Instance = this;
 
 		m_Window = Scoped<Window>(Window::Create(WindowProperties{ name }));
-		m_Window->SetEventCallback(PST_BIND_EVENT_FUNCTION(Application::SendEvent));
+		m_Window->SetEventCallback(PST_BIND_EVENT_FUNCTION(SendEvent));
 
 		Renderer::Init();
 

@@ -105,7 +105,7 @@ namespace Pistachio {
 
 		int samplers[Renderer2DData::MaxTextureSlots];
 		for (size_t i = 0; i < Renderer2DData::MaxTextureSlots; i++) {
-			samplers[i] = i;
+			samplers[i] = (int)i;
 		}
 
 		s_Data.Shader->Bind();
@@ -127,6 +127,20 @@ namespace Pistachio {
 		delete[] s_Data.QuadVertexBufferBase;
 	}
 
+	void Renderer2D::BeginScene(const Camera& camera, glm::mat4& transform) {
+		PST_PROFILE_FUNCTION();
+
+		glm::mat4 projectionViewMatrix = camera.Projection() * glm::inverse(transform);
+
+		s_Data.Shader->Bind();
+		s_Data.Shader->SetMat4("u_ProjectionViewMatrix", projectionViewMatrix);
+
+		s_Data.QuadIndexCount = 0;
+		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+
+		s_Data.TextureSlotIndex = 1;
+	}
+
 	void Renderer2D::BeginScene(const OrthographicCamera& camera) {
 		PST_PROFILE_FUNCTION();
 
@@ -144,7 +158,7 @@ namespace Pistachio {
 
 		if (s_Data.QuadIndexCount == 0) return;
 
-		uint32_t dataSize = (uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase;
+		size_t dataSize = (size_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
 		s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 
 		Flush();
@@ -154,7 +168,7 @@ namespace Pistachio {
 		PST_PROFILE_FUNCTION();
 
 		for (size_t i = 0; i < s_Data.TextureSlotIndex; i++) {
-			s_Data.TextureSlots[i]->Bind(i);
+			s_Data.TextureSlots[i]->Bind((unsigned int)i);
 		}
 
 		RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
@@ -171,35 +185,12 @@ namespace Pistachio {
 		s_Data.TextureSlotIndex = 1;
 	}
 
-	void Renderer2D::DrawQuad(const Transform& transform, const glm::vec4& colour) {
+	void Renderer2D::DrawQuad(const glm::mat4& transformMatrix, const glm::vec4& colour) {
 		PST_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices) {
 			FlushAndReset();
 		}
-
-		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
-		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
-
-		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
-			*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], colour, Renderer2DData::QuadTextureCoords[i], 0, 1.0f};
-		}
-
-		s_Data.QuadIndexCount += 6;
-
-		s_Data.Stats.QuadCount++;
-	}
-
-	void Renderer2D::DrawQuad(const RotatedTransform& transform, const glm::vec4& colour) {
-		PST_PROFILE_FUNCTION();
-
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices) {
-			FlushAndReset();
-		}
-
-		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
-		transformMatrix = glm::rotate(transformMatrix, transform.Rotation, { 0.0f, 0.0f, 1.0f });
-		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
 
 		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
 			*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], colour, Renderer2DData::QuadTextureCoords[i], 0, 1.0f };
@@ -210,7 +201,26 @@ namespace Pistachio {
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const Transform& transform, const Sprite& sprite) {
+	void Renderer2D::DrawQuad(const Transform& transform, const glm::vec4& colour) {
+		PST_PROFILE_FUNCTION();
+
+		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
+		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
+
+		DrawQuad(transformMatrix, colour);
+	}
+
+	void Renderer2D::DrawQuad(const RotatedTransform& transform, const glm::vec4& colour) {
+		PST_PROFILE_FUNCTION();
+
+		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
+		transformMatrix = glm::rotate(transformMatrix, transform.Rotation, { 0.0f, 0.0f, 1.0f });
+		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
+
+		DrawQuad(transformMatrix, colour);
+	}
+
+	void Renderer2D::DrawQuad(const glm::mat4& transformMatrix, const Sprite& sprite) {
 		PST_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices) {
@@ -218,7 +228,7 @@ namespace Pistachio {
 		}
 
 		unsigned int textureIndex = 0;
-		
+
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++) {
 			if (*sprite.SubTexture->Texture() == *s_Data.TextureSlots[i]) {
 				textureIndex = (unsigned int)i;
@@ -234,9 +244,6 @@ namespace Pistachio {
 			textureIndex = s_Data.TextureSlotIndex;
 			s_Data.TextureSlots[s_Data.TextureSlotIndex++] = sprite.SubTexture->Texture();
 		}
-
-		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
-		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
 
 		glm::vec4 colour = sprite.TintColour;
 		const glm::vec2* textureCoords = sprite.SubTexture->TextureCoords();
@@ -251,48 +258,23 @@ namespace Pistachio {
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const RotatedTransform& transform, const Sprite& sprite) {
+	void Renderer2D::DrawQuad(const Transform& transform, const Sprite& sprite) {
 		PST_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices) {
-			FlushAndReset();
-		}
+		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
+		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
 
-		unsigned int textureIndex = 0;
+		DrawQuad(transformMatrix, sprite);
+	}
 
-		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++) {
-			if (*sprite.SubTexture->Texture() == *s_Data.TextureSlots[i]) {
-				textureIndex = (unsigned int)i;
-				break;
-			}
-		}
-
-		if (textureIndex == 0) {
-			if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots) {
-				FlushAndReset();
-			}
-
-			textureIndex = s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex++] = sprite.SubTexture->Texture();
-		}
-
-		glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), transform.Rotation, { 0.0f, 0.0f, 1.0f });
+	void Renderer2D::DrawQuad(const RotatedTransform& transform, const Sprite& sprite) {
+		PST_PROFILE_FUNCTION();
 
 		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
 		transformMatrix = glm::rotate(transformMatrix, transform.Rotation, { 0.0f, 0.0f, 1.0f });
 		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
 
-		glm::vec4 colour = sprite.TintColour;
-		const glm::vec2* textureCoords = sprite.SubTexture->TextureCoords();
-		float tilingScale = sprite.TilingScale;
-
-		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
-			*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], colour, textureCoords[i], (float)textureIndex, tilingScale };
-		}
-
-		s_Data.QuadIndexCount += 6;
-
-		s_Data.Stats.QuadCount++;
+		DrawQuad(transformMatrix, sprite);
 	}
 
 	void Renderer2D::ResetStats() {

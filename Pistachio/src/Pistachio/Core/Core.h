@@ -5,7 +5,7 @@
 
 #define BIT(x) (1 << x)
 
-#define PST_BIND_EVENT_FUNCTION(function) std::bind(&function, this, std::placeholders::_1)
+#define PST_BIND_EVENT_FUNCTION(function) [this](auto&&... args) -> decltype(auto) { return this->function(std::forward<decltype(args)>(args)...); }
 
 
 #ifdef _WIN32
