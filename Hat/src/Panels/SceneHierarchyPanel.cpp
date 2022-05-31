@@ -13,6 +13,8 @@
 
 namespace Pistachio {
 
+	static void DrawAddComponentPopup(Entity entity);
+
 	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 
 	template<typename T>
@@ -53,7 +55,17 @@ namespace Pistachio {
 		ImGui::Begin("Properties");
 
 		if (m_SelectedEntity) {
+			// Right click on blank panel area
+			if (ImGui::BeginPopupContextWindow("Properties Context Menu", ImGuiMouseButton_Right, false)) {
+				ImGui::CloseCurrentPopup();
+				ImGui::EndPopup();
+
+				ImGui::OpenPopup("Add Component Popup");
+			}
+
 			DrawComponents(m_SelectedEntity);
+
+			DrawAddComponentPopup(m_SelectedEntity);
 		} else {
 			ImGuiIO& io = ImGui::GetIO();
 			auto italicFont = io.Fonts->Fonts[1];  // 1 is italics
@@ -119,43 +131,8 @@ namespace Pistachio {
 
 		ImGui::SameLine();
 		ImGui::PushItemWidth(-1);
-
 		if (ImGui::Button("Add Component")) {
 			ImGui::OpenPopup("Add Component Popup");
-		}
-
-		if (ImGui::BeginPopup("Add Component Popup")) {
-			bool isEmpty = true;
-
-			if (!entity.HasComponent<SpriteRendererComponent>()) {
-				isEmpty = false;
-				if (ImGui::MenuItem("Sprite Renderer")) {
-					// Default White Texture
-					// FIXME: This is a workaround, shouldn't be making textures here
-					static auto whiteTexture = Texture2D::Create(1, 1);
-					unsigned int whiteTextureData = 0xFFFFFFFF;
-					whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
-
-					m_SelectedEntity.AddComponent<SpriteRendererComponent>(whiteTexture);
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			if (!entity.HasComponent<CameraComponent>()) {
-				isEmpty = false;
-				if (ImGui::MenuItem("Camera")) {
-					m_SelectedEntity.AddComponent<CameraComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);  // 1 is italics
-			if (isEmpty) {
-				ImGui::TextDisabled("No Available Components");
-			}
-			ImGui::PopFont();
-
-			ImGui::EndPopup();
 		}
 		ImGui::PopItemWidth();
 
@@ -246,6 +223,42 @@ namespace Pistachio {
 		DrawComponentProperties<SpriteRendererComponent>(entity, "Sprite Renderer", [](auto& spriteComponent) {
 			ImGui::ColorEdit4("Colour", glm::value_ptr(spriteComponent.Sprite.TintColour));
 		});
+	}
+
+	static void DrawAddComponentPopup(Entity entity) {
+		if (ImGui::BeginPopup("Add Component Popup")) {
+			bool isEmpty = true;
+
+			if (!entity.HasComponent<SpriteRendererComponent>()) {
+				isEmpty = false;
+				if (ImGui::MenuItem("Sprite Renderer")) {
+					// Default White Texture
+					// FIXME: This is a workaround, shouldn't be making textures here
+					static auto whiteTexture = Texture2D::Create(1, 1);
+					unsigned int whiteTextureData = 0xFFFFFFFF;
+					whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+
+					entity.AddComponent<SpriteRendererComponent>(whiteTexture);
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			if (!entity.HasComponent<CameraComponent>()) {
+				isEmpty = false;
+				if (ImGui::MenuItem("Camera")) {
+					entity.AddComponent<CameraComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);  // 1 is italics
+			if (isEmpty) {
+				ImGui::TextDisabled("No Available Components");
+			}
+			ImGui::PopFont();
+
+			ImGui::EndPopup();
+		}
 	}
 
 	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue /*= 0.0f*/, float columnWidth /*= 100.0f*/) {

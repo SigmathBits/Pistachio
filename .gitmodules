@@ -14,3 +14,6 @@
 	url = https://github.com/g-truc/glm.git
 [submodule "Pistachio/vendor/glm/"]
 	branch = 0.9.9.8
+[submodule "Pistachio/vendor/yaml-cpp"]
+	path = Pistachio/vendor/yaml-cpp
+	url = https://github.com/TheCherno/yaml-cpp.git

@@ -4,6 +4,8 @@
 
 #include "imgui/imgui.h"
 
+#include "Pistachio/Scene/SceneSerializer.h"
+
 
 inline std::ostream& operator<<(std::ostream& ostream, const ImVec2& vector) {
 	return ostream << "ImVec2(" << vector.x << ", " << vector.y << ")";
@@ -33,6 +35,7 @@ namespace Pistachio {
 
 		m_ActiveScene = CreateRef<Scene>();
 
+#if 0
 		class RandomColour : public ScriptableEntity {
 		public:
 			void OnCreate() {
@@ -91,6 +94,7 @@ namespace Pistachio {
 
 		primaryCameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 		secondCameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+#endif
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
@@ -168,6 +172,16 @@ namespace Pistachio {
 
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
+				if (ImGui::MenuItem("Serialize")) {
+					SceneSerializer serializer(m_ActiveScene);
+					serializer.Serialize("assets/scenes/Example.pistachio");
+				}
+
+				if (ImGui::MenuItem("Deserialize")) {
+					SceneSerializer serializer(m_ActiveScene);
+					serializer.Deserialize("assets/scenes/Example.pistachio");
+				}
+
 				if (ImGui::MenuItem("Exit")) {
 					Application::Instance().Close();
 				}

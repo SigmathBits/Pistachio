@@ -355,3 +355,4 @@ intermediates/
 bin-int/
 **/imgui.ini
 **/*.json
+**/*.pistachio
