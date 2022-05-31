@@ -13,13 +13,14 @@ namespace Pistachio {
 		SceneHierarchyPanel() = default;
 		SceneHierarchyPanel(const Ref<Scene>& scene);
 
+		inline Entity SelectedEntity() const { return m_SelectedEntity; }
+
 		void SetContext(const Ref<Scene>& scene);
 
 		void OnImGuiRender();
 
 	private:
 		void DrawEntityNode(Entity entity);
-		void DrawComponents(Entity entity);
 
 	private:
 		Ref<Scene> m_Context;

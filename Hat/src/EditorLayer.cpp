@@ -194,6 +194,9 @@ namespace Pistachio {
 
 		// Dockspace windows begin
 		m_SceneHierarchyPanel.OnImGuiRender();
+		m_PropertiesPanel.SetSelectedEntity(m_SceneHierarchyPanel.SelectedEntity());
+		m_PropertiesPanel.OnImGuiRender();
+
 
 		{
 			auto stats = Renderer2D::RetrieveStats();

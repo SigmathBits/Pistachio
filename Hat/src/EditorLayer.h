@@ -3,6 +3,7 @@
 #include <Pistachio.h>
 
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/PropertiesPanel.h"
 
 
 namespace Pistachio {
@@ -39,6 +40,7 @@ namespace Pistachio {
 
 		// Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+		PropertiesPanel m_PropertiesPanel;
 	};
 
 }
