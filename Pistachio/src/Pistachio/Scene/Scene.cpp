@@ -7,7 +7,7 @@
 #include "Pistachio/Renderer/Renderer2D.h"
 
 #include "Pistachio/Scene/Entity.h"
-#include "Pistachio/Scene/Components.h"
+#include "Pistachio/Scene/ScriptableEntity.h"
 
 
 namespace Pistachio {
@@ -22,8 +22,12 @@ namespace Pistachio {
 	Entity Scene::CreateEntity(const std::string& name /*= std::string()*/) {
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<TagComponent>(name.empty() ? "Entity" : name);
+		entity.AddComponent<TagComponent>(name.empty() ? "Unnamed Entity" : name);
 		return entity;
+	}
+
+	void Scene::DestroyEntity(Entity entity) {
+		m_Registry.destroy(entity);
 	}
 
 	void Scene::OnUpdate(Timestep timestep) {
@@ -44,24 +48,28 @@ namespace Pistachio {
 		}
 
 		// Render 2D 
-		glm::mat4* cameraTransform = nullptr;
+		glm::mat4 cameraTransform;
 		Camera* mainCamera = nullptr;
-		auto view = m_Registry.view<TransformComponent, CameraComponent>();
-		for (auto&& [entity, transform, camera] : view.each()) {
-			if (camera.Primary) {
-				cameraTransform = &transform.Transform;
-				mainCamera = &camera.Camera;
-				break;
+		{
+			auto view = m_Registry.view<TransformComponent, CameraComponent>();
+			for (auto&& [entity, transform, camera] : view.each()) {
+				if (camera.Primary) {
+					cameraTransform = transform.Transform();
+					mainCamera = &camera.Camera;
+					break;
+				}
 			}
 		}
 
 		if (!mainCamera) return;
 
-		Renderer2D::BeginScene(*mainCamera, *cameraTransform);
+		Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-		for (auto&& [entity, transform, sprite] : group.each()) {
-			Renderer2D::DrawQuad(transform, sprite.Colour);
+		{
+			auto group = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
+			for (auto&& [entity, spriteComponent, transform] : group.each()) {
+				Renderer2D::DrawQuad(transform.Transform(), spriteComponent.Sprite);
+			}
 		}
 
 		Renderer2D::EndScene();
@@ -79,5 +87,46 @@ namespace Pistachio {
 			}
 		}
 	}
+
+	void Scene::EachEntity(std::function<void(Entity)> callback) {
+		m_Registry.each([this, &callback](auto entity) {
+			callback(Entity(entity, this));
+		});
+	}
+
+	template<typename T>
+	void Scene::OnComponentAdded(Entity entity, T& component) {
+		static_assert(false);
+	}
+
+	template<>
+	void Scene::OnComponentAdded(Entity entity, TagComponent& component) {
+
+	}
+	template void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component);
+
+	template<>
+	void Scene::OnComponentAdded(Entity entity, TransformComponent& component) {
+
+	}
+	template void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component);
+
+	template<>
+	void Scene::OnComponentAdded(Entity entity, SpriteRendererComponent& component) {
+
+	}
+	template void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component);
+
+	template<>
+	void Scene::OnComponentAdded(Entity entity, CameraComponent& component) {
+		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+	}
+	template void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component);
+
+	template<>
+	void Scene::OnComponentAdded(Entity entity, NativeScriptComponent& component) {
+
+	}
+	template void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component);
 
 }

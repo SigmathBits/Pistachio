@@ -8,17 +8,28 @@
 namespace Pistachio {
 
 	SceneCamera::SceneCamera() {
+
 	}
 
 	SceneCamera::SceneCamera(float size, float nearClip /*= -1.0f*/, float farClip /*= 1.0f*/)
-		: m_OrthographicSize(size), m_OrthographicNear(nearClip), m_OrthographicFar(farClip) {
+		: m_OrthographicSize(size), m_OrthographicNearClip(nearClip), m_OrthographicFarClip(farClip) {
+		CalculateProjection();
+	}
+
+	void SceneCamera::SetPerspective(float verticalFOV, float nearClip, float farClip) {
+		m_ProjectionType = ProjectionType::Perspective;
+		m_PerspectiveVerticalFOV = verticalFOV;
+		m_PerspectiveNearClip = nearClip;
+		m_PerspectiveFarClip = farClip;
+
 		CalculateProjection();
 	}
 
 	void SceneCamera::SetOrthographic(float size, float nearClip, float farClip) {
+		m_ProjectionType = ProjectionType::Orthographic;
 		m_OrthographicSize = size;
-		m_OrthographicNear = nearClip;
-		m_OrthographicFar = farClip;
+		m_OrthographicNearClip = nearClip;
+		m_OrthographicFarClip = farClip;
 
 		CalculateProjection();
 	}
@@ -30,14 +41,25 @@ namespace Pistachio {
 	}
 
 	void SceneCamera::CalculateProjection() {
-		float orthoWidth = m_AspectRatio * m_OrthographicSize;
-		float orthoHeight = m_OrthographicSize;
+		switch (m_ProjectionType) {
+			case ProjectionType::Perspective: {
+				m_Projection = glm::perspective(m_PerspectiveVerticalFOV, m_AspectRatio, m_PerspectiveNearClip, m_PerspectiveFarClip);
+				break;
+			}
 
-		m_Projection = glm::ortho(
-			-orthoWidth * 0.5f, orthoWidth * 0.5f, 
-			-orthoHeight * 0.5f, orthoHeight * 0.5f, 
-			m_OrthographicNear, m_OrthographicFar
-		);
+			case ProjectionType::Orthographic: {
+				float orthoWidth = m_AspectRatio * m_OrthographicSize;
+				float orthoHeight = m_OrthographicSize;
+
+				m_Projection = glm::ortho(
+					-orthoWidth * 0.5f, orthoWidth * 0.5f,
+					-orthoHeight * 0.5f, orthoHeight * 0.5f,
+					m_OrthographicNearClip, m_OrthographicFarClip
+				);
+
+				break;
+			}
+		}
 	}
 
 }

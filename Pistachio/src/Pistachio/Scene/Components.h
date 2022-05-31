@@ -3,12 +3,14 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Pistachio/Scene/SceneCamera.h"
+#include "Pistachio/Renderer/Sprite.h"
 
-#include "Pistachio/Scene/ScriptableEntity.h"
+#include "Pistachio/Scene/SceneCamera.h"
 
 
 namespace Pistachio {
+
+	class ScriptableEntity;
 
 	struct TagComponent {
 		std::string Tag;
@@ -20,30 +22,37 @@ namespace Pistachio {
 	};
 
 	struct TransformComponent {
-		glm::mat4 Transform{ 1.0f };
+		glm::vec3 Translation = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
-		TransformComponent(const glm::mat4& transform) 
-			: Transform(transform) {}
+		TransformComponent(const glm::vec3& translation)
+			: Translation(translation) {}
 
-		TransformComponent(const glm::vec3& position)
-			: Transform(glm::translate(glm::mat4(1.0f), position)) {}
-
-		operator glm::mat4& () { return Transform; }
-		operator const glm::mat4& () const { return Transform; }
+		glm::mat4 Transform() const {
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f), Translation);
+			transform = glm::rotate(transform, Rotation.x, { 1.0f, 0.0f, 0.0f });
+			transform = glm::rotate(transform, Rotation.y, { 0.0f, 1.0f, 0.0f });
+			transform = glm::rotate(transform, Rotation.z, { 0.0f, 0.0f, 1.0f });
+			transform = glm::scale(transform, Scale);
+			return transform;
+		}
 	};
 	
 	struct SpriteRendererComponent {
-		glm::vec4 Colour{ 1.0f, 1.0f, 1.0f, 1.0f };
+		Pistachio::Sprite Sprite;
 
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
-		SpriteRendererComponent(const glm::vec4& colour)
-			: Colour(colour) {}
+		SpriteRendererComponent(const Pistachio::Sprite& sprite)
+			: Sprite(sprite) {}
+		//SpriteRendererComponent(const glm::vec4& colour)
+		//	: Colour(colour) {}
 
-		operator glm::vec4& () { return Colour; }
-		operator const glm::vec4& () const { return Colour; }
+		//operator glm::vec4& () { return Colour; }
+		//operator const glm::vec4& () const { return Colour; }
 	};
 
 	struct CameraComponent {

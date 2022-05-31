@@ -2,6 +2,8 @@
 
 #include <Pistachio.h>
 
+#include "Panels/SceneHierarchyPanel.h"
+
 
 namespace Pistachio {
 
@@ -23,26 +25,20 @@ namespace Pistachio {
 
 		Ref<Framebuffer> m_Framebuffer; 
 
-		glm::vec2 m_ViewportPosition;
-		glm::vec2 m_ViewportSize{ 1280, 720 };
-		bool m_ViewportFocused = false;
-		bool m_ViewportHovered = false;
-		bool m_ViewportIsDragging = false;
-
 		Ref<Scene> m_ActiveScene;
-		Entity m_SquareEntity;
-		Entity m_CameraEntity;
-		Entity m_SecondCameraEntity;
-
-		bool m_UsePrimaryCamera = true;
 
 		Ref<Texture2D> m_PistachioTexture;
 		Ref<Texture2D> m_RainbowDashTexture;
 		Ref<Texture2D> m_CheckerboardTexture;
 
-		RotatedTransform m_RotatedTransform{ { 0.0f, 0.0f, -0.51f }, 0.0f };
-		float m_Angle = 0.0f;
-		glm::vec4 m_Colour{ 0.486f, 0.686f, 0.255f, 1.0f };
+		glm::vec2 m_ViewportPosition{ 0.0f, 0.0f };
+		glm::vec2 m_ViewportSize{ 1280, 720 };
+		bool m_ViewportFocused = false;
+		bool m_ViewportHovered = false;
+		bool m_ViewportIsDragging = false;
+
+		// Panels
+		SceneHierarchyPanel m_SceneHierarchyPanel;
 	};
 
 }

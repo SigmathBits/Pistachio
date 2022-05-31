@@ -40,5 +40,5 @@ layout(location = 0) out vec4 colour;
 
 
 void main () {
-	colour = texture(u_Textures[int(v_TextureIndex)], v_TilingScale * v_TextureCoords) * v_Colour;
+	colour = texture(u_Textures[int(round(v_TextureIndex))], v_TilingScale * v_TextureCoords) * v_Colour;
 }

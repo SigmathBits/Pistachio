@@ -140,10 +140,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Pistachio\Renderer\Camera.h" />
-    <ClInclude Include="src\Pistachio\Scene\Entity.h" />
-    <ClInclude Include="src\Pistachio\Scene\Components.h" />
-    <ClInclude Include="src\Pistachio\Scene\Scene.h" />
     <ClInclude Include="src\Pistachio.h" />
     <ClInclude Include="src\Pistachio\Core\Application.h" />
     <ClInclude Include="src\Pistachio\Core\Common.h" />
@@ -166,6 +162,7 @@
     <ClInclude Include="src\Pistachio\Events\MouseEvent.h" />
     <ClInclude Include="src\Pistachio\ImGui\ImGuiLayer.h" />
     <ClInclude Include="src\Pistachio\Renderer\Buffer.h" />
+    <ClInclude Include="src\Pistachio\Renderer\Camera.h" />
     <ClInclude Include="src\Pistachio\Renderer\Framebuffer.h" />
     <ClInclude Include="src\Pistachio\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\Pistachio\Renderer\OrthographicCamera.h" />
@@ -180,6 +177,9 @@
     <ClInclude Include="src\Pistachio\Renderer\Texture.h" />
     <ClInclude Include="src\Pistachio\Renderer\Transform.h" />
     <ClInclude Include="src\Pistachio\Renderer\VertexArray.h" />
+    <ClInclude Include="src\Pistachio\Scene\Components.h" />
+    <ClInclude Include="src\Pistachio\Scene\Entity.h" />
+    <ClInclude Include="src\Pistachio\Scene\Scene.h" />
     <ClInclude Include="src\Pistachio\Scene\SceneCamera.h" />
     <ClInclude Include="src\Pistachio\Scene\ScriptableEntity.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
@@ -613,8 +613,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Pistachio\Scene\Entity.cpp" />
-    <ClCompile Include="src\Pistachio\Scene\Scene.cpp" />
     <ClCompile Include="src\Pistachio\Core\Application.cpp" />
     <ClCompile Include="src\Pistachio\Core\Common.cpp" />
     <ClCompile Include="src\Pistachio\Core\LayerStack.cpp" />
@@ -635,6 +633,8 @@
     <ClCompile Include="src\Pistachio\Renderer\SubTexture2D.cpp" />
     <ClCompile Include="src\Pistachio\Renderer\Texture.cpp" />
     <ClCompile Include="src\Pistachio\Renderer\VertexArray.cpp" />
+    <ClCompile Include="src\Pistachio\Scene\Entity.cpp" />
+    <ClCompile Include="src\Pistachio\Scene\Scene.cpp" />
     <ClCompile Include="src\Pistachio\Scene\SceneCamera.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp" />

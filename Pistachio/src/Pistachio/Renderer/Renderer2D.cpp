@@ -12,7 +12,7 @@
 namespace Pistachio {
 
 	struct QuadVertex {
-		glm::vec3 Position;
+		glm::vec4 Position;
 		glm::vec4 Colour;
 		glm::vec2 TextureCoords;
 		float TextureIndex;
@@ -73,7 +73,7 @@ namespace Pistachio {
 
 		// Layout
 		s_Data.QuadVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float4, "a_Position" },
 			{ ShaderDataType::Float4, "a_Colour" },
 			{ ShaderDataType::Float2, "a_TextureCoords" },
 			{ ShaderDataType::Float, "a_TextureIndex" },

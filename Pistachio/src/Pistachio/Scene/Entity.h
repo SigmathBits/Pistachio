@@ -3,6 +3,7 @@
 #include <entt.hpp>
 
 #include "Pistachio/Core/Core.h"
+#include "Pistachio/Core/Log.h"
 
 #include "Pistachio/Scene/Scene.h"
 
@@ -19,7 +20,10 @@ namespace Pistachio {
 		T& AddComponent(Args&&... args) {
 			PST_CORE_ASSERT(!HasComponent<T>(), "Entity already has component");
 
-			return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
+			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
+			m_Scene->OnComponentAdded<T>(*this, component);
+
+			return component;
 		}
 
 		template<typename T>
@@ -28,12 +32,12 @@ namespace Pistachio {
 
 			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
-		
+
 		template<typename T>
-		T& RemoveComponent() {
+		void RemoveComponent() {
 			PST_CORE_ASSERT(HasComponent<T>(), "Entity does not have component");
 
-			return m_Scene->m_Registry.remove<T>(m_EntityHandle);
+			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
 		template<typename T>
@@ -41,7 +45,17 @@ namespace Pistachio {
 			return m_Scene->m_Registry.all_of<T>(m_EntityHandle);
 		}
 
+		bool operator==(const Entity& other) const { 
+			return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene;
+		}
+		
+		bool operator!=(const Entity& other) const { 
+			return m_EntityHandle != other.m_EntityHandle || m_Scene != other.m_Scene;
+		}
+
 		operator bool() const { return m_EntityHandle != entt::null; }
+		operator unsigned int() const { return (unsigned int)m_EntityHandle; }
+		operator entt::entity() const { return m_EntityHandle; }
 
 	private:
 		entt::entity m_EntityHandle = entt::null;

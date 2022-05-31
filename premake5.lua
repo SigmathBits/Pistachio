@@ -164,6 +164,7 @@ project "Sandbox"
 		"Pistachio/src",
 		"Pistachio/vendor",
 		"%{IncludeDir.glm}",
+		"%{IncludeDir.entt}",
 	}
 
 	links {

@@ -40,19 +40,23 @@ namespace Pistachio {
 
 				srand(static_cast<unsigned int>(time(0)));
 				auto random = []() { return static_cast<float>(rand()) / static_cast<float>(RAND_MAX); };
-				sprite.Colour = { random(), random(), random(), 1.0f};
+				sprite.Sprite.TintColour = { random(), random(), random(), 1.0f};
 			}
 		};
 
-		m_SquareEntity = m_ActiveScene->CreateEntity("Square");
-		m_SquareEntity.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.7f, 1.0f, 0.6f, 1.0f });
-		m_SquareEntity.AddComponent<NativeScriptComponent>().Bind<RandomColour>();
+		Entity pistachioEntity = m_ActiveScene->CreateEntity("Pistachio");
+		pistachioEntity.AddComponent<SpriteRendererComponent>(m_PistachioTexture);
+		pistachioEntity.AddComponent<NativeScriptComponent>().Bind<RandomColour>();
 
-		m_CameraEntity = m_ActiveScene->CreateEntity("Camera");
-		m_CameraEntity.AddComponent<CameraComponent>();
+		Entity rainbowDashEntity = m_ActiveScene->CreateEntity("Rainbow Dash");
+		rainbowDashEntity.AddComponent<SpriteRendererComponent>(m_RainbowDashTexture);
+		rainbowDashEntity.Component<TransformComponent>().Translation = { 1.5f, 0.0f, 0.0f };
+
+		Entity primaryCameraEntity = m_ActiveScene->CreateEntity("Primary Camera");
+		primaryCameraEntity.AddComponent<CameraComponent>(5.0f);
 		
-		m_SecondCameraEntity = m_ActiveScene->CreateEntity("Camera");
-		auto& cc = m_SecondCameraEntity.AddComponent<CameraComponent>();
+		Entity secondCameraEntity = m_ActiveScene->CreateEntity("Secondary Camera");
+		auto& cc = secondCameraEntity.AddComponent<CameraComponent>();
 		cc.Primary = false;
 
 		class CameraController : public ScriptableEntity {
@@ -65,25 +69,30 @@ namespace Pistachio {
 
 			void OnUpdate(Timestep timestep) {
 				auto& transform = Component<TransformComponent>();
-				
+				auto& camera = Component<CameraComponent>();
+
+				if (!camera.Primary) return;
+
 				constexpr float speed = 5.0f;
 				if (Input::IsKeyPressed(PST_KEY_A)) {
-					transform.Transform[3][0] -= speed * timestep;
+					transform.Translation.x -= speed * timestep;
 				}
 				if (Input::IsKeyPressed(PST_KEY_D)) {
-					transform.Transform[3][0] += speed * timestep;
+					transform.Translation.x += speed * timestep;
 				}
 				if (Input::IsKeyPressed(PST_KEY_S)) {
-					transform.Transform[3][1] -= speed * timestep;
+					transform.Translation.y -= speed * timestep;
 				}
 				if (Input::IsKeyPressed(PST_KEY_W)) {
-					transform.Transform[3][1] += speed * timestep;
+					transform.Translation.y += speed * timestep;
 				}
 			}
 		};
 
-		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-		m_SecondCameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+		primaryCameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+		secondCameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::OnDetach() {
@@ -113,13 +122,6 @@ namespace Pistachio {
 
 		RenderCommand::SetClearColour({ .03f, 0.1f, 0.15f, 1 });
 		RenderCommand::Clear();
-
-
-		Renderer2D::BeginScene(m_CameraController.Camera());
-
-		Pistachio::Renderer2D::DrawQuad({ { 1.0f, 0.0f, 0.1f } }, m_PistachioTexture);
-
-		Renderer2D::EndScene();
 
 		// Update Scene
 		m_ActiveScene->OnUpdate(timestep);
@@ -172,18 +174,12 @@ namespace Pistachio {
 			ImGui::EndMenuBar();
 		}
 
-		{
-			if (m_SquareEntity) {
-				ImGui::Begin("Quad");
-				auto& tag = m_SquareEntity.Component<TagComponent>().Tag;
-				ImGui::Text("%s", tag.c_str());
-				auto& colour = m_SquareEntity.Component<SpriteRendererComponent>().Colour;
-				ImGui::ColorEdit4("Colour", glm::value_ptr(colour));
-				ImGui::End();
-			}
+		// Dockspace windows begin
+		m_SceneHierarchyPanel.OnImGuiRender();
 
+		{
 			auto stats = Renderer2D::RetrieveStats();
-			ImGui::Begin("Stats");
+			ImGui::Begin("Renderer2D Statistics");
 			ImGui::Text("Draw Calls: %d", stats.DrawCalls);
 			ImGui::Text("Quad Count: %d", stats.QuadCount);
 			ImGui::Text("Vertex Count: %d", stats.TotalVertexCount());
@@ -191,30 +187,17 @@ namespace Pistachio {
 			ImGui::End();
 		}
 
-		{
-			ImGui::Begin("Camera");
-			auto& position = m_CameraEntity.Component<TransformComponent>().Transform[3];
-			ImGui::DragFloat3("Camera Transform", glm::value_ptr(position), 0.1f);
-			if (ImGui::Checkbox("Primary Camera", &m_UsePrimaryCamera)) {
-				m_CameraEntity.Component<CameraComponent>().Primary = m_UsePrimaryCamera;
-				m_SecondCameraEntity.Component<CameraComponent>().Primary = !m_UsePrimaryCamera;
-			}
-			
-			{
-				auto& camera = m_SecondCameraEntity.Component<CameraComponent>().Camera;
-				float orthoSize = camera.OrthographicSize();
-				if (ImGui::DragFloat("Second Camera Ortho Size", &orthoSize, 0.1f, 0.1f, 10.0f)) {
-					camera.SetOrthographicSize(orthoSize);
-				}
-			}
-
-			ImGui::End();
-		}
-
 		// Display framebuffer to viewport
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		ImGui::Begin("Viewport");
 
+		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+
+		unsigned int colourAttachmentID = m_Framebuffer->ColourAttachmentRendererID();
+		ImGui::Image((void*)(size_t)colourAttachmentID, viewportPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		// Determine when ImGui should block events
 		ImVec2 viewportPanelPosition = ImGui::GetWindowPos();
 		glm::vec2 viewportPosition = { viewportPanelPosition.x, viewportPanelPosition.y };
 		if (m_ViewportPosition != viewportPosition) {
@@ -230,11 +213,6 @@ namespace Pistachio {
 		Application::Instance().BaseImGuiLayer()->AllowMouseEventBlocking(m_ViewportIsDragging || !m_ViewportHovered);
 		Application::Instance().BaseImGuiLayer()->AllowKeyboardEventBlocking(m_ViewportIsDragging || !m_ViewportFocused);
 
-		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-
-		unsigned int colourAttachmentID = m_Framebuffer->ColourAttachmentRendererID();
-		ImGui::Image((void*)colourAttachmentID, viewportPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		ImGui::End();
 		ImGui::PopStyleVar();
 

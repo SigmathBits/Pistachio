@@ -41,12 +41,7 @@ namespace Pistachio {
 		ImGuiStylesPsistachio();
 		ImGuiStyleColoursPistachio();
 
-		// Don't know how to properly load files which are only local to Pistachio
-		{
-			PST_PROFILE_SCOPE("io.Fonts->AddFontFromFileTTF - Pistachio::ImGuiLayer::OnAttach");
-
-			io.Fonts->AddFontFromFileTTF("../Pistachio/assets/fonts/GidoleFont/Gidole-Regular.ttf", 16.0f);
-		}
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("assets/fonts/GidoleFont/Gidole-Regular.ttf", 18.0f); 
 
 		// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 		ImGuiStyle& style = ImGui::GetStyle();
