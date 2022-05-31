@@ -1,4 +1,4 @@
-#include "SceneHierarchyPanel.h"
+﻿#include "SceneHierarchyPanel.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
@@ -14,6 +14,10 @@
 namespace Pistachio {
 
 	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
+
+	template<typename T>
+	static void DrawComponentProperties(Entity entity, const std::string& label, std::function<void(T&)> drawFunction, bool removable = true);
+
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& scene)
 		: m_Context(scene) {
@@ -50,39 +54,20 @@ namespace Pistachio {
 
 		if (m_SelectedEntity) {
 			DrawComponents(m_SelectedEntity);
-
-			if (ImGui::Button("Add Component")) {
-				ImGui::OpenPopup("Add Component Popup");
-			}
-
-			if (ImGui::BeginPopup("Add Component Popup")) {
-
-				if (ImGui::MenuItem("Sprite Renderer")) {
-					// Default White Texture
-					static auto whiteTexture = Texture2D::Create(1, 1);
-					unsigned int whiteTextureData = 0xFFFFFFFF;
-					whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
-
-					m_SelectedEntity.AddComponent<SpriteRendererComponent>(whiteTexture);
-					ImGui::CloseCurrentPopup();
-				}
-
-				if (ImGui::MenuItem("Camera")) {
-					m_SelectedEntity.AddComponent<CameraComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-
-				ImGui::EndPopup();
-			}
-
 		} else {
+			ImGuiIO& io = ImGui::GetIO();
+			auto italicFont = io.Fonts->Fonts[1];  // 1 is italics
+			
 			constexpr char* noSelectionText = "No Entity Selected";
 
 			float windowWidth = ImGui::GetWindowSize().x;
 			float textWidth = ImGui::CalcTextSize(noSelectionText).x;
 
 			ImGui::SetCursorPosX(0.5f * (windowWidth - textWidth));
+
+			ImGui::PushFont(italicFont);
 			ImGui::TextDisabled(noSelectionText);
+			ImGui::PopFont();
 		}
 
 		ImGui::End();
@@ -91,7 +76,7 @@ namespace Pistachio {
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity) {
 		std::string& tag = entity.Component<TagComponent>().Tag;
 		
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0);
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0);
 		bool opened = ImGui::TreeNodeEx((void*)(size_t)(unsigned int)entity, flags, tag.c_str());
 
 		if (ImGui::IsItemClicked()) {
@@ -127,24 +112,65 @@ namespace Pistachio {
 			memset(buffer, 0, sizeof(buffer));
 			strncpy_s(buffer, tag.c_str(), tag.size() + 1);
 
-			if (ImGui::InputText("Tag", buffer, sizeof(buffer))) {
+			if (ImGui::InputText("##Tag", buffer, sizeof(buffer))) {
 				tag = std::string(buffer);
 			}
 		}
 
+		ImGui::SameLine();
+		ImGui::PushItemWidth(-1);
+
+		if (ImGui::Button("Add Component")) {
+			ImGui::OpenPopup("Add Component Popup");
+		}
+
+		if (ImGui::BeginPopup("Add Component Popup")) {
+			bool isEmpty = true;
+
+			if (!entity.HasComponent<SpriteRendererComponent>()) {
+				isEmpty = false;
+				if (ImGui::MenuItem("Sprite Renderer")) {
+					// Default White Texture
+					// FIXME: This is a workaround, shouldn't be making textures here
+					static auto whiteTexture = Texture2D::Create(1, 1);
+					unsigned int whiteTextureData = 0xFFFFFFFF;
+					whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+
+					m_SelectedEntity.AddComponent<SpriteRendererComponent>(whiteTexture);
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			if (!entity.HasComponent<CameraComponent>()) {
+				isEmpty = false;
+				if (ImGui::MenuItem("Camera")) {
+					m_SelectedEntity.AddComponent<CameraComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);  // 1 is italics
+			if (isEmpty) {
+				ImGui::TextDisabled("No Available Components");
+			}
+			ImGui::PopFont();
+
+			ImGui::EndPopup();
+		}
+		ImGui::PopItemWidth();
+
 		DrawComponentProperties<TransformComponent>(entity, "Transform", [](auto& transformComponent) {
 			DrawVec3Control("Translation", transformComponent.Translation);
-
 			ImGui::Spacing();
 
 			glm::vec3 rotationDegrees = glm::degrees(transformComponent.Rotation);
 			if (DrawVec3Control("Rotation", rotationDegrees)) {
 				transformComponent.Rotation = glm::radians(rotationDegrees);
 			}
-
 			ImGui::Spacing();
 
 			DrawVec3Control("Scale", transformComponent.Scale, 1.0f);
+			ImGui::Spacing();
 		}, false);
 
 		DrawComponentProperties<CameraComponent>(entity, "Camera", [](auto& cameraComponent) {
@@ -223,6 +249,9 @@ namespace Pistachio {
 	}
 
 	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue /*= 0.0f*/, float columnWidth /*= 100.0f*/) {
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];  // 0 is bold
+
 		ImGui::PushID(label.c_str());
 
 		ImGui::Columns(2, label.c_str(), false);
@@ -245,10 +274,12 @@ namespace Pistachio {
 		ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4{ 0.83f, 0.36f, 0.27f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.97f, 0.54f, 0.3f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4{ 0.93f, 0.33f, 0.3f, 1.0f });
+		ImGui::PushFont(boldFont);
 		if (ImGui::Button("X", buttonSize)) {
 			values.x = resetValue;
 			changed = true;
 		}
+		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
@@ -261,10 +292,12 @@ namespace Pistachio {
 		ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4{ 0.4f, 0.6f, 0.2f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.75f, 0.85f, 0.20f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4{ 0.486f, 0.686f, 0.255f, 1.0f });
+		ImGui::PushFont(boldFont);
 		if (ImGui::Button("Y", buttonSize)) {
 			values.y = resetValue;
 			changed = true;
 		}
+		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
@@ -277,10 +310,12 @@ namespace Pistachio {
 		ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4{ 0.23f, 0.62f, 0.68f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.4f, 0.78f, 0.88f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4{ 0.15f, 0.71f, 0.82f, 1.0f });
+		ImGui::PushFont(boldFont);
 		if (ImGui::Button("Z", buttonSize)) {
 			values.z = resetValue;
 			changed = true;
 		}
+		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
@@ -293,6 +328,57 @@ namespace Pistachio {
 		ImGui::PopID();
 
 		return changed;
+	}
+
+	template<typename T>
+	static void DrawComponentProperties(Entity entity, const std::string& label, std::function<void(T&)> drawFunction, bool removable /*= true*/) {
+		if (!entity.HasComponent<T>()) return;
+
+		ImGuiTreeNodeFlags flags = 
+			ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowItemOverlap
+			| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+
+		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4.0f, 4.0f });
+		ImGui::Separator();
+		bool open = ImGui::TreeNodeEx(label.c_str(), flags);
+
+		bool removeComponent = false;
+		if (removable) {
+			float lineHeight = ImGui::GetFrameHeight();
+
+			ImGui::SameLine(contentRegionAvailable.x - 0.5f * lineHeight);
+
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.4f, 0.6f, 0.2f, 1.0f });
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.75f, 0.85f, 0.20f, 1.0f });
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.486f, 0.686f, 0.255f, 1.0f });
+			ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]);  // 0 is bold
+			if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight })) {
+				ImGui::OpenPopup("Component Settings");
+			}
+			ImGui::PopFont();
+			ImGui::PopStyleColor(3);
+
+			if (ImGui::BeginPopup("Component Settings")) {
+				if (ImGui::MenuItem("Remove component")) {
+					removeComponent = true;
+				}
+
+				ImGui::EndPopup();
+			}
+		}
+		ImGui::PopStyleVar();
+
+		if (open) {
+			T& component = entity.Component<T>();
+			drawFunction(component);
+			ImGui::TreePop();
+		}
+
+		if (removeComponent) {
+			entity.RemoveComponent<T>();
+		}
 	}
 
 }
