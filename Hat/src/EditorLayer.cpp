@@ -1,11 +1,16 @@
 #include "EditorLayer.h"
 
+#include <fstream>
+
 #include <glm/gtc/type_ptr.hpp>
 
-#include "imgui/imgui.h"
+#include <imgui/imgui.h>
+
+#include <ImGuizmo/ImGuizmo.h>
 
 #include "Pistachio/Scene/SceneSerializer.h"
 
+#include "Pistachio/Math/Math.h"
 #include "Pistachio/Utils/PlatformUtils.h"
 
 
@@ -36,6 +41,16 @@ namespace Pistachio {
 		m_Framebuffer = Framebuffer::Create(frameBufferSpec);
 
 		m_ActiveScene = CreateRef<Scene>();
+
+		std::ifstream inFile("assets/scenes/.pistachio_last_save");
+		if (inFile) {
+			std::string filepath;
+			std::getline(inFile, filepath);
+
+			PST_INFO("Loading last save \"{}\" ... ", filepath);
+
+			LoadSceneFile(filepath);
+		}
 
 #if 0
 		class RandomColour : public ScriptableEntity {
@@ -179,18 +194,18 @@ namespace Pistachio {
 				}
 
 				if (ImGui::MenuItem("Open...", "Ctrl+O")) {
-					OpenScene();
+					FileOpen();
 				}
 
 				if (ImGui::MenuItem("Save...", "Ctrl+S")) {
-					SaveScene();
+					FileSave();
 				}
 
 				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) {
-					SaveSceneAs();
+					FileSaveAs();
 				}
 
-				if (ImGui::MenuItem("Exit")) {
+				if (ImGui::MenuItem("Exit", "Ctrl+Q")) {
 					Application::Instance().Close();
 				}
 
@@ -239,8 +254,55 @@ namespace Pistachio {
 
 		m_ViewportHovered = ImGui::IsWindowHovered();
 		m_ViewportFocused = ImGui::IsWindowFocused();
+		auto isAnyItemActive = ImGui::IsAnyItemActive();
 		Application::Instance().BaseImGuiLayer()->AllowMouseEventBlocking(m_ViewportIsDragging || !m_ViewportHovered);
-		Application::Instance().BaseImGuiLayer()->AllowKeyboardEventBlocking(m_ViewportIsDragging || !m_ViewportFocused);
+		Application::Instance().BaseImGuiLayer()->AllowKeyboardEventBlocking(m_ViewportIsDragging || !m_ViewportFocused && isAnyItemActive);
+
+
+		// Gizmos
+		Entity selectedEntity = m_SceneHierarchyPanel.SelectedEntity();
+		if (selectedEntity && m_GizmoType != -1) {
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+
+			// Set our viewport (rectangle)
+			ImVec2 windowSize = ImGui::GetWindowSize();
+			ImGuizmo::SetRect(viewportPanelPosition.x, viewportPanelPosition.y, windowSize.x, windowSize.y);
+
+			// Camera projection and view
+			auto cameraEntity = m_ActiveScene->PrimaryCameraEntity();
+			const auto& camera = cameraEntity.Component<CameraComponent>().Camera;
+
+			glm::mat4 viewMatrix = glm::inverse(cameraEntity.Component<TransformComponent>().Transform());
+			const glm::mat4& projectionMatrix = camera.Projection();
+
+			// Entity transform
+			auto& entityTransformComponent = selectedEntity.Component<TransformComponent>();
+			glm::mat4 transform = entityTransformComponent.Transform();
+
+			// Snapping
+			bool snap = Input::IsKeyPressed(PST_KEY_LEFT_CONTROL);
+			float snapValue = 0.5f;  // snap to 0.5m for tranlation and scale
+			if (m_GizmoType == ImGuizmo::OPERATION::ROTATE) {
+				snapValue = 45.0f;  // snap to 45 degrees for rotation;
+			}
+			float snapValues[3] = { snapValue, snapValue, snapValue };
+
+			ImGuizmo::Manipulate(
+				glm::value_ptr(viewMatrix), glm::value_ptr(projectionMatrix),
+				(ImGuizmo::OPERATION)(m_GizmoType), ImGuizmo::LOCAL,
+				glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr
+			);
+
+			if (ImGuizmo::IsUsing()) {
+				glm::vec3 translation, rotation, scale;
+				Math::DecomposeTransform(transform, translation, rotation, scale);
+
+				entityTransformComponent.Translation = translation;
+				entityTransformComponent.Rotation = rotation;
+				entityTransformComponent.Scale = scale;
+			}
+		}
 
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -270,22 +332,49 @@ namespace Pistachio {
 			}
 			case PST_KEY_O: {
 				if (ctrlPressed) {
-					OpenScene();
+					FileOpen();
 					return true;
 				}
 				break;
 			}
 			case PST_KEY_S: {
 				if (ctrlPressed && !shiftPressed) {
-					SaveScene();
+					FileSave();
 					return true;
 				}
 				if (ctrlPressed && shiftPressed) {
-					SaveSceneAs();
+					FileSaveAs();
 					return true;
 				}
 				break;
 			}
+
+			// Gizmos
+			case PST_KEY_Q: {
+				if (ctrlPressed) {
+					Application::Instance().Close();
+				}
+
+				m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+				return true;
+				break;
+			}
+			case PST_KEY_W: {
+				m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+				return true;
+				break;
+			}
+			case PST_KEY_E: {
+				m_GizmoType = ImGuizmo::OPERATION::SCALE;
+				return true;
+				break;
+			}
+			case PST_KEY_R: {
+				m_GizmoType = -1;
+				return true;
+				break;
+			}
+
 			default:
 				break;
 		}
@@ -300,29 +389,25 @@ namespace Pistachio {
 		m_Filepath = "";
 	}
 
-	void EditorLayer::OpenScene() {
+	void EditorLayer::FileOpen() {
 		std::string filepath = FileDialog::OpenFile("Pistachio Scene (*.pistachio)\0*.pistachio\0");
 		if (!filepath.empty()) {
 			NewScene();
 
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.Deserialize(filepath);
-
-			m_Filepath = filepath;
+			LoadSceneFile(filepath);
 		}
 	}
 
-	void EditorLayer::SaveScene() {
+	void EditorLayer::FileSave() {
 		if (m_Filepath.empty()) {
-			SaveSceneAs();
+			FileSaveAs();
 			return;
 		}
 
-		SceneSerializer serializer(m_ActiveScene);
-		serializer.Serialize(m_Filepath);
+		SaveSceneFile(m_Filepath);
 	}
 
-	void EditorLayer::SaveSceneAs() {
+	void EditorLayer::FileSaveAs() {
 		std::string filepath = FileDialog::SaveFile("Pistachio Scene (*.pistachio)\0*.pistachio\0");
 		if (!filepath.empty()) {
 			const std::string filetype = ".pistachio";
@@ -330,11 +415,29 @@ namespace Pistachio {
 				filepath = filepath.append(filetype);
 			}
 
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.Serialize(filepath);
-
-			m_Filepath = filepath;
+			SaveSceneFile(filepath);
 		}
+	}
+
+	void EditorLayer::LoadSceneFile(std::string& filepath) {
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.Deserialize(filepath);
+
+		m_Filepath = filepath;
+		SetLastSave(filepath);
+	}
+
+	void EditorLayer::SaveSceneFile(std::string& filepath) {
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.Serialize(filepath);
+
+		m_Filepath = filepath;
+		SetLastSave(filepath);
+	}
+
+	void EditorLayer::SetLastSave(std::string& filepath) {
+		std::ofstream outFile("assets/scenes/.pistachio_last_save");
+		outFile << filepath;
 	}
 
 }

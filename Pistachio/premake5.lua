@@ -18,6 +18,8 @@ project "Pistachio"
 		"vendor/glm/glm/**.h",
 		"vendor/glm/glm/**.hpp",
 		"vendor/glm/glm/**.inl",
+		"vendor/ImGuizmo/ImGuizmo.h",
+		"vendor/ImGuizmo/ImGuizmo.cpp",
 	}
 
 	includedirs {
@@ -30,6 +32,7 @@ project "Pistachio"
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.yaml_cpp}",
+		"%{IncludeDir.ImGuizmo}",
 	}
 
 	links {
@@ -44,6 +47,11 @@ project "Pistachio"
 		"_CRT_SECURE_NO_WARNINGS",
 		"GLFW_INCLUDE_NONE",
 	}
+
+	filter "files:vendor/ImGuizmo/**.cpp"
+		flags {
+			"NoPCH"
+		}
 
 	filter "system:windows"
 		systemversion "latest"

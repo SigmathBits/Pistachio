@@ -25,9 +25,13 @@ namespace Pistachio {
 		bool OnKeyPressed(KeyPressedEvent& event) override;
 
 		void NewScene();
-		void OpenScene();
-		void SaveScene();
-		void SaveSceneAs();
+		void FileOpen();
+		void FileSave();
+		void FileSaveAs();
+
+		void LoadSceneFile(std::string& filepath);
+		void SaveSceneFile(std::string& filepath);
+		void SetLastSave(std::string& filepath);
 
 	private:
 		OrthographicCameraController m_CameraController;
@@ -46,6 +50,8 @@ namespace Pistachio {
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
 		bool m_ViewportIsDragging = false;
+
+		int m_GizmoType = -1;
 
 		// Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;

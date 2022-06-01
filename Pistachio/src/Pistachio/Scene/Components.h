@@ -3,6 +3,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+
 #include "Pistachio/Renderer/Sprite.h"
 
 #include "Pistachio/Scene/SceneCamera.h"
@@ -32,10 +35,8 @@ namespace Pistachio {
 			: Translation(translation) {}
 
 		glm::mat4 Transform() const {
-			glm::mat4 transform = glm::translate(glm::mat4(1.0f), Translation);
-			transform = glm::rotate(transform, Rotation.x, { 1.0f, 0.0f, 0.0f });
-			transform = glm::rotate(transform, Rotation.y, { 0.0f, 1.0f, 0.0f });
-			transform = glm::rotate(transform, Rotation.z, { 0.0f, 0.0f, 1.0f });
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f), Translation)
+				* glm::toMat4(glm::quat(Rotation));
 			transform = glm::scale(transform, Scale);
 			return transform;
 		}

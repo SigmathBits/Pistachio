@@ -3,18 +3,6 @@
 #include <iomanip>
 
 #include <glm/glm.hpp>
-#include <glm/ext/scalar_constants.hpp>
-
-
-namespace Pistachio {
-
-	constexpr float pi = glm::pi<float>();
-
-	float fmodulo(float value, float mod);
-
-	float wrap_rotation(float rotation);
-
-}
 
 
 template<glm::length_t L, typename T, glm::qualifier Q>

@@ -6,9 +6,9 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
-#include "Pistachio/Core/Common.h"
-
 #include "Pistachio/Core/Input.h"
+
+#include "Pistachio/Math/Math.h"
 
 
 namespace Pistachio {
@@ -22,7 +22,7 @@ namespace Pistachio {
 
 	void OrthographicCameraController::OnUpdate(Timestep timestep) {
 		constexpr float zoomThreshold = 0.01f;
-		constexpr float rotationThreshold = 0.001f * pi;
+		constexpr float rotationThreshold = 0.001f * Math::pi;
 		constexpr float positionThreshold = 0.01f;
 
 		const float delta = std::min(timestep / m_ReponseTime, 1.0f);
@@ -38,7 +38,7 @@ namespace Pistachio {
 		
 		const float rotation = m_Camera.Rotation();
 		if (rotation != m_RotationTarget) {
-			const float rotationDiff = wrap_rotation(m_RotationTarget - rotation);
+			const float rotationDiff = Math::wrap_rotation(m_RotationTarget - rotation);
 			if (std::abs(rotationDiff) < rotationThreshold) {
 				m_Camera.SetRotation(m_RotationTarget);
 			} else {
@@ -137,7 +137,7 @@ namespace Pistachio {
 			m_Camera.SetPosition(m_Camera.Position() + m_MousePressedPositionWorld - mousePositionWorld);
 			m_PositionTarget = m_Camera.Position();
 		} else if (m_CameraMoveMode == CAMERA_ROTATE) {
-			constexpr float rotationNoEasingThreshold = pi / 8;
+			constexpr float rotationNoEasingThreshold = Math::pi / 8;
 			const float rotationDeadzone = 0.10f * m_ZoomLevel;
 
 			glm::vec2 mousePositionWorldRotation = m_Camera.CameraViewMatrix() * glm::vec4(mousePositionCamera, 0.0f);
@@ -164,7 +164,7 @@ namespace Pistachio {
 		if (m_AllowRotation && Input::IsKeyPressed(PST_KEY_LEFT_CONTROL)) {
 			float newAngle = glm::degrees(m_RotationTarget) + m_CameraAngleStep * event.YOffset();
 			// Round to nearest `m_CameraAngleSpeed`
-			m_RotationTarget = wrap_rotation(glm::radians(m_CameraAngleStep * std::round(newAngle / m_CameraAngleStep)));
+			m_RotationTarget = Math::wrap_rotation(glm::radians(m_CameraAngleStep * std::round(newAngle / m_CameraAngleStep)));
 		} else {
 			m_ZoomLevelTarget = std::max(m_ZoomLevelTarget - event.YOffset() / 4.0f, 0.10f);
 		}

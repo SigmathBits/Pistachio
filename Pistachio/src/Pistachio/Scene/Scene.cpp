@@ -94,6 +94,16 @@ namespace Pistachio {
 		});
 	}
 
+	Entity Scene::PrimaryCameraEntity() {
+		auto view = m_Registry.view<CameraComponent>();
+		for (auto&&[entity, cameraComponent] : view.each()) {
+			if (cameraComponent.Primary) {
+				return Entity(entity, this);
+			}
+		}
+		return Entity();
+	}
+
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component) {
 		static_assert(false);

@@ -8,6 +8,8 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_glfw.h"
 
+#include "ImGuizmo.h"
+
 #include "Pistachio/Core/Application.h"
 #include "Pistachio/Core/KeyCodes.h"
 
@@ -37,6 +39,8 @@ namespace Pistachio {
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+		io.ConfigWindowsMoveFromTitleBarOnly = true;
 
 		ImGuiStylesPsistachio();
 		ImGuiStyleColoursPistachio();
@@ -81,6 +85,8 @@ namespace Pistachio {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
+		ImGuizmo::BeginFrame();
 	}
 
 	void ImGuiLayer::End() {

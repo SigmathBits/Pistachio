@@ -25,6 +25,8 @@ namespace Pistachio {
 
 		void EachEntity(std::function<void(Entity)> callback);
 
+		Entity PrimaryCameraEntity();
+
 	private:
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);
