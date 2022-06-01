@@ -4,6 +4,8 @@
 
 #include "Pistachio/Core/Timestep.h"
 
+#include "Pistachio/Renderer/EditorCamera.h"
+
 #include "Pistachio/Scene/Components.h"
 
 
@@ -19,7 +21,8 @@ namespace Pistachio {
 		Entity CreateEntity(const std::string&name = std::string());
 		void DestroyEntity(Entity entity);
 
-		void OnUpdate(Timestep timestep);
+		void OnUpdateEditor(Timestep timestep, EditorCamera& camera);
+		void OnUpdateRuntime(Timestep timestep);
 
 		void OnViewportResize(unsigned int width, unsigned int height);
 

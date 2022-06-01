@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Pistachio/Renderer/Camera.h"
+#include "Pistachio/Renderer/EditorCamera.h"
 #include "Pistachio/Renderer/OrthographicCamera.h"
 
 #include "Pistachio/Renderer/Transform.h" 
@@ -15,6 +16,7 @@ namespace Pistachio {
 		static void Shutdown();
 
 		static void BeginScene(const Camera& camera, glm::mat4& transform);
+		static void BeginScene(const EditorCamera& camera);
 		static void BeginScene(const OrthographicCamera& camera);  // TODO: Remove
 		static void EndScene();
 		static void Flush();

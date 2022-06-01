@@ -22,7 +22,7 @@ inline std::ostream& operator<<(std::ostream& ostream, const ImVec2& vector) {
 namespace Pistachio {
 
 	EditorLayer::EditorLayer()
-		: Layer("Sandbox2D", { EventType::KeyPressed }, EVENT_CATEGORY_NONE), m_CameraController(1280, 720, true) {
+		: Layer("Sandbox2D", { EventType::KeyPressed }, EVENT_CATEGORY_NONE), m_EditorCamera(1280, 720, 45.0f, 0.001f, 1000.0f) {
 
 	}
 
@@ -127,13 +127,16 @@ namespace Pistachio {
 		auto& spec = m_Framebuffer->Specification();
 		if (m_ViewportSize.x > 0 && m_ViewportSize.y > 0
 			&& (m_ViewportSize.x != spec.Width || m_ViewportSize.y != spec.Height)) {
-			m_Framebuffer->Resize((unsigned int)m_ViewportSize.x, (unsigned int)m_ViewportSize.y);
-			m_CameraController.Resize((unsigned int)m_ViewportSize.x, (unsigned int)m_ViewportSize.y);
+			unsigned int width = (unsigned int)m_ViewportSize.x;
+			unsigned int height = (unsigned int)m_ViewportSize.y;
 
-			m_ActiveScene->OnViewportResize((unsigned int)m_ViewportSize.x, (unsigned int)m_ViewportSize.y);
+			m_Framebuffer->Resize(width, height);
+			m_EditorCamera.SetViewportSize(width, height);
+
+			m_ActiveScene->OnViewportResize(width, height);
 		}
 
-		m_CameraController.OnUpdate(timestep);
+		m_EditorCamera.OnUpdate(timestep);
 
 
 		// Render
@@ -141,11 +144,11 @@ namespace Pistachio {
 
 		m_Framebuffer->Bind();
 
-		RenderCommand::SetClearColour({ .03f, 0.1f, 0.15f, 1 });
+		RenderCommand::SetClearColour({ 0.03f, 0.10f, 0.15f, 1 });
 		RenderCommand::Clear();
 
 		// Update Scene
-		m_ActiveScene->OnUpdate(timestep);
+		m_ActiveScene->OnUpdateEditor(timestep, m_EditorCamera);
 
 		m_Framebuffer->Unbind();
 	}
@@ -269,12 +272,15 @@ namespace Pistachio {
 			ImVec2 windowSize = ImGui::GetWindowSize();
 			ImGuizmo::SetRect(viewportPanelPosition.x, viewportPanelPosition.y, windowSize.x, windowSize.y);
 
-			// Camera projection and view
-			auto cameraEntity = m_ActiveScene->PrimaryCameraEntity();
-			const auto& camera = cameraEntity.Component<CameraComponent>().Camera;
+			// Runtime Camera projection and view
+			//auto cameraEntity = m_ActiveScene->PrimaryCameraEntity();
+			//const auto& camera = cameraEntity.Component<CameraComponent>().Camera;
 
-			glm::mat4 viewMatrix = glm::inverse(cameraEntity.Component<TransformComponent>().Transform());
-			const glm::mat4& projectionMatrix = camera.Projection();
+			//glm::mat4 viewMatrix = glm::inverse(cameraEntity.Component<TransformComponent>().Transform());
+			//const glm::mat4& projectionMatrix = camera.Projection();
+
+			const glm::mat4& projectionMatrix = m_EditorCamera.ProjectionMatrix();
+			const glm::mat4& viewMatrix = m_EditorCamera.ViewMatrix();
 
 			// Entity transform
 			auto& entityTransformComponent = selectedEntity.Component<TransformComponent>();
@@ -311,7 +317,7 @@ namespace Pistachio {
 	}
 
 	bool EditorLayer::OnEvent(Event& event) {
-		m_CameraController.SendEvent(event);
+		m_EditorCamera.SendEvent(event);
 		return false;
 	}
 
@@ -356,22 +362,20 @@ namespace Pistachio {
 				}
 
 				m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
-				return true;
 				break;
 			}
 			case PST_KEY_W: {
 				m_GizmoType = ImGuizmo::OPERATION::ROTATE;
-				return true;
 				break;
 			}
 			case PST_KEY_E: {
 				m_GizmoType = ImGuizmo::OPERATION::SCALE;
-				return true;
 				break;
 			}
 			case PST_KEY_R: {
-				m_GizmoType = -1;
-				return true;
+				if (!Input::IsKeyPressed(PST_KEY_LEFT_ALT)) {
+					m_GizmoType = -1;
+				}
 				break;
 			}
 

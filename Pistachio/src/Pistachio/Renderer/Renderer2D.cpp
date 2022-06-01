@@ -130,10 +130,22 @@ namespace Pistachio {
 	void Renderer2D::BeginScene(const Camera& camera, glm::mat4& transform) {
 		PST_PROFILE_FUNCTION();
 
-		glm::mat4 projectionViewMatrix = camera.Projection() * glm::inverse(transform);
+		glm::mat4 projectionViewMatrix = camera.ProjectionMatrix() * glm::inverse(transform);
 
 		s_Data.Shader->Bind();
 		s_Data.Shader->SetMat4("u_ProjectionViewMatrix", projectionViewMatrix);
+
+		s_Data.QuadIndexCount = 0;
+		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+
+		s_Data.TextureSlotIndex = 1;
+	}
+
+	void Renderer2D::BeginScene(const EditorCamera& camera) {
+		PST_PROFILE_FUNCTION();
+
+		s_Data.Shader->Bind();
+		s_Data.Shader->SetMat4("u_ProjectionViewMatrix", camera.ProjectionViewMatrix());
 
 		s_Data.QuadIndexCount = 0;
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;

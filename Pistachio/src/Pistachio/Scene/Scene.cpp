@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 
 #include "Pistachio/Renderer/Renderer2D.h"
+#include "Pistachio/Renderer/EditorCamera.h"
 
 #include "Pistachio/Scene/Entity.h"
 #include "Pistachio/Scene/ScriptableEntity.h"
@@ -30,7 +31,20 @@ namespace Pistachio {
 		m_Registry.destroy(entity);
 	}
 
-	void Scene::OnUpdate(Timestep timestep) {
+	void Scene::OnUpdateEditor(Timestep timestep, EditorCamera& camera) {
+		Renderer2D::BeginScene(camera);
+
+		{
+			auto group = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
+			for (auto&& [entity, spriteComponent, transform] : group.each()) {
+				Renderer2D::DrawQuad(transform.Transform(), spriteComponent.Sprite);
+			}
+		}
+
+		Renderer2D::EndScene();
+	}
+
+	void Scene::OnUpdateRuntime(Timestep timestep) {
 		// Update Scripts
 		{
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& script) {

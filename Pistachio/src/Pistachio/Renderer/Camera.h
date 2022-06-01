@@ -9,14 +9,14 @@ namespace Pistachio {
 	public:
 		Camera() = default;
 		Camera(const glm::mat4& projection)
-			: m_Projection(projection) {}
+			: m_ProjectionMatrix(projection) {}
 
 		virtual ~Camera() = default;
 
-		const glm::mat4 Projection() const { return m_Projection; }
+		const glm::mat4& ProjectionMatrix() const { return m_ProjectionMatrix; }
 		
 	protected:
-		glm::mat4 m_Projection = glm::mat4(1.0f);
+		glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
 	};
 
 }

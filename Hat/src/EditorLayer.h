@@ -34,7 +34,7 @@ namespace Pistachio {
 		void SetLastSave(std::string& filepath);
 
 	private:
-		OrthographicCameraController m_CameraController;
+		EditorCamera m_EditorCamera;
 
 		Ref<Framebuffer> m_Framebuffer; 
 

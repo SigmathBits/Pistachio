@@ -43,7 +43,7 @@ namespace Pistachio {
 	void SceneCamera::CalculateProjection() {
 		switch (m_ProjectionType) {
 			case ProjectionType::Perspective: {
-				m_Projection = glm::perspective(m_PerspectiveVerticalFOV, m_AspectRatio, m_PerspectiveNearClip, m_PerspectiveFarClip);
+				m_ProjectionMatrix = glm::perspective(m_PerspectiveVerticalFOV, m_AspectRatio, m_PerspectiveNearClip, m_PerspectiveFarClip);
 				break;
 			}
 
@@ -51,7 +51,7 @@ namespace Pistachio {
 				float orthoWidth = m_AspectRatio * m_OrthographicSize;
 				float orthoHeight = m_OrthographicSize;
 
-				m_Projection = glm::ortho(
+				m_ProjectionMatrix = glm::ortho(
 					-orthoWidth * 0.5f, orthoWidth * 0.5f,
 					-orthoHeight * 0.5f, orthoHeight * 0.5f,
 					m_OrthographicNearClip, m_OrthographicFarClip

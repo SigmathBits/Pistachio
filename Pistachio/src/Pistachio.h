@@ -24,7 +24,7 @@
 #include "Pistachio/Renderer/Renderer2D.h"
 #include "Pistachio/Renderer/RenderCommand.h"
 
-#include "Pistachio/Renderer/OrthographicCameraController.h"
+#include "Pistachio/Renderer/EditorCamera.h"
 
 #include "Pistachio/Renderer/Shader.h"
 #include "Pistachio/Renderer/Framebuffer.h"
