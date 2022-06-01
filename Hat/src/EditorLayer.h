@@ -19,13 +19,22 @@ namespace Pistachio {
 
 		virtual void OnImGuiRender() override;
 
-		bool OnEvent(Pistachio::Event& event) override;
+		bool OnEvent(Event& event) override;
+
+	private:
+		bool OnKeyPressed(KeyPressedEvent& event) override;
+
+		void NewScene();
+		void OpenScene();
+		void SaveScene();
+		void SaveSceneAs();
 
 	private:
 		OrthographicCameraController m_CameraController;
 
 		Ref<Framebuffer> m_Framebuffer; 
 
+		std::string m_Filepath;
 		Ref<Scene> m_ActiveScene;
 
 		Ref<Texture2D> m_PistachioTexture;

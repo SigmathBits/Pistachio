@@ -6,6 +6,8 @@
 
 #include "Pistachio/Scene/SceneSerializer.h"
 
+#include "Pistachio/Utils/PlatformUtils.h"
+
 
 inline std::ostream& operator<<(std::ostream& ostream, const ImVec2& vector) {
 	return ostream << "ImVec2(" << vector.x << ", " << vector.y << ")";
@@ -15,7 +17,7 @@ inline std::ostream& operator<<(std::ostream& ostream, const ImVec2& vector) {
 namespace Pistachio {
 
 	EditorLayer::EditorLayer()
-		: Layer("Sandbox2D", EVENT_CATEGORY_NONE), m_CameraController(1280, 720, true) {
+		: Layer("Sandbox2D", { EventType::KeyPressed }, EVENT_CATEGORY_NONE), m_CameraController(1280, 720, true) {
 
 	}
 
@@ -172,14 +174,20 @@ namespace Pistachio {
 
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
-				if (ImGui::MenuItem("Serialize")) {
-					SceneSerializer serializer(m_ActiveScene);
-					serializer.Serialize("assets/scenes/Example.pistachio");
+				if (ImGui::MenuItem("New", "Ctrl+N")) {
+					NewScene();
 				}
 
-				if (ImGui::MenuItem("Deserialize")) {
-					SceneSerializer serializer(m_ActiveScene);
-					serializer.Deserialize("assets/scenes/Example.pistachio");
+				if (ImGui::MenuItem("Open...", "Ctrl+O")) {
+					OpenScene();
+				}
+
+				if (ImGui::MenuItem("Save...", "Ctrl+S")) {
+					SaveScene();
+				}
+
+				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) {
+					SaveSceneAs();
 				}
 
 				if (ImGui::MenuItem("Exit")) {
@@ -243,6 +251,90 @@ namespace Pistachio {
 	bool EditorLayer::OnEvent(Event& event) {
 		m_CameraController.SendEvent(event);
 		return false;
+	}
+
+	bool EditorLayer::OnKeyPressed(Pistachio::KeyPressedEvent& event) {
+		// Shortcuts
+		if (event.RepeatCount() > 0) return false;
+
+		bool ctrlPressed = Input::IsKeyPressed(PST_KEY_LEFT_CONTROL) || Input::IsKeyPressed(PST_KEY_RIGHT_CONTROL);
+		bool shiftPressed = Input::IsKeyPressed(PST_KEY_LEFT_SHIFT) || Input::IsKeyPressed(PST_KEY_RIGHT_SHIFT);
+
+		switch (event.KeyCode()) {
+			case PST_KEY_N: {
+				if (ctrlPressed) {
+					NewScene();
+					return true;
+				}
+				break;
+			}
+			case PST_KEY_O: {
+				if (ctrlPressed) {
+					OpenScene();
+					return true;
+				}
+				break;
+			}
+			case PST_KEY_S: {
+				if (ctrlPressed && !shiftPressed) {
+					SaveScene();
+					return true;
+				}
+				if (ctrlPressed && shiftPressed) {
+					SaveSceneAs();
+					return true;
+				}
+				break;
+			}
+			default:
+				break;
+		}
+
+		return false;
+	}
+
+	void EditorLayer::NewScene() {
+		m_ActiveScene = CreateRef<Scene>();
+		m_ActiveScene->OnViewportResize((unsigned int)m_ViewportSize.x, (unsigned int)m_ViewportSize.y);
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_Filepath = "";
+	}
+
+	void EditorLayer::OpenScene() {
+		std::string filepath = FileDialog::OpenFile("Pistachio Scene (*.pistachio)\0*.pistachio\0");
+		if (!filepath.empty()) {
+			NewScene();
+
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.Deserialize(filepath);
+
+			m_Filepath = filepath;
+		}
+	}
+
+	void EditorLayer::SaveScene() {
+		if (m_Filepath.empty()) {
+			SaveSceneAs();
+			return;
+		}
+
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.Serialize(m_Filepath);
+	}
+
+	void EditorLayer::SaveSceneAs() {
+		std::string filepath = FileDialog::SaveFile("Pistachio Scene (*.pistachio)\0*.pistachio\0");
+		if (!filepath.empty()) {
+			const std::string filetype = ".pistachio";
+			if (filepath.compare(filepath.length() - filetype.length(), filetype.length(), filetype) != 0) {
+				filepath = filepath.append(filetype);
+			}
+
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.Serialize(filepath);
+
+			m_Filepath = filepath;
+		}
 	}
 
 }
