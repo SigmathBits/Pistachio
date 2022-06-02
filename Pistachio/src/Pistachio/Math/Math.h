@@ -14,6 +14,11 @@ namespace Pistachio {
 
 		float wrap_rotation(float rotation);
 
+		template<typename T>
+		int sign(T value) {
+			return (value > static_cast<T>(0)) - (value < static_cast<T>(0));
+		}
+
 		bool DecomposeTransform(const glm::mat4& transform, glm::vec3& outTranslation, glm::vec3& outRotation, glm::vec3& outScale);
 
 	}

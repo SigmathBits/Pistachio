@@ -72,14 +72,41 @@ namespace Pistachio {
 
 		unsigned int index = 0;
 		for (const auto& element : layout) {
-			glEnableVertexAttribArray(index);
-			glVertexAttribPointer(
-				index,
-				element.ComponentCount(),
-				ShaderDataTypeToOpenGLBaseType(element.Type),
-				element.Normalised ? GL_TRUE : GL_FALSE,
-				(GLsizei)layout.Stride(), (void*)element.Offset
-			);
+			switch (element.Type) {
+				case ShaderDataType::Float:
+				case ShaderDataType::Float2:
+				case ShaderDataType::Float3:
+				case ShaderDataType::Float4:
+				case ShaderDataType::Mat3:
+				case ShaderDataType::Mat4: {
+					glEnableVertexAttribArray(index);
+					glVertexAttribPointer(
+						index,
+						element.ComponentCount(),
+						ShaderDataTypeToOpenGLBaseType(element.Type),
+						element.Normalised ? GL_TRUE : GL_FALSE,
+						(GLsizei)layout.Stride(), (void*)element.Offset
+					);
+					break;
+				}
+				case ShaderDataType::Int:
+				case ShaderDataType::Int2:
+				case ShaderDataType::Int3:
+				case ShaderDataType::Int4:
+				case ShaderDataType::Bool: {
+					glEnableVertexAttribArray(index);
+					glVertexAttribIPointer(
+						index,
+						element.ComponentCount(),
+						ShaderDataTypeToOpenGLBaseType(element.Type),
+						(GLsizei)layout.Stride(), (void*)element.Offset
+					);
+					break;
+				}
+				default:
+					PST_CORE_ASSERT(false, "Unsupported Shader Data Type");
+					break;
+			}
 			index++;
 		}
 

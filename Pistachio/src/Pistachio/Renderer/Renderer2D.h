@@ -4,7 +4,7 @@
 #include "Pistachio/Renderer/EditorCamera.h"
 #include "Pistachio/Renderer/OrthographicCamera.h"
 
-#include "Pistachio/Renderer/Transform.h" 
+#include "Pistachio/Renderer/Transform2D.h" 
 #include "Pistachio/Renderer/Sprite.h" 
 
 
@@ -23,12 +23,10 @@ namespace Pistachio {
 
 		// Primitives
 		static void DrawQuad(const glm::mat4& transformMatrix, const glm::vec4& colour);
-		static void DrawQuad(const Transform& transform, const glm::vec4& colour);
-		static void DrawQuad(const RotatedTransform& transform, const glm::vec4& colour);
+		static void DrawQuad(const Transform2D& transform, const glm::vec4& colour);
 
-		static void DrawQuad(const glm::mat4& transformMatrix, const Sprite& sprite);
-		static void DrawQuad(const Transform& transform, const Sprite& sprite);
-		static void DrawQuad(const RotatedTransform& transform, const Sprite& sprite);
+		static void DrawSprite(const glm::mat4& transformMatrix, const Sprite& sprite, int entityID = -1);
+		static void DrawSprite(const Transform2D& transform, const Sprite& sprite, int entityID = -1);
 
 		// Stats
 		struct Statistics {

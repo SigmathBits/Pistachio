@@ -14,6 +14,7 @@ namespace Pistachio {
 		SceneHierarchyPanel(const Ref<Scene>& scene);
 
 		inline Entity SelectedEntity() const { return m_SelectedEntity; }
+		inline void SetSelectedEntity(Entity entity) { m_SelectedEntity = entity; }
 
 		void SetContext(const Ref<Scene>& scene);
 

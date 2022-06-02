@@ -52,7 +52,7 @@ void Sandbox2DLayer::OnUpdate(Pistachio::Timestep timestep) {
 		// Squares
 		Pistachio::Renderer2D::BeginScene(m_CameraController.Camera());
 
-		Pistachio::Renderer2D::DrawQuad({ { 0.0f, 0.0f, 0.9f }, { 10.0f, 10.0f } }, { m_CheckerboardTexture, { 0.6f, 0.8f, 0.9f, 0.1f }, 10.0f });
+		Pistachio::Renderer2D::DrawSprite({ { 0.0f, 0.0f, 0.9f }, { 10.0f, 10.0f } }, { m_CheckerboardTexture, { 0.6f, 0.8f, 0.9f, 0.1f }, 10.0f });
 
 		Pistachio::Renderer2D::DrawQuad({ { 0.5f, 0.5f, 0.2f } }, { 1.0f, 0.0f, 1.0f, 1.0f });
 
@@ -85,9 +85,9 @@ void Sandbox2DLayer::OnUpdate(Pistachio::Timestep timestep) {
 
 		static float rotation = 0.0f;
 		rotation += 30.0f * timestep;
-		Pistachio::Renderer2D::DrawQuad({ { 0.0f, 0.0f, -0.52f }, glm::radians(rotation) }, { m_PistachioTexture, 2.0f });
+		Pistachio::Renderer2D::DrawSprite({ { 0.0f, 0.0f, -0.52f }, glm::radians(rotation) }, { m_PistachioTexture, 2.0f });
 
-		Pistachio::Renderer2D::DrawQuad({ { 0.5f, 0.5f, -0.6f } }, m_RainbowDashTexture);
+		Pistachio::Renderer2D::DrawSprite({ { 0.5f, 0.5f, -0.6f } }, m_RainbowDashTexture);
 
 		Pistachio::Renderer2D::EndScene();
 	}

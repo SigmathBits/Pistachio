@@ -177,7 +177,7 @@
     <ClInclude Include="src\Pistachio\Renderer\Sprite.h" />
     <ClInclude Include="src\Pistachio\Renderer\SubTexture2D.h" />
     <ClInclude Include="src\Pistachio\Renderer\Texture.h" />
-    <ClInclude Include="src\Pistachio\Renderer\Transform.h" />
+    <ClInclude Include="src\Pistachio\Renderer\Transform2D.h" />
     <ClInclude Include="src\Pistachio\Renderer\VertexArray.h" />
     <ClInclude Include="src\Pistachio\Scene\Components.h" />
     <ClInclude Include="src\Pistachio\Scene\Entity.h" />
@@ -638,6 +638,7 @@
     <ClCompile Include="src\Pistachio\Renderer\Shader.cpp" />
     <ClCompile Include="src\Pistachio\Renderer\SubTexture2D.cpp" />
     <ClCompile Include="src\Pistachio\Renderer\Texture.cpp" />
+    <ClCompile Include="src\Pistachio\Renderer\Transform2D.cpp" />
     <ClCompile Include="src\Pistachio\Renderer\VertexArray.cpp" />
     <ClCompile Include="src\Pistachio\Scene\Entity.cpp" />
     <ClCompile Include="src\Pistachio\Scene\Scene.cpp" />

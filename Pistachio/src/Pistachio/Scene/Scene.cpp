@@ -37,7 +37,7 @@ namespace Pistachio {
 		{
 			auto group = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
 			for (auto&& [entity, spriteComponent, transform] : group.each()) {
-				Renderer2D::DrawQuad(transform.Transform(), spriteComponent.Sprite);
+				Renderer2D::DrawSprite(transform.Transform(), spriteComponent.Sprite, (int)entity);
 			}
 		}
 
@@ -82,7 +82,7 @@ namespace Pistachio {
 		{
 			auto group = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
 			for (auto&& [entity, spriteComponent, transform] : group.each()) {
-				Renderer2D::DrawQuad(transform.Transform(), spriteComponent.Sprite);
+				Renderer2D::DrawSprite(transform.Transform(), spriteComponent.Sprite);
 			}
 		}
 

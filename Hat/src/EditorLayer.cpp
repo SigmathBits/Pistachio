@@ -22,8 +22,9 @@ inline std::ostream& operator<<(std::ostream& ostream, const ImVec2& vector) {
 namespace Pistachio {
 
 	EditorLayer::EditorLayer()
-		: Layer("Sandbox2D", { EventType::KeyPressed }, EVENT_CATEGORY_NONE), m_EditorCamera(1280, 720, 45.0f, 0.001f, 1000.0f) {
-
+		: Layer("Sandbox2D", { EventType::KeyPressed }, EVENT_CATEGORY_MOUSE_BUTTON), m_EditorCamera(1280, 720, 45.0f, 0.001f, 1000.0f) {
+		m_ViewportBounds[0] = { 0.0f, 0.0f };
+		m_ViewportBounds[1] = { 0.0f, 0.0f };
 	}
 
 	EditorLayer::~EditorLayer() {
@@ -38,10 +39,12 @@ namespace Pistachio {
 		m_CheckerboardTexture = Texture2D::Create("assets/textures/Checkerboard.png");
 
 		FramebufferSpecification frameBufferSpec{ 1280, 720 };
+		frameBufferSpec.AttachmentsSpecification = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
 		m_Framebuffer = Framebuffer::Create(frameBufferSpec);
 
 		m_ActiveScene = CreateRef<Scene>();
 
+		// Load last save
 		std::ifstream inFile("assets/scenes/.pistachio_last_save");
 		if (inFile) {
 			std::string filepath;
@@ -147,8 +150,24 @@ namespace Pistachio {
 		RenderCommand::SetClearColour({ 0.03f, 0.10f, 0.15f, 1 });
 		RenderCommand::Clear();
 
+		// Clear our Entity ID attachment (index 1) to -1
+		m_Framebuffer->ClearColourAttachment(1, -1);
+
 		// Update Scene
 		m_ActiveScene->OnUpdateEditor(timestep, m_EditorCamera);
+
+		// Capture which Entity is being hovered over
+		auto [x, y] = ImGui::GetMousePos();
+		glm::vec2 mousePosition = { x, y };
+		mousePosition -= m_ViewportBounds[0];
+
+		int mouseX = (int)mousePosition.x;
+		int mouseY = (int)(m_ViewportSize.y - mousePosition.y);
+
+		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)m_ViewportSize.x && mouseY < (int)m_ViewportSize.y) {
+			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
+			m_HoveredEntity = pixelData == -1 ? Entity{} : Entity{ (entt::entity)pixelData, m_ActiveScene.get() };
+		}
 
 		m_Framebuffer->Unbind();
 	}
@@ -225,8 +244,14 @@ namespace Pistachio {
 
 
 		{
+			std::string name = "None";
+			if (m_HoveredEntity) {
+				name = m_HoveredEntity.Component<TagComponent>().Tag;
+			}
+
 			auto stats = Renderer2D::RetrieveStats();
 			ImGui::Begin("Renderer2D Statistics");
+			ImGui::Text("Hovered Entity: %s", name.c_str());
 			ImGui::Text("Draw Calls: %d", stats.DrawCalls);
 			ImGui::Text("Quad Count: %d", stats.QuadCount);
 			ImGui::Text("Vertex Count: %d", stats.TotalVertexCount());
@@ -234,18 +259,25 @@ namespace Pistachio {
 			ImGui::End();
 		}
 
+		/// Viewport
 		// Display framebuffer to viewport
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		ImGui::Begin("Viewport");
 
+		ImVec2 viewportOffset = ImGui::GetCursorPos();  // Includes the tab/title bar
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+		ImVec2 viewportPanelPosition = ImGui::GetWindowPos();
 
-		unsigned int colourAttachmentID = m_Framebuffer->ColourAttachmentRendererID();
+		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+		m_ViewportBounds[0] = { viewportPanelPosition.x + viewportOffset.x, viewportPanelPosition.y + viewportOffset.y };
+		m_ViewportBounds[1] = { viewportPanelPosition.x + m_ViewportSize.x, viewportPanelPosition.y + m_ViewportSize.y };
+
+		// Draw Colour Attachment buffer to viewport
+		unsigned int colourAttachmentID = m_Framebuffer->ColourAttachmentRendererID(0);
 		ImGui::Image((void*)(size_t)colourAttachmentID, viewportPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
+
 		// Determine when ImGui should block events
-		ImVec2 viewportPanelPosition = ImGui::GetWindowPos();
 		glm::vec2 viewportPosition = { viewportPanelPosition.x, viewportPanelPosition.y };
 		if (m_ViewportPosition != viewportPosition) {
 			m_ViewportPosition = viewportPosition;
@@ -269,8 +301,7 @@ namespace Pistachio {
 			ImGuizmo::SetDrawlist();
 
 			// Set our viewport (rectangle)
-			ImVec2 windowSize = ImGui::GetWindowSize();
-			ImGuizmo::SetRect(viewportPanelPosition.x, viewportPanelPosition.y, windowSize.x, windowSize.y);
+			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportSize.x, m_ViewportSize.y);
 
 			// Runtime Camera projection and view
 			//auto cameraEntity = m_ActiveScene->PrimaryCameraEntity();
@@ -300,7 +331,7 @@ namespace Pistachio {
 				glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr
 			);
 
-			if (ImGuizmo::IsUsing()) {
+			if (m_AllowGizmoInteraction && ImGuizmo::IsUsing()) {
 				glm::vec3 translation, rotation, scale;
 				Math::DecomposeTransform(transform, translation, rotation, scale);
 
@@ -383,6 +414,17 @@ namespace Pistachio {
 				break;
 		}
 
+		return false;
+	}
+
+	bool EditorLayer::OnMouseButtonReleased(MouseButtonReleasedEvent& event) {
+		if (event.MouseButton() == PST_MOUSE_BUTTON_LEFT && m_ViewportHovered && !ImGuizmo::IsOver()) {
+			if (m_GizmoType == -1) {
+				m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+			}
+			m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+			m_PropertiesPanel.SetSelectedEntity(m_SceneHierarchyPanel.SelectedEntity());
+		}
 		return false;
 	}
 

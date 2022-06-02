@@ -23,6 +23,7 @@ namespace Pistachio {
 
 	private:
 		bool OnKeyPressed(KeyPressedEvent& event) override;
+		bool OnMouseButtonReleased(MouseButtonReleasedEvent& event) override;
 
 		void NewScene();
 		void FileOpen();
@@ -47,11 +48,16 @@ namespace Pistachio {
 
 		glm::vec2 m_ViewportPosition{ 0.0f, 0.0f };
 		glm::vec2 m_ViewportSize{ 1280, 720 };
+		glm::vec2 m_ViewportBounds[2];
+
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
 		bool m_ViewportIsDragging = false;
 
+		bool m_AllowGizmoInteraction = true;
 		int m_GizmoType = -1;
+		
+		Entity m_HoveredEntity;
 
 		// Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;

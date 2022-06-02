@@ -25,7 +25,7 @@ namespace Pistachio {
 
 		void SetViewportSize(unsigned int width, unsigned int height);
 
-		glm::quat Orientation() const;
+		glm::mat4 Orientation() const;
 		glm::vec3 LocalXDirection() const;
 		glm::vec3 LocalYDirection() const;
 		glm::vec3 LocalZDirection() const;
@@ -59,7 +59,7 @@ namespace Pistachio {
 		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 m_FocalPoint = { 0.0f, 0.0f, 0.0f };
 
-		float m_Pitch = 0.0f, m_Yaw = 0.0f, m_Roll = 0.0f;  // Rotation
+		float m_Yaw = 0.0f, m_Pitch = 0.0f, m_Roll = 0.0f;  // Rotation
 		float m_Distance = 10.0f;
 
 		CameraMoveMode m_CameraMoveMode = CAMERA_NONE;

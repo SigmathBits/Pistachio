@@ -174,7 +174,7 @@
     <ClInclude Include="src\Pistachio\Renderer\Texture.h">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Pistachio\Renderer\Transform.h">
+    <ClInclude Include="src\Pistachio\Renderer\Transform2D.h">
       <Filter>src\Pistachio\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Pistachio\Renderer\VertexArray.h">
@@ -1608,5 +1608,6 @@
     </ClCompile>
     <ClCompile Include="src\Pistachio\Math\Math.cpp" />
     <ClCompile Include="src\Pistachio\Renderer\EditorCamera.cpp" />
+    <ClCompile Include="src\Pistachio\Renderer\Transform2D.cpp" />
   </ItemGroup>
 </Project>

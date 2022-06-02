@@ -15,8 +15,11 @@ namespace Pistachio {
 		glm::vec4 Position;
 		glm::vec4 Colour;
 		glm::vec2 TextureCoords;
-		float TextureIndex;
+		unsigned int TextureIndex;
 		float TilingScale;
+
+		// Editor-Only
+		int EntityID = -1;
 	};
 
 	struct Renderer2DData {
@@ -76,13 +79,15 @@ namespace Pistachio {
 			{ ShaderDataType::Float4, "a_Position" },
 			{ ShaderDataType::Float4, "a_Colour" },
 			{ ShaderDataType::Float2, "a_TextureCoords" },
-			{ ShaderDataType::Float, "a_TextureIndex" },
-			{ ShaderDataType::Float, "a_TilingScale" },
+			{ ShaderDataType::Int,  "a_TextureIndex" },
+			{ ShaderDataType::Float,  "a_TilingScale" },
+			// Editor-Only
+			{ ShaderDataType::Int,    "a_EntityID" },
 		});
 		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
 
 		// Index Buffer
-		Ref<unsigned int[]> quadIndices(new unsigned int[s_Data.MaxIndices]);
+		Scoped<unsigned int[]> quadIndices(new unsigned int[s_Data.MaxIndices]);
 		
 		unsigned int offset = 0;
 		for (size_t i = 0; i < s_Data.MaxIndices; i += 6) {
@@ -101,7 +106,7 @@ namespace Pistachio {
 		s_Data.QuadVertexArray->SetIndexBuffer(quadIndexBuffer);
 
 		// Shader
-		s_Data.Shader = Shader::Create("assets/shaders/BatchTexture.glsl");
+		s_Data.Shader = Shader::Create("assets/shaders/Editor.glsl");
 
 		int samplers[Renderer2DData::MaxTextureSlots];
 		for (size_t i = 0; i < Renderer2DData::MaxTextureSlots; i++) {
@@ -213,26 +218,13 @@ namespace Pistachio {
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const Transform& transform, const glm::vec4& colour) {
+	void Renderer2D::DrawQuad(const Transform2D& transform, const glm::vec4& colour) {
 		PST_PROFILE_FUNCTION();
 
-		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
-		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
-
-		DrawQuad(transformMatrix, colour);
+		DrawQuad(transform.TransformMatrix(), colour);
 	}
 
-	void Renderer2D::DrawQuad(const RotatedTransform& transform, const glm::vec4& colour) {
-		PST_PROFILE_FUNCTION();
-
-		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
-		transformMatrix = glm::rotate(transformMatrix, transform.Rotation, { 0.0f, 0.0f, 1.0f });
-		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
-
-		DrawQuad(transformMatrix, colour);
-	}
-
-	void Renderer2D::DrawQuad(const glm::mat4& transformMatrix, const Sprite& sprite) {
+	void Renderer2D::DrawSprite(const glm::mat4& transformMatrix, const Sprite& sprite, int entityID /*= -1*/) {
 		PST_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices) {
@@ -262,7 +254,7 @@ namespace Pistachio {
 		float tilingScale = sprite.TilingScale;
 
 		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
-			*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], colour, textureCoords[i], (float)textureIndex, tilingScale };
+			*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], colour, textureCoords[i], textureIndex, tilingScale, entityID };
 		}
 
 		s_Data.QuadIndexCount += 6;
@@ -270,23 +262,10 @@ namespace Pistachio {
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const Transform& transform, const Sprite& sprite) {
+	void Renderer2D::DrawSprite(const Transform2D& transform, const Sprite& sprite, int entityID /*= -1*/) {
 		PST_PROFILE_FUNCTION();
 
-		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
-		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
-
-		DrawQuad(transformMatrix, sprite);
-	}
-
-	void Renderer2D::DrawQuad(const RotatedTransform& transform, const Sprite& sprite) {
-		PST_PROFILE_FUNCTION();
-
-		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
-		transformMatrix = glm::rotate(transformMatrix, transform.Rotation, { 0.0f, 0.0f, 1.0f });
-		transformMatrix = glm::scale(transformMatrix, glm::vec3(transform.Size, 1.0f));
-
-		DrawQuad(transformMatrix, sprite);
+		DrawSprite(transform.TransformMatrix(), sprite, entityID);
 	}
 
 	void Renderer2D::ResetStats() {

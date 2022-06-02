@@ -6,8 +6,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-#define GLM_ENABLE_EXPERIMENTAL
+//#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 #include "Pistachio/Core/Common.h"
 
@@ -83,7 +84,7 @@ namespace Pistachio {
 	void EditorCamera::CalculateProjectionView() {
 		CalculatePosition();
 
-		m_CameraViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(Orientation());
+		m_CameraViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * Orientation();
 		m_ViewMatrix = glm::inverse(m_CameraViewMatrix);
 		m_ProjectionViewMatrix = m_ProjectionMatrix * m_ViewMatrix;
 
@@ -99,7 +100,7 @@ namespace Pistachio {
 			 m_ProjectionWidth * position.x / (float)m_ViewportWidth,
 			-m_ProjectionWidth * position.y / (float)m_ViewportHeight,
 			0.0f,
-			1.0f,
+			0.0f,
 		};
 	}
 
@@ -146,15 +147,16 @@ namespace Pistachio {
 			m_FocalPointTarget = m_FocalPoint;
 			CalculateProjectionView();
 		} else if (m_CameraMoveMode == CAMERA_ROTATE) {
-			glm::vec2 mouseDelta = m_InitialMousePosition - mouse;
+			glm::vec2 mouseDelta = glm::rotate(glm::vec2(m_InitialMousePosition - mouse), m_Roll);
 			m_InitialMousePosition = mouse;
 
-			const float yawSign = LocalYDirection().y < 0 ? -1.0f : 1.0f;
-			m_Pitch += yawSign * mouseDelta.x * 2 * Math::pi / m_ProjectionWidth;
-			m_Yaw += mouseDelta.y * 2 * Math::pi / m_ProjectionWidth;
+			const float ySign = LocalYDirection().y < 0 ? -1.0f : 1.0f;
 
-			m_PitchTarget = m_Pitch;
+			m_Yaw += ySign * mouseDelta.x * 2 * Math::pi / m_ProjectionWidth;
+			m_Pitch += mouseDelta.y * 2 * Math::pi / m_ProjectionWidth;
+
 			m_YawTarget = m_Yaw;
+			m_PitchTarget = m_Pitch;
 
 			CalculateProjectionView();
 		}
@@ -188,8 +190,8 @@ namespace Pistachio {
 		if (Input::IsKeyPressed(PST_KEY_LEFT_ALT) && event.KeyCode() == PST_KEY_R && event.RepeatCount() == 0) {
 			m_FocalPointTarget = { 0.0f, 0.0f, 0.0f };
 
-			m_PitchTarget = 0.0f;
 			m_YawTarget = 0.0f;
+			m_PitchTarget = 0.0f;
 			m_RollTarget = 0.0f;
 
 			m_DistanceTarget = 10.0f;
@@ -200,20 +202,21 @@ namespace Pistachio {
 		return false;
 	}
 
-	glm::quat EditorCamera::Orientation() const {
-		return glm::quat(glm::vec3(-m_Pitch, m_Yaw, m_Roll));
+	glm::mat4 EditorCamera::Orientation() const {
+		return glm::yawPitchRoll(m_Yaw, -m_Pitch, m_Roll);
+		//return glm::toMat4(glm::quat(glm::vec3(-m_Pitch, m_Yaw, m_Roll)));
 	}
 
 	glm::vec3 EditorCamera::LocalXDirection() const {
-		return glm::rotate(Orientation(), glm::vec3(1.0f, 0.0f, 0.0f));
+		return Orientation() * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	}
 
 	glm::vec3 EditorCamera::LocalYDirection() const {
-		return glm::rotate(Orientation(), glm::vec3(0.0f, 1.0f, 0.0f));
+		return Orientation() * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 	}
 
 	glm::vec3 EditorCamera::LocalZDirection() const {
-		return glm::rotate(Orientation(), glm::vec3(0.0f, 0.0f, 1.0f));
+		return Orientation() * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 	}
 
 }
