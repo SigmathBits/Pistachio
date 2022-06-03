@@ -9,9 +9,12 @@ namespace Pistachio {
 
 	struct Sprite {
 		Ref<SubTexture2D> SubTexture;
-		glm::vec4 TintColour;
-		float TilingScale;
+		glm::vec4 TintColour = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float TilingScale = 1.0f;
 		
+		Sprite()
+			: SubTexture(CreateRef<SubTexture2D>(nullptr)) { }
+
 		Sprite(const Ref<Pistachio::SubTexture2D>& texture, const glm::vec4& tintColour = glm::vec4(1.0f), float tilingScale = 1.0f)
 			: SubTexture(texture), TintColour(tintColour), TilingScale(tilingScale) {}
 

@@ -7,13 +7,19 @@
 #include "Pistachio/Core/Application.h"
 #include "Pistachio/Core/Input.h"
 
+#include "Pistachio/Renderer/Texture.h"
+
+#include "Pistachio/Utils/Utils.h"
+
 
 namespace Pistachio {
+
 
 	ContentBrowserPanel::ContentBrowserPanel(const std::string& directory) 
 		: EventListener({ EventType::MouseScrolled }), m_AssetsDirectory(directory), m_CurrentDirectory(directory) {
 		m_DirectoryIcon = Texture2D::Create("resources/icons/content-browser/folder.png");
 		m_FileIcon = Texture2D::Create("resources/icons/content-browser/file.png");
+		m_ImageIcon = Texture2D::Create("resources/icons/content-browser/image.png");
 	}
 
 	void ContentBrowserPanel::OnImGuiRender() {
@@ -60,12 +66,24 @@ namespace Pistachio {
 
 			ImGui::PushID(path.string().c_str());
 
-			auto icon = directoryEntry.is_directory() ? m_DirectoryIcon : m_FileIcon;
+			Ref<Texture2D> icon;
+			if (Utils::EndsWith(filename, ".png")) {
+				icon = m_ImageIcon;
+			} else {
+				icon = directoryEntry.is_directory() ? m_DirectoryIcon : m_FileIcon;
+			}
+
 			ImGui::ImageButton((ImTextureID)icon->RendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
 
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 				std::string itemPath = path.string();
 				ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath.c_str(), itemPath.size() + 1);
+
+				float lineHeight = ImGui::GetTextLineHeight();
+				ImGui::Image((ImTextureID)icon->RendererID(), { lineHeight, lineHeight }, { 0, 1 }, { 1, 0 });
+				ImGui::SameLine();
+				ImGui::Text(filename.c_str());
+
 				ImGui::EndDragDropSource();
 			}
 
@@ -75,7 +93,7 @@ namespace Pistachio {
 				}
 			}
 
-			ImGui::BeginHorizontal("Name", { cellSize, 0.0f });
+			ImGui::BeginHorizontal("Name", { (float)m_ThumbnailSize, 0.0f });
 			ImGui::Spring(1);
 			ImGui::TextWrapped(filename.c_str());
 			ImGui::Spring(1);
@@ -104,5 +122,3 @@ namespace Pistachio {
 	}
 
 }
-
-

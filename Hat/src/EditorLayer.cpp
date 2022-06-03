@@ -12,6 +12,7 @@
 #include "Pistachio/Scene/SceneSerializer.h"
 
 #include "Pistachio/Math/Math.h"
+#include "Pistachio/Utils/Utils.h"
 #include "Pistachio/Utils/PlatformUtils.h"
 
 
@@ -22,7 +23,7 @@ inline std::ostream& operator<<(std::ostream& ostream, const ImVec2& vector) {
 
 namespace Pistachio {
 
-	static const std::string FileExtension = ".pistachio";
+	static const std::string PistachioSceneFileExtension = ".pistachio";
 
 	EditorLayer::EditorLayer()
 		: Layer("Sandbox2D", { EventType::KeyPressed }, EVENT_CATEGORY_MOUSE_BUTTON), m_EditorCamera(1280, 720, 45.0f, 0.001f, 1000.0f),
@@ -42,6 +43,9 @@ namespace Pistachio {
 		m_PistachioTexture = Texture2D::Create("assets/textures/Pistachio.png");
 		m_RainbowDashTexture = Texture2D::Create("assets/textures/Rainbow-Dash.png");
 		m_CheckerboardTexture = Texture2D::Create("assets/textures/Checkerboard.png");
+
+		m_PlayIcon = Texture2D::Create("resources/icons/toolbar/play.png");
+		m_StopIcon = Texture2D::Create("resources/icons/toolbar/stop.png");
 
 		FramebufferSpecification frameBufferSpec{ 1280, 720 };
 		frameBufferSpec.AttachmentsSpecification = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
@@ -90,8 +94,6 @@ namespace Pistachio {
 			m_ActiveScene->OnViewportResize(width, height);
 		}
 
-		m_EditorCamera.OnUpdate(timestep);
-
 
 		// Render
 		Renderer2D::ResetStats();
@@ -105,7 +107,18 @@ namespace Pistachio {
 		m_Framebuffer->ClearColourAttachment(1, -1);
 
 		// Update Scene
-		m_ActiveScene->OnUpdateEditor(timestep, m_EditorCamera);
+		switch (m_SceneState) {
+			case SceneState::Edit: {
+				m_EditorCamera.OnUpdate(timestep);
+
+				m_ActiveScene->OnUpdateEditor(timestep, m_EditorCamera);
+				break;
+			}
+			case SceneState::Play: {
+				m_ActiveScene->OnUpdateRuntime(timestep);
+				break;
+			}
+		}
 
 
 		// Capture which Entity is being hovered over
@@ -210,7 +223,7 @@ namespace Pistachio {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM")) {
 				std::string path = (const char*)payload->Data;
 
-				if (path.compare(path.length() - FileExtension.length(), FileExtension.length(), FileExtension) == 0) {
+				if (Utils::EndsWith(path, PistachioSceneFileExtension)) {
 					NewScene();
 					LoadSceneFile(std::string(path));
 				}
@@ -238,7 +251,7 @@ namespace Pistachio {
 
 		// Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.SelectedEntity();
-		if (selectedEntity && m_GizmoType != -1) {
+		if (selectedEntity && m_GizmoType != -1 && m_SceneState == SceneState::Edit) {
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 
@@ -310,12 +323,52 @@ namespace Pistachio {
 			ImGui::End();
 		}
 
+		UIToolbar();
+
 		ImGui::End();
+	}
+
+	void EditorLayer::UIToolbar() {
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 2.0f });
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, { 0.0f, 0.0f });
+		ImGui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
+		//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.0f, 0.0f, 0.0f, 0.0f });
+		//ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.0f, 0.0f, 0.0f, 0.0f });
+
+		ImGui::Begin("##Toolbar", nullptr,
+			ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+		float size = ImGui::GetWindowHeight() - 4.0f;
+		Ref<Texture2D> icon = m_SceneState == SceneState::Edit ? m_PlayIcon : m_StopIcon;
+
+		ImGui::SetCursorPosX(0.5f * ImGui::GetWindowContentRegionMax().x - 0.5f * size);
+		if (ImGui::ImageButton((ImTextureID)icon->RendererID(), { size, size }, { 0, 1 }, { 1, 0 }, 0)) {
+			if (m_SceneState == SceneState::Edit) {
+				OnScenePlay();
+			} else if (m_SceneState == SceneState::Play) {
+				OnSceneStop();
+			}
+		}
+
+		ImGui::End();
+
+		ImGui::PopStyleVar(2);
+		ImGui::PopStyleColor();
+	}
+
+	void EditorLayer::OnScenePlay() {
+		m_SceneState = SceneState::Play;
+	}
+
+	void EditorLayer::OnSceneStop() {
+		m_SceneState = SceneState::Edit;
 	}
 
 	bool EditorLayer::OnEvent(Event& event) {
 		m_ContentBrowserPanel.SendEvent(event);
-		m_EditorCamera.SendEvent(event);
+		if (m_SceneState == SceneState::Edit) {
+			m_EditorCamera.SendEvent(event);
+		}
 		return false;
 	}
 
@@ -424,8 +477,8 @@ namespace Pistachio {
 		std::string filepath = FileDialog::SaveFile("Pistachio Scene (*.pistachio)\0*.pistachio\0");
 		if (!filepath.empty()) {
 			
-			if (filepath.compare(filepath.length() - FileExtension.length(), FileExtension.length(), FileExtension) != 0) {
-				filepath = filepath.append(FileExtension);
+			if (!Utils::EndsWith(filepath, PistachioSceneFileExtension)) {
+				filepath = filepath.append(PistachioSceneFileExtension);
 			}
 
 			SaveSceneFile(filepath);

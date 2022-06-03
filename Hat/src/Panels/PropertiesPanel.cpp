@@ -7,6 +7,8 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Pistachio/Utils/Utils.h"
+
 
 namespace Pistachio {
 
@@ -15,6 +17,10 @@ namespace Pistachio {
 
 	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 
+
+	PropertiesPanel::PropertiesPanel() {
+		m_ImageIcon = Texture2D::Create("resources/icons/content-browser/image.png");
+	}
 
 	void PropertiesPanel::OnImGuiRender() {
 		ImGui::Begin("Properties");
@@ -154,8 +160,32 @@ namespace Pistachio {
 			}
 		});
 
-		DrawComponentProperties<SpriteRendererComponent>(entity, "Sprite Renderer", [](auto& spriteComponent) {
+		DrawComponentProperties<SpriteRendererComponent>(entity, "Sprite Renderer", [this](auto& spriteComponent) {
+			if (spriteComponent.Sprite.SubTexture->Texture()) {
+				ImGui::ImageButton((ImTextureID)m_ImageIcon->RendererID(), { 100.0f, 100.0f }, { 0, 1 }, { 1, 0 }, 0);
+				if (ImGui::BeginPopupContextItem(nullptr, ImGuiMouseButton_Right)) {
+					if (ImGui::MenuItem("Remove Texture")) {
+						spriteComponent.Sprite.SubTexture = CreateRef<SubTexture2D>(nullptr);
+					}
+					ImGui::EndPopup();
+				}
+			} else {
+				ImGui::Button("Drag & Drop\n   Texture  ", { 100.0f, 100.0f });
+			}
+
+			if (ImGui::BeginDragDropTarget()) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM")) {
+					std::string path = (const char*)payload->Data;
+
+					if (Utils::EndsWith(path, ".png")) {
+						spriteComponent.Sprite.SubTexture = CreateRef<SubTexture2D>(Texture2D::Create(path));
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
+
 			ImGui::ColorEdit4("Colour", glm::value_ptr(spriteComponent.Sprite.TintColour));
+			ImGui::DragFloat("Tiling Factor", &spriteComponent.Sprite.TilingScale, 0.1f, 0.0f, 10.0f);
 		});
 	}
 
@@ -166,13 +196,7 @@ namespace Pistachio {
 			if (!entity.HasComponent<SpriteRendererComponent>()) {
 				isEmpty = false;
 				if (ImGui::MenuItem("Sprite Renderer")) {
-					// Default White Texture
-					// FIXME: This is a workaround, shouldn't be making textures here
-					static auto whiteTexture = Texture2D::Create(1, 1);
-					unsigned int whiteTextureData = 0xFFFFFFFF;
-					whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
-
-					entity.AddComponent<SpriteRendererComponent>(whiteTexture);
+					entity.AddComponent<SpriteRendererComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 			}

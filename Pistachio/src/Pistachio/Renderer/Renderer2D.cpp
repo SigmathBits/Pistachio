@@ -16,7 +16,7 @@ namespace Pistachio {
 		glm::vec4 Position;
 		glm::vec4 Colour;
 		glm::vec2 TextureCoords;
-		float TextureIndex;
+		unsigned int TextureIndex;
 		float TilingScale;
 
 		// Editor-Only
@@ -86,7 +86,7 @@ namespace Pistachio {
 			{ ShaderDataType::Float4, "a_Position" },
 			{ ShaderDataType::Float4, "a_Colour" },
 			{ ShaderDataType::Float2, "a_TextureCoords" },
-			{ ShaderDataType::Float,  "a_TextureIndex" },
+			{ ShaderDataType::Int,  "a_TextureIndex" },
 			{ ShaderDataType::Float,  "a_TilingScale" },
 			// Editor-Only
 			{ ShaderDataType::Int,    "a_EntityID" },
@@ -228,9 +228,13 @@ namespace Pistachio {
 		}
 
 		unsigned int textureIndex = 0;
+		Ref<Texture> texture = sprite.SubTexture->Texture();
+		if (!texture) {
+			texture = s_Data.WhiteTexture;
+		}
 
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++) {
-			if (*sprite.SubTexture->Texture() == *s_Data.TextureSlots[i]) {
+			if (*texture == *s_Data.TextureSlots[i]) {
 				textureIndex = (unsigned int)i;
 				break;
 			}
@@ -242,7 +246,7 @@ namespace Pistachio {
 			}
 
 			textureIndex = s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex++] = sprite.SubTexture->Texture();
+			s_Data.TextureSlots[s_Data.TextureSlotIndex++] = texture;
 		}
 
 		glm::vec4 colour = sprite.TintColour;
@@ -250,7 +254,7 @@ namespace Pistachio {
 		float tilingScale = sprite.TilingScale;
 
 		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
-			*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], colour, textureCoords[i], (float)textureIndex, tilingScale, entityID };
+			*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], colour, textureCoords[i], textureIndex, tilingScale, entityID };
 		}
 
 		s_Data.QuadIndexCount += 6;

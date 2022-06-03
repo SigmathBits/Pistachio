@@ -24,6 +24,7 @@ namespace Pistachio {
 
 		Ref<Texture2D> m_DirectoryIcon;
 		Ref<Texture2D> m_FileIcon;
+		Ref<Texture2D> m_ImageIcon;
 
 		unsigned int m_ThumbnailSize = 128;
 		unsigned int m_Padding = 16;

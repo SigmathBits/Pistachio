@@ -106,6 +106,12 @@ namespace Pistachio {
 
 			auto& spriteComponent = entity.Component<SpriteRendererComponent>();
 
+			std::string textureResourceLocation = "";
+			if (auto& texture = spriteComponent.Sprite.SubTexture->Texture()) {
+				textureResourceLocation = texture->ResourceLocation();
+			}
+
+			out << YAML::Key << "TextureResourceLocation" << YAML::Value << textureResourceLocation;
 			out << YAML::Key << "Colour" << YAML::Value << spriteComponent.Sprite.TintColour;
 			out << YAML::Key << "TilingScale" << YAML::Value << spriteComponent.Sprite.TilingScale;
 
@@ -194,13 +200,14 @@ namespace Pistachio {
 
 			auto spriteRendererComponentData = entityData["SpriteRendererComponent"];
 			if (spriteRendererComponentData) {
-				// Default White Texture
-				// FIXME: This is a workaround, shouldn't be making textures here
-				static auto whiteTexture = Texture2D::Create(1, 1);
-				unsigned int whiteTextureData = 0xFFFFFFFF;
-				whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+				auto& spriteComponent = entity.AddComponent<SpriteRendererComponent>();
 
-				auto& spriteComponent = entity.AddComponent<SpriteRendererComponent>(whiteTexture);
+				if (auto node = spriteRendererComponentData["TextureResourceLocation"]) {
+					std::string textureResourceLocation = node.as<std::string>();
+					if (!textureResourceLocation.empty()) {
+						spriteComponent.Sprite.SubTexture = CreateRef<SubTexture2D>(Texture2D::Create(textureResourceLocation));
+					}
+				}
 
 				spriteComponent.Sprite.TintColour = spriteRendererComponentData["Colour"].as<glm::vec4>();
 				spriteComponent.Sprite.TilingScale = spriteRendererComponentData["TilingScale"].as<float>();

@@ -20,9 +20,14 @@ namespace Pistachio {
 
 		virtual void OnImGuiRender() override;
 
-		bool OnEvent(Event& event) override;
+		void UIToolbar();
 
 	private:
+		void OnScenePlay();
+		void OnSceneStop();
+
+		bool OnEvent(Event& event) override;
+
 		bool OnKeyPressed(KeyPressedEvent& event) override;
 		bool OnMouseButtonReleased(MouseButtonReleasedEvent& event) override;
 
@@ -59,10 +64,20 @@ namespace Pistachio {
 		
 		Entity m_HoveredEntity;
 
+		enum class SceneState {
+			Edit = 0, Play,
+		};
+
+		SceneState m_SceneState = SceneState::Edit;
+
 		// Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		PropertiesPanel m_PropertiesPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
+
+		// Editor Resources
+		Ref<Texture2D> m_PlayIcon;
+		Ref<Texture2D> m_StopIcon;
 	};
 
 }

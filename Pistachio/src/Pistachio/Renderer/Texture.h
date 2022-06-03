@@ -18,6 +18,8 @@ namespace Pistachio {
 
 		virtual void Bind(unsigned int slot = 0) const = 0;
 
+		virtual std::string ResourceLocation() const = 0;
+
 		virtual bool operator==(const Texture& other) const = 0;
 	};
 

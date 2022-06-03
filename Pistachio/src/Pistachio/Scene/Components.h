@@ -49,11 +49,6 @@ namespace Pistachio {
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
 		SpriteRendererComponent(const Pistachio::Sprite& sprite)
 			: Sprite(sprite) {}
-		//SpriteRendererComponent(const glm::vec4& colour)
-		//	: Colour(colour) {}
-
-		//operator glm::vec4& () { return Colour; }
-		//operator const glm::vec4& () const { return Colour; }
 	};
 
 	struct CameraComponent {

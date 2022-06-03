@@ -22,6 +22,8 @@ namespace Pistachio {
 
 		virtual void Bind(unsigned int slot = 0) const override;
 
+		virtual std::string ResourceLocation() const { return m_Filepath; };
+
 		virtual bool operator==(const Texture& other) const override { 
 			return m_RendererID == ((const OpenGLTexture2D&)other).m_RendererID;
 		}
