@@ -11,8 +11,8 @@
 
 class Hat : public Pistachio::Application {
 public:
-	Hat() 
-		: Application("Hat") {
+	Hat(Pistachio::ApplicationArguments args)
+		: Application("Hat", args) {
 		PushLayer(new Pistachio::EditorLayer());
 	}
 
@@ -22,6 +22,6 @@ public:
 };
 
 
-Pistachio::Application* Pistachio::CreateApplication() {
-	return new Hat();
+Pistachio::Application* Pistachio::CreateApplication(ApplicationArguments args) {
+	return new Hat(args);
 }

@@ -11,10 +11,22 @@
 
 
 namespace Pistachio {
+
+
+	struct ApplicationArguments {
+		int Count = 0;
+		char** Arguments = nullptr;
+
+		const char* operator[](int index) { 
+			PST_CORE_ASSERT(index < Count, "Invalid argument index");
+			return Arguments[index];
+		}
+	};
+
 	
 	class Application : public EventListener {
 	public:
-		Application(const std::string& name = "Pistachio App");
+		Application(const std::string& name = "Pistachio App", ApplicationArguments args = ApplicationArguments());
 		virtual ~Application();
 
 		void Run();
@@ -30,6 +42,8 @@ namespace Pistachio {
 
 		static inline Application& Instance() { return *s_Instance; }
 
+		ApplicationArguments Arguments() const { return m_ApplicationArguments; }
+
 	private:
 		bool OnEventAfter(Event& event);
 
@@ -37,6 +51,8 @@ namespace Pistachio {
 		bool OnWindowResize(WindowResizeEvent& event);
 
 	private:
+		ApplicationArguments m_ApplicationArguments;
+
 		Scoped<Window> m_Window;
 
 		bool m_Running = true;
@@ -52,5 +68,5 @@ namespace Pistachio {
 	};
 
 	// To be defined in CLIENT
-	Application* CreateApplication();
+	Application* CreateApplication(ApplicationArguments args);
 }

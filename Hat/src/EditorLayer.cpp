@@ -1,6 +1,7 @@
 #include "EditorLayer.h"
 
 #include <fstream>
+#include <filesystem>
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -34,6 +35,7 @@ namespace Pistachio {
 	void EditorLayer::OnAttach() {
 		PST_PROFILE_FUNCTION();
 
+		// Textures
 		m_PistachioTexture = Texture2D::Create("assets/textures/Pistachio.png");
 		m_RainbowDashTexture = Texture2D::Create("assets/textures/Rainbow-Dash.png");
 		m_CheckerboardTexture = Texture2D::Create("assets/textures/Checkerboard.png");
@@ -44,86 +46,23 @@ namespace Pistachio {
 
 		m_ActiveScene = CreateRef<Scene>();
 
-		Entity pistachioTexture = m_ActiveScene->CreateEntity("Pistachio");
-		pistachioTexture.Component<TransformComponent>().Translation = { 1.0f, 1.0f, 1.0f };
-		pistachioTexture.AddComponent<SpriteRendererComponent>(m_PistachioTexture);
-
-		Entity rainbowDashEntity = m_ActiveScene->CreateEntity("Rainbow Dash");
-		rainbowDashEntity.Component<TransformComponent>().Translation = { -1.0f, 1.0f, 1.0f };
-		rainbowDashEntity.AddComponent<SpriteRendererComponent>(m_RainbowDashTexture);
-
-		// Load last save
-		// TODO: Also accept file from command line
-		std::ifstream inFile("assets/scenes/.pistachio_last_save");
-		if (inFile) {
-			std::string filepath;
-			std::getline(inFile, filepath);
-
-			PST_INFO("Loading last save \"{}\" ... ", filepath);
-
-			LoadSceneFile(filepath);
+		// Load save
+		auto args = Application::Instance().Arguments();
+		std::string sceneFilepath = "";
+		if (args.Count > 1) {
+			sceneFilepath = args[1];
+		} else {
+			// Load last save
+			std::ifstream inFile("assets/scenes/.pistachio_last_save");
+			if (inFile) {
+				std::getline(inFile, sceneFilepath);
+			}
 		}
 
-#if 0
-		class RandomColour : public ScriptableEntity {
-		public:
-			void OnCreate() {
-				auto& sprite = Component<SpriteRendererComponent>();
-
-				srand(static_cast<unsigned int>(time(0)));
-				auto random = []() { return static_cast<float>(rand()) / static_cast<float>(RAND_MAX); };
-				sprite.Sprite.TintColour = { random(), random(), random(), 1.0f};
-			}
-		};
-
-		Entity pistachioEntity = m_ActiveScene->CreateEntity("Pistachio");
-		pistachioEntity.AddComponent<SpriteRendererComponent>(m_PistachioTexture);
-		pistachioEntity.AddComponent<NativeScriptComponent>().Bind<RandomColour>();
-
-		Entity rainbowDashEntity = m_ActiveScene->CreateEntity("Rainbow Dash");
-		rainbowDashEntity.AddComponent<SpriteRendererComponent>(m_RainbowDashTexture);
-		rainbowDashEntity.Component<TransformComponent>().Translation = { 1.5f, 0.0f, 0.0f };
-
-		Entity primaryCameraEntity = m_ActiveScene->CreateEntity("Primary Camera");
-		primaryCameraEntity.AddComponent<CameraComponent>(5.0f);
-		
-		Entity secondCameraEntity = m_ActiveScene->CreateEntity("Secondary Camera");
-		auto& cc = secondCameraEntity.AddComponent<CameraComponent>();
-		cc.Primary = false;
-
-		class CameraController : public ScriptableEntity {
-		public:
-			void OnCreate() {
-				PST_TRACE("CameraController::OnCreate");
-			}
-
-			void OnDestroy() {}
-
-			void OnUpdate(Timestep timestep) {
-				auto& transform = Component<TransformComponent>();
-				auto& camera = Component<CameraComponent>();
-
-				if (!camera.Primary) return;
-
-				constexpr float speed = 5.0f;
-				if (Input::IsKeyPressed(PST_KEY_A)) {
-					transform.Translation.x -= speed * timestep;
-				}
-				if (Input::IsKeyPressed(PST_KEY_D)) {
-					transform.Translation.x += speed * timestep;
-				}
-				if (Input::IsKeyPressed(PST_KEY_S)) {
-					transform.Translation.y -= speed * timestep;
-				}
-				if (Input::IsKeyPressed(PST_KEY_W)) {
-					transform.Translation.y += speed * timestep;
-				}
-			}
-		};
-
-		primaryCameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-		secondCameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-#endif
+		if (!sceneFilepath.empty() && std::filesystem::exists(sceneFilepath)) {
+			PST_INFO("Loading save \"{}\" ... ", sceneFilepath);
+			LoadSceneFile(sceneFilepath);
+		}
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
@@ -476,6 +415,10 @@ namespace Pistachio {
 	}
 
 	void EditorLayer::LoadSceneFile(std::string& filepath) {
+		m_HoveredEntity = {};
+		m_SceneHierarchyPanel.SetSelectedEntity({});
+		m_PropertiesPanel.SetSelectedEntity({});
+
 		SceneSerializer serializer(m_ActiveScene);
 		serializer.Deserialize(filepath);
 

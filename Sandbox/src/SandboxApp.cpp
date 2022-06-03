@@ -18,6 +18,6 @@ public:
 };
 
 
-Pistachio::Application* Pistachio::CreateApplication() {
+Pistachio::Application* Pistachio::CreateApplication(ApplicationArguments args) {
 	return new Sandbox();
 }

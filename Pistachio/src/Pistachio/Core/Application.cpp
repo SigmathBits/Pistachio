@@ -14,8 +14,8 @@ namespace Pistachio {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const std::string& name /*= "Pistachio App"*/)
-		: EventListener(EVENT_CATEGORY_APPLICATION) {
+	Application::Application(const std::string& name /*= "Pistachio App"*/, ApplicationArguments args /*= ApplicationArguments()*/)
+		: EventListener(EVENT_CATEGORY_APPLICATION), m_ApplicationArguments(args) {
 		PST_PROFILE_FUNCTION();
 
 		PST_ASSERT(!s_Instance, "Application already exists!");
