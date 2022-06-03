@@ -1,5 +1,5 @@
 #shader vertex
-#version 330 core
+#version 450 core
 
 uniform mat4 u_ProjectionViewMatrix;
 uniform mat4 u_Transform;
@@ -30,7 +30,7 @@ void main() {
 
 
 #shader fragment
-#version 330 core
+#version 450 core
 
 uniform sampler2D u_Textures[32];
 

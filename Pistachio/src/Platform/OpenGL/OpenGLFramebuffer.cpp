@@ -14,7 +14,7 @@ namespace Pistachio {
 		}
 
 		static void CreateTextures(bool multisampled, unsigned int* outIDs, size_t count) {
-			glCreateTextures(TextureTarget(multisampled), count, outIDs);
+			glCreateTextures(TextureTarget(multisampled), (GLsizei)count, outIDs);
 		}
 
 		static void BindTexture(bool multisampled, unsigned int ID) {
@@ -102,14 +102,14 @@ namespace Pistachio {
 
 	OpenGLFramebuffer::~OpenGLFramebuffer() {
 		glDeleteFramebuffers(1, &m_RendererID);
-		glDeleteTextures(m_ColourAttachmentRendererIDs.size(), m_ColourAttachmentRendererIDs.data());
+		glDeleteTextures((GLsizei)m_ColourAttachmentRendererIDs.size(), m_ColourAttachmentRendererIDs.data());
 		glDeleteTextures(1, &m_DepthAttachmentRendererID);
 	}
 
 	void OpenGLFramebuffer::Revalidate() {
 		if (m_RendererID != 0) {
 			glDeleteFramebuffers(1, &m_RendererID);
-			glDeleteTextures(m_ColourAttachmentRendererIDs.size(), m_ColourAttachmentRendererIDs.data());
+			glDeleteTextures((GLsizei)m_ColourAttachmentRendererIDs.size(), m_ColourAttachmentRendererIDs.data());
 			glDeleteTextures(1, &m_DepthAttachmentRendererID);
 
 			m_ColourAttachmentRendererIDs.clear();
@@ -135,7 +135,7 @@ namespace Pistachio {
 						Utils::AttachColourTexture(
 							m_ColourAttachmentRendererIDs[i], m_Specification.Samples, 
 							GL_RGBA8, GL_RGBA,
-							m_Specification.Width, m_Specification.Height, i
+							m_Specification.Width, m_Specification.Height, (int)i
 						);
 						break;
 					}
@@ -143,7 +143,7 @@ namespace Pistachio {
 						Utils::AttachColourTexture(
 							m_ColourAttachmentRendererIDs[i], m_Specification.Samples, 
 							GL_R32I, GL_RED_INTEGER,
-							m_Specification.Width, m_Specification.Height, i
+							m_Specification.Width, m_Specification.Height, (int)i
 						);
 						break;
 					}
@@ -171,7 +171,7 @@ namespace Pistachio {
 			PST_CORE_ASSERT(m_ColourAttachmentRendererIDs.size() <= 4, "Can only have a maximum of 4 Colour Attachments");
 
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-			glDrawBuffers(m_ColourAttachmentRendererIDs.size(), buffers);
+			glDrawBuffers((GLsizei)m_ColourAttachmentRendererIDs.size(), buffers);
 		} else if (m_ColourAttachmentRendererIDs.empty()) {
 			// Only Depth Pass
 			glDrawBuffer(GL_NONE);

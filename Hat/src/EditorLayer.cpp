@@ -44,7 +44,16 @@ namespace Pistachio {
 
 		m_ActiveScene = CreateRef<Scene>();
 
+		Entity pistachioTexture = m_ActiveScene->CreateEntity("Pistachio");
+		pistachioTexture.Component<TransformComponent>().Translation = { 1.0f, 1.0f, 1.0f };
+		pistachioTexture.AddComponent<SpriteRendererComponent>(m_PistachioTexture);
+
+		Entity rainbowDashEntity = m_ActiveScene->CreateEntity("Rainbow Dash");
+		rainbowDashEntity.Component<TransformComponent>().Translation = { -1.0f, 1.0f, 1.0f };
+		rainbowDashEntity.AddComponent<SpriteRendererComponent>(m_RainbowDashTexture);
+
 		// Load last save
+		// TODO: Also accept file from command line
 		std::ifstream inFile("assets/scenes/.pistachio_last_save");
 		if (inFile) {
 			std::string filepath;
@@ -155,6 +164,7 @@ namespace Pistachio {
 
 		// Update Scene
 		m_ActiveScene->OnUpdateEditor(timestep, m_EditorCamera);
+
 
 		// Capture which Entity is being hovered over
 		auto [x, y] = ImGui::GetMousePos();
@@ -331,7 +341,7 @@ namespace Pistachio {
 				glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr
 			);
 
-			if (m_AllowGizmoInteraction && ImGuizmo::IsUsing()) {
+			if (ImGuizmo::IsUsing()) {
 				glm::vec3 translation, rotation, scale;
 				Math::DecomposeTransform(transform, translation, rotation, scale);
 
@@ -418,7 +428,7 @@ namespace Pistachio {
 	}
 
 	bool EditorLayer::OnMouseButtonReleased(MouseButtonReleasedEvent& event) {
-		if (event.MouseButton() == PST_MOUSE_BUTTON_LEFT && m_ViewportHovered && !ImGuizmo::IsOver()) {
+		if (event.MouseButton() == PST_MOUSE_BUTTON_LEFT && m_ViewportHovered && (!ImGuizmo::IsOver() || m_GizmoType == -1)) {
 			if (m_GizmoType == -1) {
 				m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 			}

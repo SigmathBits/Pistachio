@@ -50,13 +50,24 @@ namespace Pistachio {
 	private:
 		std::string ReadFile(const std::string& filepath);
 		std::unordered_map<GLenum, std::string> Preprocess(const std::string& source);
-		void Compile(const std::unordered_map<GLenum, std::string> shaderSources);
+
+		void CompileVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources, bool force = false);
+		void CompileOpenGLBinariesFromVulkanSPIRVs(std::unordered_map<GLenum, std::vector<uint32_t>>& vulkanSPIRVs, bool force = false);
+		void CreateProgram();
+
+		void Reflect(GLenum type, const std::vector<uint32_t>& shaderData);
 
 		GLint UniformLocation(const std::string& name) const;
 
 	private:
 		unsigned int m_RendererID;
+		std::string m_Filepath;
 		std::string m_Name;
+
+		std::unordered_map<GLenum, std::vector<uint32_t>> m_VulkanSPIRVs;
+		std::unordered_map<GLenum, std::vector<uint32_t>> m_OpenGLSPIRVs;
+
+		std::unordered_map<GLenum, std::string> m_OpenGLSourceCodes;
 
 		std::unordered_map<std::string, GLint> mutable m_UniformLocationCache;
 	};

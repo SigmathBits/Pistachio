@@ -9,10 +9,10 @@
 
 namespace Pistachio {
 
-	enum CameraMoveMode : int {
-		CAMERA_NONE = -1,
-		CAMERA_PAN = 0,
-		CAMERA_ROTATE = 1,
+	enum class OrthographicCameraControllerMoveMode : int {
+		None = -1,
+		Pan = 0,
+		Rotate = 1,
 	};
 
 	class OrthographicCameraController : public EventListener {
@@ -52,7 +52,7 @@ namespace Pistachio {
 
 		const float m_CameraAngleStep = 20.0f;
 
-		CameraMoveMode m_CameraMoveMode = CAMERA_NONE;
+		OrthographicCameraControllerMoveMode m_CameraMoveMode = OrthographicCameraControllerMoveMode::None;
 		glm::vec3 m_MousePressedPositionWorld = { 0.0f, 0.0f, 0.0f };
 		glm::vec2 m_MousePressedPositionWorldRotation = { 0.0f, 0.0f };
 

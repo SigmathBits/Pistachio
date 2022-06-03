@@ -54,7 +54,6 @@ namespace Pistachio {
 		bool m_ViewportHovered = false;
 		bool m_ViewportIsDragging = false;
 
-		bool m_AllowGizmoInteraction = true;
 		int m_GizmoType = -1;
 		
 		Entity m_HoveredEntity;

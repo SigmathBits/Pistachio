@@ -26,6 +26,10 @@
 #include "Pistachio/Renderer/Renderer2D.h"
 #include "Pistachio/Renderer/RenderCommand.h"
 
+// FIXME: Don't need this here, but Sandbox uses it
+#include "Pistachio/Renderer/OrthographicCameraController.h"
+#include "Pistachio/Renderer/Transform2D.h"
+
 #include "Pistachio/Renderer/EditorCamera.h"
 
 #include "Pistachio/Renderer/Shader.h"

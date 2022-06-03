@@ -105,7 +105,9 @@ namespace Pistachio {
 
 		m_MousePressedPositionWorldRotation = glm::normalize(m_Camera.CameraViewMatrix() * glm::vec4(mousePositionCamera, 0.0f));
 
-		m_CameraMoveMode = m_AllowRotation && Input::IsKeyPressed(PST_KEY_LEFT_CONTROL) ? CAMERA_ROTATE : CAMERA_PAN;
+		m_CameraMoveMode = m_AllowRotation && Input::IsKeyPressed(PST_KEY_LEFT_CONTROL)
+			? OrthographicCameraControllerMoveMode::Rotate
+			: OrthographicCameraControllerMoveMode::Pan;
 
 		return false;
 	}
@@ -113,7 +115,7 @@ namespace Pistachio {
 	bool OrthographicCameraController::OnMouseButtonReleased(MouseButtonReleasedEvent& event) {
 		if (event.MouseButton() != PST_MOUSE_BUTTON_LEFT) return false;
 
-		m_CameraMoveMode = CAMERA_NONE;
+		m_CameraMoveMode = OrthographicCameraControllerMoveMode::None;
 
 		return false;
 	}
@@ -123,20 +125,20 @@ namespace Pistachio {
 
 		// Fix mouse down still being sent, but not mouse released, when resizing the viewport
 		if (!Input::IsMouseButtonPressed(PST_MOUSE_BUTTON_LEFT)) {
-			m_CameraMoveMode = CAMERA_NONE;
+			m_CameraMoveMode = OrthographicCameraControllerMoveMode::None;
 			return false;
 		}
 
-		if (m_CameraMoveMode == CAMERA_NONE) return false;
+		if (m_CameraMoveMode == OrthographicCameraControllerMoveMode::None) return false;
 
 		glm::vec3 mousePositionCamera = WindowToCameraCoordinates({ event.X(), event.Y() });
 
-		if (m_CameraMoveMode == CAMERA_PAN) {
+		if (m_CameraMoveMode == OrthographicCameraControllerMoveMode::Pan) {
 			glm::vec3 mousePositionWorld = m_Camera.CameraViewMatrix() * glm::vec4(mousePositionCamera, 1.0f);
 			
 			m_Camera.SetPosition(m_Camera.Position() + m_MousePressedPositionWorld - mousePositionWorld);
 			m_PositionTarget = m_Camera.Position();
-		} else if (m_CameraMoveMode == CAMERA_ROTATE) {
+		} else if (m_CameraMoveMode == OrthographicCameraControllerMoveMode::Rotate) {
 			constexpr float rotationNoEasingThreshold = Math::pi / 8;
 			const float rotationDeadzone = 0.10f * m_ZoomLevel;
 

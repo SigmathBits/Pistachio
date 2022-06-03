@@ -19,6 +19,7 @@ namespace Pistachio {
 		static void BeginScene(const EditorCamera& camera);
 		static void BeginScene(const OrthographicCamera& camera);  // TODO: Remove
 		static void EndScene();
+		static void StartBatch();
 		static void Flush();
 
 		// Primitives
@@ -41,7 +42,7 @@ namespace Pistachio {
 		static Statistics RetrieveStats();
 
 	private:
-		static void FlushAndReset();
+		static void NextBatch();
 	};
 
 }

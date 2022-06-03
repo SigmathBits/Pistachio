@@ -7,6 +7,7 @@
 #include "Pistachio/Renderer/RenderCommand.h"
 #include "Pistachio/Renderer/VertexArray.h"
 #include "Pistachio/Renderer/Shader.h"
+#include "Pistachio/Renderer/UniformBuffer.h"
 
 
 namespace Pistachio {
@@ -15,7 +16,7 @@ namespace Pistachio {
 		glm::vec4 Position;
 		glm::vec4 Colour;
 		glm::vec2 TextureCoords;
-		unsigned int TextureIndex;
+		float TextureIndex;
 		float TilingScale;
 
 		// Editor-Only
@@ -57,6 +58,12 @@ namespace Pistachio {
 		unsigned int TextureSlotIndex = 1;  // First (0th) texture is WhiteTexture
 
 		Renderer2D::Statistics Stats;
+
+		struct CameraData {
+			glm::mat4 ProjectionViewMatrix;
+		};
+		CameraData CameraBuffer;
+		Ref<UniformBuffer> CameraUniformBuffer;
 	};
 
 	static Renderer2DData s_Data;
@@ -79,7 +86,7 @@ namespace Pistachio {
 			{ ShaderDataType::Float4, "a_Position" },
 			{ ShaderDataType::Float4, "a_Colour" },
 			{ ShaderDataType::Float2, "a_TextureCoords" },
-			{ ShaderDataType::Int,  "a_TextureIndex" },
+			{ ShaderDataType::Float,  "a_TextureIndex" },
 			{ ShaderDataType::Float,  "a_TilingScale" },
 			// Editor-Only
 			{ ShaderDataType::Int,    "a_EntityID" },
@@ -106,16 +113,8 @@ namespace Pistachio {
 		s_Data.QuadVertexArray->SetIndexBuffer(quadIndexBuffer);
 
 		// Shader
-		s_Data.Shader = Shader::Create("assets/shaders/Editor.glsl");
-
-		int samplers[Renderer2DData::MaxTextureSlots];
-		for (size_t i = 0; i < Renderer2DData::MaxTextureSlots; i++) {
-			samplers[i] = (int)i;
-		}
-
+		s_Data.Shader = Shader::Create("assets/shaders/EditorUniformBuffer.glsl");
 		s_Data.Shader->Bind();
-		s_Data.Shader->SetMat4("u_Transform", glm::mat4(1.0f));
-		s_Data.Shader->SetIntArray("u_Textures", samplers, Renderer2DData::MaxTextureSlots);
 		
 		// Texture
 		// Default White Texture
@@ -124,6 +123,9 @@ namespace Pistachio {
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
 		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
+
+		// Uniform Buffer
+		s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
 	}
 
 	void Renderer2D::Shutdown() {
@@ -137,37 +139,28 @@ namespace Pistachio {
 
 		glm::mat4 projectionViewMatrix = camera.ProjectionMatrix() * glm::inverse(transform);
 
-		s_Data.Shader->Bind();
-		s_Data.Shader->SetMat4("u_ProjectionViewMatrix", projectionViewMatrix);
+		s_Data.CameraBuffer.ProjectionViewMatrix = projectionViewMatrix;
+		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
-		s_Data.QuadIndexCount = 0;
-		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-
-		s_Data.TextureSlotIndex = 1;
+		StartBatch();
 	}
 
 	void Renderer2D::BeginScene(const EditorCamera& camera) {
 		PST_PROFILE_FUNCTION();
 
-		s_Data.Shader->Bind();
-		s_Data.Shader->SetMat4("u_ProjectionViewMatrix", camera.ProjectionViewMatrix());
+		s_Data.CameraBuffer.ProjectionViewMatrix = camera.ProjectionViewMatrix();
+		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
-		s_Data.QuadIndexCount = 0;
-		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-
-		s_Data.TextureSlotIndex = 1;
+		StartBatch();
 	}
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera) {
 		PST_PROFILE_FUNCTION();
 
-		s_Data.Shader->Bind();
-		s_Data.Shader->SetMat4("u_ProjectionViewMatrix", camera.ProjectionViewMatrix());
+		s_Data.CameraBuffer.ProjectionViewMatrix = camera.ProjectionViewMatrix();
+		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
-		s_Data.QuadIndexCount = 0;
-		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-
-		s_Data.TextureSlotIndex = 1;
+		StartBatch();
 	}
 
 	void Renderer2D::EndScene() {
@@ -179,6 +172,13 @@ namespace Pistachio {
 		s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 
 		Flush();
+	}
+
+	void Renderer2D::StartBatch() {
+		s_Data.QuadIndexCount = 0;
+		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+
+		s_Data.TextureSlotIndex = 1;
 	}
 
 	void Renderer2D::Flush() {
@@ -193,20 +193,16 @@ namespace Pistachio {
 		s_Data.Stats.DrawCalls++;
 	}
 
-	void Renderer2D::FlushAndReset() {
-		EndScene();
-
-		s_Data.QuadIndexCount = 0;
-		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-
-		s_Data.TextureSlotIndex = 1;
+	void Renderer2D::NextBatch() {
+		Flush();
+		StartBatch();
 	}
 
 	void Renderer2D::DrawQuad(const glm::mat4& transformMatrix, const glm::vec4& colour) {
 		PST_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices) {
-			FlushAndReset();
+			NextBatch();
 		}
 
 		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
@@ -228,7 +224,7 @@ namespace Pistachio {
 		PST_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices) {
-			FlushAndReset();
+			NextBatch();
 		}
 
 		unsigned int textureIndex = 0;
@@ -242,7 +238,7 @@ namespace Pistachio {
 
 		if (textureIndex == 0) {
 			if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots) {
-				FlushAndReset();
+				NextBatch();
 			}
 
 			textureIndex = s_Data.TextureSlotIndex;
@@ -254,7 +250,7 @@ namespace Pistachio {
 		float tilingScale = sprite.TilingScale;
 
 		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
-			*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], colour, textureCoords[i], textureIndex, tilingScale, entityID };
+			*(s_Data.QuadVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], colour, textureCoords[i], (float)textureIndex, tilingScale, entityID };
 		}
 
 		s_Data.QuadIndexCount += 6;

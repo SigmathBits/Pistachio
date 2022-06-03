@@ -32,13 +32,25 @@ project "Hat"
 		runtime "Debug"
 		symbols "on"
 
+		postbuildcommands {
+			"{COPYDIR} %{LibraryDir.VulkanSDK_DebugDLL}/**sharedd.dll \"%{cfg.targetdir}\""
+		}
+
 	filter "configurations:Release"
 		defines "PST_RELEASE"
 		runtime "Release"
 		optimize "on"
 
+		postbuildcommands {
+			"{COPYDIR} %{LibraryDir.VulkanSDK_DLL}/**shared.dll \"%{cfg.targetdir}\""
+		}
+
 	filter "configurations:Dist"
 		defines "PST_DIST"
 		runtime "Release"
 		optimize "on"
-  
+
+		postbuildcommands {
+			"{COPYDIR} %{LibraryDir.VulkanSDK_DLL}/**shared.dll \"%{cfg.targetdir}\""
+		}
+ 

@@ -351,8 +351,24 @@ MigrationBackup/
 
 
 ## Custom gitignores
+# Visual Studio files and folders
+.vs/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+
+# Intermediate binaries
 intermediates/
 bin-int/
+!vendor/premake/bin/  # Keep premake directory
+
+# Pistachio directories
+Pistachio/vendor/VulkanSDK
+Hat/assets/scenes
+Hat/assets/cache
+
+# File types
 **/imgui.ini
 **/*.json
 **/*.pistachio

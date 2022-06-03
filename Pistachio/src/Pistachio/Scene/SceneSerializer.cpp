@@ -7,6 +7,7 @@
 #include "Pistachio/Scene/Entity.h"
 #include "Pistachio/Scene/Components.h"
 
+
 namespace YAML {
 
 	template<glm::length_t L, typename T, glm::qualifier Q>
@@ -14,7 +15,7 @@ namespace YAML {
 		static Node encode(const glm::vec<L, T, Q>& vector) {
 			Node node;
 			for (size_t i = 0; i < vector.length(); i++) {
-				node.push_back(vector[i]);
+				node.push_back(vector[static_cast<glm::length_t>(i)]);
 			}
 			return node;
 		}
@@ -23,7 +24,7 @@ namespace YAML {
 			if (!node.IsSequence() || node.size() != L) return false;
 
 			for (size_t i = 0; i < vector.length(); i++) {
-				vector[i] = node[i].as<float>();
+				vector[static_cast<glm::length_t>(i)] = node[i].as<float>();
 			}
 
 			return true;
@@ -32,13 +33,14 @@ namespace YAML {
 
 }
 
+
 namespace Pistachio {
 	template<glm::length_t L, typename T, glm::qualifier Q>
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec<L, T, Q> vector) {
 		out << YAML::Flow;
 		out << YAML::BeginSeq;
 		for (size_t i = 0; i < vector.length(); i++) {
-			out << vector[i];
+			out << vector[static_cast<glm::length_t>(i)];
 		}
 		return out << YAML::EndSeq;
 	}

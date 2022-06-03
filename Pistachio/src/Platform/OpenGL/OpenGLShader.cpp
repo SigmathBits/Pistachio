@@ -3,45 +3,127 @@
 #include "OpenGLShader.h"
 
 #include <fstream>
+#include <filesystem>
+#include <chrono>
 
 #include <glad/glad.h>
 
 #include <glm/gtc/type_ptr.hpp>
+
+#include <shaderc/shaderc.hpp>
+#include <spirv_cross/spirv_cross.hpp>
+#include <spirv_cross/spirv_glsl.hpp>
 
 #include "Pistachio/Core/Core.h"
 
 
 namespace Pistachio {
 
-	static GLenum ShaderTypeFromString(const std::string& shaderTypeName) {
-		if (shaderTypeName == "vertex") {
-			return GL_VERTEX_SHADER;
-		} else if (shaderTypeName == "fragment" || shaderTypeName == "pixel") {
-			return GL_FRAGMENT_SHADER;
+	namespace Utils {
+
+		static GLenum GLShaderTypeFromString(const std::string& shaderTypeName) {
+			if (shaderTypeName == "vertex") {
+				return GL_VERTEX_SHADER;
+			} else if (shaderTypeName == "fragment" || shaderTypeName == "pixel") {
+				return GL_FRAGMENT_SHADER;
+			}
+
+			PST_CORE_ASSERT(false, "Unrecognised shader type");
+			return 0;
 		}
 
-		PST_CORE_ASSERT(false, "Unrecognised shader type");
-		return 0;
-	}
+		static std::string GLShaderTypeToString(GLenum shaderType) {
+			switch (shaderType) {
+				case GL_VERTEX_SHADER:
+					return "Vertex";
+				case GL_FRAGMENT_SHADER:
+					return "Fragment";
+				default:
+					break;
+			}
 
-	static std::string ShaderStringFromType(GLenum shaderType) {
-		switch (shaderType) {
-			case GL_VERTEX_SHADER:
-				return "Vertex";
-			case GL_FRAGMENT_SHADER:
-				return "Fragment";
-			default:
-				PST_CORE_ASSERT(false, "Unrecognised shader type");
-				return "";
+			PST_CORE_ASSERT(false, "Unrecognised shader type");
+			return "";
 		}
+
+		static shaderc_shader_kind GLShaderTypeToShaderC(GLenum type) {
+			switch (type) {
+				case GL_VERTEX_SHADER:
+					return shaderc_glsl_vertex_shader;
+				case GL_FRAGMENT_SHADER:
+					return shaderc_glsl_fragment_shader;
+				default:
+					break;
+			}
+
+			PST_CORE_ASSERT(false, "Unrecognised shader type");
+			return (shaderc_shader_kind)0;
+		}
+
+		static const char* CacheDirectory() {
+			return "assets/cache/shader/opengl";
+		}
+
+		static void CreateCacheDirectory() {
+			std::string cacheDirectory = CacheDirectory();
+			if (!std::filesystem::exists(cacheDirectory)) {
+				std::filesystem::create_directories(cacheDirectory);
+			}
+		}
+
+		static const char* GLShaderTypeCachedOpenGLFileExtension(GLenum type) {
+			switch (type) {
+				case GL_VERTEX_SHADER:
+					return ".cached_opengl.vert";
+				case GL_FRAGMENT_SHADER:
+					return ".cached_opengl.frag";
+				default:
+					break;
+			}
+
+			PST_CORE_ASSERT(false, "Unrecognised shader type");
+			return "";
+		}
+
+		static const char* GLShaderTypeCachedVulkanFileExtension(GLenum type) {
+			switch (type) {
+				case GL_VERTEX_SHADER:
+					return ".cached_vulkan.vert";
+				case GL_FRAGMENT_SHADER:
+					return ".cached_vulkan.frag";
+				default:
+					break;
+			}
+
+			PST_CORE_ASSERT(false, "Unrecognised shader type");
+			return "";
+		}
+
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& filepath) {
+	OpenGLShader::OpenGLShader(const std::string& filepath)
+		: m_Filepath(filepath) {
 		PST_PROFILE_FUNCTION();
+
+		Utils::CreateCacheDirectory();
 
 		std::string shaderSource = ReadFile(filepath);
 		auto shaderSources = Preprocess(shaderSource);
-		Compile(shaderSources);
+
+		{
+			auto start = std::chrono::high_resolution_clock::now();
+			CompileVulkanBinaries(shaderSources);
+			CompileOpenGLBinariesFromVulkanSPIRVs(m_VulkanSPIRVs);
+			CreateProgram();
+			auto stop = std::chrono::high_resolution_clock::now();
+			PST_CORE_WARN("Shader compilation took {:.2f} ms",
+				(float)std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() / 1000.0f);
+		}
+
+		// Reflect info about shaders (optional)
+		//for (auto&& [type, shaderData] : m_OpenGLSPIRVs) {
+		//	Reflect(type, shaderData);
+		//}
 
 		// Extract name from filepath
 		auto lastSlash = filepath.find_last_of("/\\");
@@ -54,22 +136,32 @@ namespace Pistachio {
 	}
 
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& filepath)
-		: m_Name(name) {
+		: m_Name(name), m_Filepath(filepath) {
 		PST_PROFILE_FUNCTION();
 
 		std::string shaderSource = ReadFile(filepath);
 		auto shaderSources = Preprocess(shaderSource);
-		Compile(shaderSources);
+
+		{
+			CompileVulkanBinaries(shaderSources);
+			CompileOpenGLBinariesFromVulkanSPIRVs(m_VulkanSPIRVs);
+			CreateProgram();
+		}
 	}
 
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource)
 		: m_RendererID(0), m_Name(name) {
 		PST_PROFILE_FUNCTION();
 
-		std::unordered_map<GLenum, std::string> sources;
-		sources[GL_VERTEX_SHADER] = vertexSource;
-		sources[GL_FRAGMENT_SHADER] = fragmentSource;
-		Compile(sources);
+		std::unordered_map<GLenum, std::string> shaderSources;
+		shaderSources[GL_VERTEX_SHADER] = vertexSource;
+		shaderSources[GL_FRAGMENT_SHADER] = fragmentSource;
+		
+		{
+			CompileVulkanBinaries(shaderSources);
+			CompileOpenGLBinariesFromVulkanSPIRVs(m_VulkanSPIRVs);
+			CreateProgram();
+		}
 	}
 
 	OpenGLShader::~OpenGLShader() {
@@ -209,7 +301,7 @@ namespace Pistachio {
 			size_t begin = pos + typeTokenLength + 1;
 			std::string shaderTypeName = source.substr(begin, eol - begin);
 			
-			GLenum shaderType = ShaderTypeFromString(shaderTypeName);
+			GLenum shaderType = Utils::GLShaderTypeFromString(shaderTypeName);
 
 			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
 			pos = source.find(typeToken, nextLinePos);
@@ -223,53 +315,146 @@ namespace Pistachio {
 		return shaderSources;
 	}
 
-	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string> shaderSources) {
+	void OpenGLShader::CompileVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources, bool force /*= false*/) {
 		PST_PROFILE_FUNCTION();
 
-		/// Copied and modified from https://www.khronos.org/opengl/wiki/Shader_Compilation#Example
-		// Get a program object.
+		shaderc::Compiler compiler;
+		shaderc::CompileOptions options;
+		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+
+		constexpr bool optimise = true;
+		if (optimise) {
+			options.SetOptimizationLevel(shaderc_optimization_level_performance);
+		}
+
+
+		auto& shaderData = m_VulkanSPIRVs;
+		shaderData.clear();
+
+		for (auto&& [type, source] : shaderSources) {
+			std::filesystem::path cacheDirectory = Utils::CacheDirectory();
+			std::filesystem::path shaderFilepath = m_Filepath;
+			std::filesystem::path cachedPath = cacheDirectory / (shaderFilepath.filename().string() + Utils::GLShaderTypeCachedVulkanFileExtension(type));
+
+			// Load in cached file if we have it
+			std::ifstream inFile(cachedPath, std::ios::in | std::ios::binary);
+			if (!force && inFile.is_open()) {
+				inFile.seekg(0, std::ios::end);
+				auto size = inFile.tellg();
+				inFile.seekg(0, std::ios::beg);
+
+				// Read binary datainto 
+				auto& data = shaderData[type];
+				data.resize(size / sizeof(uint32_t));
+				inFile.read((char*)data.data(), size);
+
+			} else {
+				PST_CORE_TRACE("Compiling Vulkan {} Shader SPIR-V binaries ... ", Utils::GLShaderTypeToString(type));
+
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(
+					source,
+					Utils::GLShaderTypeToShaderC(type),
+					m_Filepath.c_str(), options
+				);
+
+				if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+					PST_CORE_CRITICAL("{} Shader compilation failed", Utils::GLShaderTypeToString(type));
+					PST_CORE_ASSERT(false, module.GetErrorMessage());
+				}
+
+				shaderData[type] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+				// Cache binary
+				std::ofstream outFile(cachedPath, std::ios::out | std::ios::binary);
+				if (outFile.is_open()) {
+					auto& data = shaderData[type];
+					outFile.write((char*)data.data(), data.size() * sizeof(uint32_t));
+					outFile.flush();
+					outFile.close();
+				}
+			}
+		}
+	}
+
+	void OpenGLShader::CompileOpenGLBinariesFromVulkanSPIRVs(std::unordered_map<GLenum, std::vector<uint32_t>>& vulkanSPIRVs, bool force /*= false*/) {
+		PST_PROFILE_FUNCTION();
+
+		shaderc::Compiler compiler;
+		shaderc::CompileOptions options;
+		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
+
+		constexpr bool optimise = true;
+		if (optimise) {
+			options.SetOptimizationLevel(shaderc_optimization_level_performance);
+		}
+
+
+		auto& shaderData = m_OpenGLSPIRVs;
+		shaderData.clear();
+
+		for (auto&& [type, spirv] : vulkanSPIRVs) {
+			std::filesystem::path cacheDirectory = Utils::CacheDirectory();
+			std::filesystem::path shaderFilepath = m_Filepath;
+			std::filesystem::path cachedPath = cacheDirectory / (shaderFilepath.filename().string() + Utils::GLShaderTypeCachedOpenGLFileExtension(type));
+
+			// Load in cached file if we have it
+			std::ifstream inFile(cachedPath, std::ios::in | std::ios::binary);
+			if (!force && inFile.is_open()) {
+				inFile.seekg(0, std::ios::end);
+				auto size = inFile.tellg();
+				inFile.seekg(0, std::ios::beg);
+
+				// Read binary datainto 
+				auto& data = shaderData[type];
+				data.resize(size / sizeof(uint32_t));
+				inFile.read((char*)data.data(), size);
+
+			} else {
+				PST_CORE_TRACE("Cross compiling OpenGL {} Shader SPIR-V binaries ... ", Utils::GLShaderTypeToString(type));
+
+				spirv_cross::CompilerGLSL glslCompiler(spirv);
+				auto& source = m_OpenGLSourceCodes[type] = glslCompiler.compile();
+
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(
+					source,
+					Utils::GLShaderTypeToShaderC(type),
+					m_Filepath.c_str(), options
+				);
+
+				if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+					PST_CORE_CRITICAL("{} Shader compilation failed", Utils::GLShaderTypeToString(type));
+					PST_CORE_ASSERT(false, module.GetErrorMessage());
+				}
+
+				shaderData[type] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+				// Cache binary
+				std::ofstream outFile(cachedPath, std::ios::out | std::ios::binary);
+				if (outFile.is_open()) {
+					auto& data = shaderData[type];
+					outFile.write((char*)data.data(), data.size() * sizeof(uint32_t));
+					outFile.flush();
+					outFile.close();
+				}
+			}
+		}
+	}
+
+	void OpenGLShader::CreateProgram() {
+		PST_PROFILE_FUNCTION();
+
 		GLuint programID = glCreateProgram();
 
-		PST_CORE_ASSERT(shaderSources.size() <= 2, "Only a maximum of two shaders in a single source is supported")
-		std::array<GLuint, 2> shaderIDs;
+		std::vector<GLuint> shaderIDs;
+		for (auto&& [type, spirv] : m_OpenGLSPIRVs) {
 
-		size_t i = 0;
-		for (auto& pair : shaderSources) {
-			GLenum shaderType = pair.first;
-			const std::string& source = pair.second;
+			GLuint shaderID = glCreateShader(type);
+			shaderIDs.emplace_back(shaderID);
 			
-			GLuint shaderID = glCreateShader(shaderType);
-
-			// Send the vertex shader source code to GL
-			// Note that std::string's .c_str is NULL character terminated.
-			const GLchar* sourceCStr = source.c_str();
-			glShaderSource(shaderID, 1, &sourceCStr, 0);
-
-			// Compile the vertex shader
-			glCompileShader(shaderID);
-
-			GLint isCompiled = 0;
-			glGetShaderiv(shaderID, GL_COMPILE_STATUS, &isCompiled);
-			if (isCompiled == GL_FALSE) {
-				GLint maxLength = 0;
-				glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &maxLength);
-
-				// The maxLength includes the NULL character
-				std::vector<GLchar> infoLog(maxLength);
-				glGetShaderInfoLog(shaderID, maxLength, &maxLength, &infoLog[0]);
-
-				// We don't need the shader anymore.
-				glDeleteShader(shaderID);
-
-				PST_CORE_ERROR("{} Shader: {}", ShaderStringFromType(shaderType), infoLog.data());
-				PST_CORE_ASSERT(false, "Shader compilation failed");
-				return;
-			}
-
-			// Attach our shaders to our program
+			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), (GLsizei)(spirv.size() * sizeof(uint32_t)));
+			glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
+			
 			glAttachShader(programID, shaderID);
-
-			shaderIDs[i++] = shaderID;
 		}
 
 		// Link our program
@@ -279,7 +464,7 @@ namespace Pistachio {
 		GLint isLinked = 0;
 		glGetProgramiv(programID, GL_LINK_STATUS, (int*)&isLinked);
 		if (isLinked == GL_FALSE) {
-			GLint maxLength = 0;
+			GLint maxLength;
 			glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &maxLength);
 
 			// The maxLength includes the NULL character
@@ -299,11 +484,34 @@ namespace Pistachio {
 			return;
 		}
 
-		m_RendererID = programID;
-
 		// Always detach shaders after a successful link.
 		for (GLuint ID : shaderIDs) {
 			glDetachShader(programID, ID);
+			glDeleteShader(ID);
+		}
+
+		m_RendererID = programID;
+	}
+
+	void OpenGLShader::Reflect(GLenum type, const std::vector<unsigned int>& shaderData) {
+		spirv_cross::Compiler compiler(shaderData);
+		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+
+		PST_CORE_INFO("OpenGLShader::Reflect - {}: \"{}\"", Utils::GLShaderTypeToString(type), m_Filepath);
+		PST_CORE_INFO("    {} uniform buffers", resources.uniform_buffers.size());
+		PST_CORE_INFO("    {} resources", resources.sampled_images.size());
+
+		PST_CORE_INFO("Unform buffers:");
+		for (const auto& resource : resources.uniform_buffers) {
+			const auto& bufferType = compiler.get_type(resource.base_type_id);
+			size_t bufferSize = compiler.get_declared_struct_size(bufferType);
+			unsigned int binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			size_t memberCount = bufferType.member_types.size();
+
+			PST_CORE_INFO("  {}", resource.name);
+			PST_CORE_INFO("    Size = {}", bufferSize);
+			PST_CORE_INFO("    Binding = {}", binding);
+			PST_CORE_INFO("    Members = {}", memberCount);
 		}
 	}
 
