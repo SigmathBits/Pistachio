@@ -4,6 +4,7 @@
 
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/PropertiesPanel.h"
+#include "Panels/ContentBrowserPanel.h"
 
 
 namespace Pistachio {
@@ -61,6 +62,7 @@ namespace Pistachio {
 		// Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		PropertiesPanel m_PropertiesPanel;
+		ContentBrowserPanel m_ContentBrowserPanel;
 	};
 
 }

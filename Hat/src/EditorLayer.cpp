@@ -22,8 +22,11 @@ inline std::ostream& operator<<(std::ostream& ostream, const ImVec2& vector) {
 
 namespace Pistachio {
 
+	static const std::string FileExtension = ".pistachio";
+
 	EditorLayer::EditorLayer()
-		: Layer("Sandbox2D", { EventType::KeyPressed }, EVENT_CATEGORY_MOUSE_BUTTON), m_EditorCamera(1280, 720, 45.0f, 0.001f, 1000.0f) {
+		: Layer("Sandbox2D", { EventType::KeyPressed }, EVENT_CATEGORY_MOUSE_BUTTON), m_EditorCamera(1280, 720, 45.0f, 0.001f, 1000.0f),
+		m_ContentBrowserPanel("assets") {
 		m_ViewportBounds[0] = { 0.0f, 0.0f };
 		m_ViewportBounds[1] = { 0.0f, 0.0f };
 	}
@@ -186,28 +189,6 @@ namespace Pistachio {
 			ImGui::EndMenuBar();
 		}
 
-		// Dockspace windows begin
-		m_SceneHierarchyPanel.OnImGuiRender();
-		m_PropertiesPanel.SetSelectedEntity(m_SceneHierarchyPanel.SelectedEntity());
-		m_PropertiesPanel.OnImGuiRender();
-
-
-		{
-			std::string name = "None";
-			if (m_HoveredEntity) {
-				name = m_HoveredEntity.Component<TagComponent>().Tag;
-			}
-
-			auto stats = Renderer2D::RetrieveStats();
-			ImGui::Begin("Renderer2D Statistics");
-			ImGui::Text("Hovered Entity: %s", name.c_str());
-			ImGui::Text("Draw Calls: %d", stats.DrawCalls);
-			ImGui::Text("Quad Count: %d", stats.QuadCount);
-			ImGui::Text("Vertex Count: %d", stats.TotalVertexCount());
-			ImGui::Text("Index Count: %d", stats.TotalIndexCount());
-			ImGui::End();
-		}
-
 		/// Viewport
 		// Display framebuffer to viewport
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
@@ -224,6 +205,18 @@ namespace Pistachio {
 		// Draw Colour Attachment buffer to viewport
 		unsigned int colourAttachmentID = m_Framebuffer->ColourAttachmentRendererID(0);
 		ImGui::Image((void*)(size_t)colourAttachmentID, viewportPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		if (ImGui::BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM")) {
+				std::string path = (const char*)payload->Data;
+
+				if (path.compare(path.length() - FileExtension.length(), FileExtension.length(), FileExtension) == 0) {
+					NewScene();
+					LoadSceneFile(std::string(path));
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
 
 
 		// Determine when ImGui should block events
@@ -293,10 +286,35 @@ namespace Pistachio {
 		ImGui::End();
 		ImGui::PopStyleVar();
 
+		/// Dockspace windows begin
+		m_SceneHierarchyPanel.OnImGuiRender();
+		m_PropertiesPanel.SetSelectedEntity(m_SceneHierarchyPanel.SelectedEntity());
+		m_PropertiesPanel.OnImGuiRender();
+
+		m_ContentBrowserPanel.OnImGuiRender();
+
+
+		{
+			std::string name = "None";
+			if (m_HoveredEntity) {
+				name = m_HoveredEntity.Component<TagComponent>().Tag;
+			}
+
+			auto stats = Renderer2D::RetrieveStats();
+			ImGui::Begin("Renderer2D Statistics");
+			ImGui::Text("Hovered Entity: %s", name.c_str());
+			ImGui::Text("Draw Calls: %d", stats.DrawCalls);
+			ImGui::Text("Quad Count: %d", stats.QuadCount);
+			ImGui::Text("Vertex Count: %d", stats.TotalVertexCount());
+			ImGui::Text("Index Count: %d", stats.TotalIndexCount());
+			ImGui::End();
+		}
+
 		ImGui::End();
 	}
 
 	bool EditorLayer::OnEvent(Event& event) {
+		m_ContentBrowserPanel.SendEvent(event);
 		m_EditorCamera.SendEvent(event);
 		return false;
 	}
@@ -405,9 +423,9 @@ namespace Pistachio {
 	void EditorLayer::FileSaveAs() {
 		std::string filepath = FileDialog::SaveFile("Pistachio Scene (*.pistachio)\0*.pistachio\0");
 		if (!filepath.empty()) {
-			const std::string filetype = ".pistachio";
-			if (filepath.compare(filepath.length() - filetype.length(), filetype.length(), filetype) != 0) {
-				filepath = filepath.append(filetype);
+			
+			if (filepath.compare(filepath.length() - FileExtension.length(), FileExtension.length(), FileExtension) != 0) {
+				filepath = filepath.append(FileExtension);
 			}
 
 			SaveSceneFile(filepath);
@@ -415,6 +433,8 @@ namespace Pistachio {
 	}
 
 	void EditorLayer::LoadSceneFile(std::string& filepath) {
+		// Currenty likely to throw exception if bad file is passed in
+
 		m_HoveredEntity = {};
 		m_SceneHierarchyPanel.SetSelectedEntity({});
 		m_PropertiesPanel.SetSelectedEntity({});
