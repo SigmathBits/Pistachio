@@ -37,11 +37,55 @@ namespace Pistachio {
 		return b2_staticBody;
 	}
 
+	template<typename C>
+	static void CopyComponent(entt::registry& dest, entt::registry& source, const std::unordered_map<UUID, entt::entity>& destEnttIDsByUUID) {
+		auto view = source.view<UUIDComponent, C>();
+		for (auto&& [enttID, uuidComponent, component] : view.each()) {
+			entt::entity destEnttID = destEnttIDsByUUID.at(uuidComponent.UUID);
+			dest.emplace_or_replace<C>(destEnttID, component);
+		}
+	}
+
+	template<typename C>
+	static void CopyComponentIfExists(Entity dest, Entity source) {
+		if (source.HasComponent<C>()) {
+			dest.AddOrReplaceComponent<C>(source.Component<C>());
+		}
+	}
+
 	Scene::Scene() {
 
 	}
 
 	Scene::~Scene() {
+	}
+
+	Ref<Scene> Scene::Copy(Ref<Scene> other) {
+		Ref<Scene> newScene = CreateRef<Scene>();
+
+		newScene->m_ViewportWidth = other->m_ViewportWidth;
+		newScene->m_ViewportHeight = other->m_ViewportHeight;
+
+		std::unordered_map<UUID, entt::entity> destEnttIDsByUUID;
+
+		auto& sourceSceneRegistery = other->m_Registry;
+		auto& destSceneRegistery = newScene->m_Registry;
+
+		auto view = sourceSceneRegistery.view<UUIDComponent, TagComponent>();
+		for (auto&& [enttID, uuidComponent, tagComponent] : view.each()) {
+			entt::entity destEnttID = newScene->CreateEntityWithUUID(uuidComponent.UUID, tagComponent.Tag);
+			destEnttIDsByUUID[uuidComponent.UUID] = destEnttID;
+		}
+
+		// Copy components (Except IDComponent and TagComponent)
+		CopyComponent<TransformComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
+		CopyComponent<SpriteRendererComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
+		CopyComponent<CameraComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
+		CopyComponent<NativeScriptComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
+		CopyComponent<RigidBody2DComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
+		CopyComponent<BoxCollider2DComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
+
+		return newScene;
 	}
 
 	Entity Scene::CreateEntity(const std::string& name /*= std::string()*/) {
@@ -50,10 +94,23 @@ namespace Pistachio {
 
 	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name) {
 		Entity entity = { m_Registry.create(), this };
-		entity.AddComponent<IDComponent>(uuid);
+		entity.AddComponent<UUIDComponent>(uuid);
 		entity.AddComponent<TagComponent>(name.empty() ? "Unnamed Entity" : name);
 		entity.AddComponent<TransformComponent>();
 		return entity;
+	}
+
+	Entity Scene::DuplicateEntity(Entity entity) {
+		Entity newEntity = CreateEntity(entity.Name());
+
+		CopyComponentIfExists<TransformComponent>(newEntity, entity);
+		CopyComponentIfExists<SpriteRendererComponent>(newEntity, entity);
+		CopyComponentIfExists<CameraComponent>(newEntity, entity);
+		CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
+		CopyComponentIfExists<RigidBody2DComponent>(newEntity, entity);
+		CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
+
+		return newEntity;
 	}
 
 	void Scene::DestroyEntity(Entity entity) {
@@ -62,56 +119,66 @@ namespace Pistachio {
 
 	void Scene::OnRuntimeStart() {
 		// Instantiate Scripts
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& script) {
-			script.ScriptInstance = script.CreateScriptInstance();
-			script.ScriptInstance->m_Entity = Entity(entity, this);
-			script.ScriptInstance->OnCreate();
-		});
+		{
+			auto view = m_Registry.view<NativeScriptComponent>();
+			for (auto&& [entity, script] : view.each()) {
+				script.ScriptInstance = script.CreateScriptInstance();
+				script.ScriptInstance->m_Entity = Entity(entity, this);
+				script.ScriptInstance->OnCreate();
+			}
+		}
 
 
 		// Initialise Physics world
-		m_PhysicsWorld = new b2World({ 0.0f, -9.8f });
-		
-		auto group = m_Registry.group<RigidBody2DComponent>(entt::get<TransformComponent>);
-		for (auto&& [e, rigidBody, transform] : group.each()) {
-			Entity entity = { e, this };
+		{
+			m_PhysicsWorld = new b2World({ 0.0f, -9.8f });
 
-			b2BodyDef bodyDef;
-			bodyDef.type = RigidBody2DTypeToBox2DType(rigidBody.Type);
-			bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
-			bodyDef.angle = transform.Rotation.z;
+			auto view = m_Registry.view<TransformComponent, RigidBody2DComponent>();
+			for (auto&& [enntID, transform, rigidBody] : view.each()) {
+				Entity entity = { enntID, this };
 
-			b2Body* body = m_PhysicsWorld->CreateBody(&bodyDef);
-			body->SetFixedRotation(rigidBody.FixedRotation);
+				b2BodyDef bodyDef;
+				bodyDef.type = RigidBody2DTypeToBox2DType(rigidBody.Type);
+				bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
+				bodyDef.angle = transform.Rotation.z;
 
-			m_RuntimeBodies[entity.ID()] = body;
+				b2Body* body = m_PhysicsWorld->CreateBody(&bodyDef);
+				body->SetFixedRotation(rigidBody.FixedRotation);
 
-			if (!entity.HasComponent<BoxCollider2DComponent>()) continue;
+				m_RuntimeBodies[entity.UUID()] = body;
 
-			auto& boxCollider = entity.Component<BoxCollider2DComponent>();
+				if (!entity.HasComponent<BoxCollider2DComponent>()) continue;
 
-			b2PolygonShape boxShape;
-			boxShape.SetAsBox(
-				transform.Scale.x * 0.5f * boxCollider.Size.x, 
-				transform.Scale.y * 0.5f * boxCollider.Size.y
-			);
+				auto& boxCollider = entity.Component<BoxCollider2DComponent>();
 
-			b2FixtureDef fixtureDef;
-			fixtureDef.shape = &boxShape;
-			fixtureDef.density = boxCollider.Density;
-			fixtureDef.friction = boxCollider.Friction;
-			fixtureDef.restitution = boxCollider.Restitution;
-			fixtureDef.restitutionThreshold = boxCollider.RestitutionThreshold;
+				b2PolygonShape boxShape;
+				boxShape.SetAsBox(
+					transform.Scale.x * 0.5f * boxCollider.Size.x,
+					transform.Scale.y * 0.5f * boxCollider.Size.y
+				);
 
-			b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &boxShape;
+				fixtureDef.density = boxCollider.Density;
+				fixtureDef.friction = boxCollider.Friction;
+				fixtureDef.restitution = boxCollider.Restitution;
+				fixtureDef.restitutionThreshold = boxCollider.RestitutionThreshold;
+
+				b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+			}
 		}
+
+
+		// Update cameras
+		OnViewportResize(m_ViewportWidth, m_ViewportHeight);
 	}
 
 	void Scene::OnRuntimeStop() {
 		// Destroy Script Instance
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& script) {
+		auto view = m_Registry.view<NativeScriptComponent>();
+		for (auto&& [enttID, script] : view.each()) {
 			script.ScriptInstance->OnDestroy();
-		});
+		}
 
 
 		// Destroy physics world
@@ -125,9 +192,9 @@ namespace Pistachio {
 		Renderer2D::BeginScene(camera);
 
 		{
-			auto group = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
-			for (auto&& [entity, spriteComponent, transform] : group.each()) {
-				Renderer2D::DrawSprite(transform.Transform(), spriteComponent.Sprite, (int)entity);
+			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+			for (auto&& [enttID, transform, spriteComponent] : view.each()) {
+				Renderer2D::DrawSprite(transform.Transform(), spriteComponent.Sprite, (int)enttID);
 			}
 		}
 
@@ -137,9 +204,10 @@ namespace Pistachio {
 	void Scene::OnUpdateRuntime(Timestep timestep) {
 		// Update Scripts
 		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& script) {
+			auto view = m_Registry.view<NativeScriptComponent>();
+			for (auto&& [enttID, script] : view.each()) {
 				script.ScriptInstance->OnUpdate(timestep);
-			});
+			}
 		}
 
 
@@ -152,11 +220,11 @@ namespace Pistachio {
 			m_PhysicsWorld->Step(timestep, velocityIteration, positionIteration);
 
 			// Retrieve transform from Box2D
-			auto group = m_Registry.group<RigidBody2DComponent>(entt::get<TransformComponent>);
-			for (auto&& [e, rigidBody, transform] : group.each()) {
-				Entity entity = { e, this };
+			auto view = m_Registry.view<TransformComponent, RigidBody2DComponent>();
+			for (auto&& [enntID, transform, rigidBody] : view.each()) {
+				Entity entity = { enntID, this };
 
-				b2Body* body = m_RuntimeBodies[entity.ID()];
+				b2Body* body = m_RuntimeBodies[entity.UUID()];
 
 				const auto& position = body->GetPosition();
 				transform.Translation.x = position.x;
@@ -172,7 +240,7 @@ namespace Pistachio {
 		Camera* mainCamera = nullptr;  // used as a weakref
 		{
 			auto view = m_Registry.view<TransformComponent, CameraComponent>();
-			for (auto&& [entity, transform, camera] : view.each()) {
+			for (auto&& [enttID, transform, camera] : view.each()) {
 				if (camera.Primary) {
 					cameraTransform = transform.Transform();
 					mainCamera = &camera.Camera;
@@ -186,9 +254,9 @@ namespace Pistachio {
 		Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
 		{
-			auto group = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
-			for (auto&& [entity, spriteComponent, transform] : group.each()) {
-				Renderer2D::DrawSprite(transform.Transform(), spriteComponent.Sprite);
+			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+			for (auto&& [enttID, transform, spriteComponent] : view.each()) {
+				Renderer2D::DrawSprite(transform.Transform(), spriteComponent.Sprite, (int)enttID);
 			}
 		}
 
@@ -216,24 +284,25 @@ namespace Pistachio {
 
 	Entity Scene::PrimaryCameraEntity() {
 		auto view = m_Registry.view<CameraComponent>();
-		for (auto&&[entity, cameraComponent] : view.each()) {
+		for (auto&&[enttID, cameraComponent] : view.each()) {
 			if (cameraComponent.Primary) {
-				return Entity(entity, this);
+				return Entity(enttID, this);
 			}
 		}
 		return Entity();
 	}
 
+	// FIXME: Whyyy any of this 
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component) {
 		static_assert(false);
 	}
 
 	template<>
-	void Scene::OnComponentAdded(Entity entity, IDComponent& component) {
+	void Scene::OnComponentAdded(Entity entity, UUIDComponent& component) {
 
 	}
-	template void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component);
+	template void Scene::OnComponentAdded<UUIDComponent>(Entity entity, UUIDComponent& component);
 
 	template<>
 	void Scene::OnComponentAdded(Entity entity, TagComponent& component) {

@@ -22,8 +22,11 @@ namespace Pistachio {
 		Scene();
 		~Scene();
 
+		static Ref<Scene> Copy(const Ref<Scene> other);
+
 		Entity CreateEntity(const std::string&name = std::string());
 		Entity CreateEntityWithUUID(UUID uuid, const std::string&name = std::string());
+		Entity DuplicateEntity(Entity entity);
 		void DestroyEntity(Entity entity);
 
 		void OnRuntimeStart();

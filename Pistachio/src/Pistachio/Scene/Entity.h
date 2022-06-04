@@ -18,7 +18,8 @@ namespace Pistachio {
 		Entity(entt::entity entityHandle, Scene* scene);
 		Entity(const Entity& other) = default;
 
-		UUID ID() { return Component<IDComponent>().ID; }
+		UUID UUID() { return Component<UUIDComponent>().UUID; }
+		const std::string& Name() { return Component<TagComponent>().Tag; }
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args) {
@@ -27,6 +28,13 @@ namespace Pistachio {
 			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 			m_Scene->OnComponentAdded<T>(*this, component);
 
+			return component;
+		}
+
+		template<typename T, typename... Args>
+		T& AddOrReplaceComponent(Args&&... args) {
+			T& component = m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
+			m_Scene->OnComponentAdded<T>(*this, component);
 			return component;
 		}
 

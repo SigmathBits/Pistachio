@@ -58,6 +58,10 @@ namespace Pistachio {
 				deleteEntity = true;
 			}
 
+			if (ImGui::MenuItem("Duplicate Entity")) {
+				m_Context->DuplicateEntity(entity);
+			}
+
 			ImGui::EndPopup();
 		}
 

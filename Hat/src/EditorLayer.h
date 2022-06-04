@@ -43,12 +43,15 @@ namespace Pistachio {
 		void SetLastSave(std::string& filepath);
 
 	private:
+		void ChangeActiveSceneTo(Ref<Scene> scene);
+
 		EditorCamera m_EditorCamera;
 
 		Ref<Framebuffer> m_Framebuffer; 
 
 		std::string m_Filepath;
 		Ref<Scene> m_ActiveScene;
+		Ref<Scene> m_EditorScene, m_RuntimeScene;
 
 		Ref<Texture2D> m_PistachioTexture;
 		Ref<Texture2D> m_RainbowDashTexture;

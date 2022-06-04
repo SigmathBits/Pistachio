@@ -18,11 +18,11 @@ namespace Pistachio {
 	class ScriptableEntity;
 
 	
-	struct IDComponent {
-		UUID ID;
+	struct UUIDComponent {
+		UUID UUID;
 
-		IDComponent() = default;
-		IDComponent(const IDComponent&) = default;
+		UUIDComponent() = default;
+		UUIDComponent(const UUIDComponent&) = default;
 	};
 
 	struct TagComponent {

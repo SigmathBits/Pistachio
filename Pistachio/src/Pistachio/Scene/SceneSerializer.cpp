@@ -2,6 +2,8 @@
 
 #include "SceneSerializer.h"
 
+#include <filesystem>
+
 #include <yaml-cpp/yaml.h>
 
 #include "Pistachio/Scene/Entity.h"
@@ -84,11 +86,11 @@ namespace Pistachio {
 	}
 
 	static void SerializeEntity(YAML::Emitter& out, Entity entity) {
-		PST_CORE_ASSERT(entity.HasComponent<IDComponent>(), "Entities must have an ID Component");
+		PST_CORE_ASSERT(entity.HasComponent<UUIDComponent>(), "Entities must have an ID Component");
 
 		out << YAML::BeginMap;  // Entity
 
-		out << YAML::Key << "Entity" << YAML::Value << entity.ID();
+		out << YAML::Key << "Entity" << YAML::Value << entity.UUID();
 
 		if (entity.HasComponent<TagComponent>()) {
 			out << YAML::Key << "TagComponent";
@@ -190,7 +192,7 @@ namespace Pistachio {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "Scene" << YAML::Value << "Untitled";
+		out << YAML::Key << "Scene" << YAML::Value << std::filesystem::path(filepath).filename().string();
 
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		m_Scene->EachEntity([&out](auto entity) {

@@ -261,9 +261,9 @@ namespace Pistachio {
 			// Runtime Camera projection and view
 			//auto cameraEntity = m_ActiveScene->PrimaryCameraEntity();
 			//const auto& camera = cameraEntity.Component<CameraComponent>().Camera;
-
+			
 			//glm::mat4 viewMatrix = glm::inverse(cameraEntity.Component<TransformComponent>().Transform());
-			//const glm::mat4& projectionMatrix = camera.Projection();
+			//const glm::mat4& projectionMatrix = camera.ProjectionMatrix();
 
 			const glm::mat4& projectionMatrix = m_EditorCamera.ProjectionMatrix();
 			const glm::mat4& viewMatrix = m_EditorCamera.ViewMatrix();
@@ -358,12 +358,21 @@ namespace Pistachio {
 
 	void EditorLayer::OnScenePlay() {
 		m_SceneState = SceneState::Play;
-		m_ActiveScene->OnRuntimeStart();
+
+		m_RuntimeScene = Scene::Copy(m_EditorScene);
+
+		m_RuntimeScene->OnRuntimeStart();
+
+		ChangeActiveSceneTo(m_RuntimeScene);
 	}
 
 	void EditorLayer::OnSceneStop() {
 		m_SceneState = SceneState::Edit;
-		m_ActiveScene->OnRuntimeStop();
+		m_RuntimeScene->OnRuntimeStop();
+
+		ChangeActiveSceneTo(m_EditorScene);
+
+		m_RuntimeScene = nullptr;
 	}
 
 	bool EditorLayer::OnEvent(Event& event) {
@@ -386,7 +395,8 @@ namespace Pistachio {
 
 		switch (event.KeyCode()) {
 			// Contextual Escape actions
-			case PST_KEY_ESCAPE: {
+			case PST_KEY_ESCAPE:
+			{
 				if (m_GizmoType != -1) {
 					m_GizmoType = -1;
 					return true;
@@ -399,21 +409,24 @@ namespace Pistachio {
 			}
 
 			// File Menu shortcuts
-			case PST_KEY_N: {
+			case PST_KEY_N:
+			{
 				if (ctrlPressed) {
 					NewScene();
 					return true;
 				}
 				break;
 			}
-			case PST_KEY_O: {
+			case PST_KEY_O:
+			{
 				if (ctrlPressed) {
 					FileOpen();
 					return true;
 				}
 				break;
 			}
-			case PST_KEY_S: {
+			case PST_KEY_S:
+			{
 				if (ctrlPressed && !shiftPressed) {
 					FileSave();
 					return true;
@@ -421,6 +434,19 @@ namespace Pistachio {
 				if (ctrlPressed && shiftPressed) {
 					FileSaveAs();
 					return true;
+				}
+				break;
+			}
+		}
+
+		if (m_SceneState != SceneState::Edit) return false;
+
+		switch (event.KeyCode()) {
+			// Commands
+			case PST_KEY_D: {
+				Entity selectedEntity = m_SceneHierarchyPanel.SelectedEntity();
+				if (selectedEntity && ctrlPressed) {
+					m_EditorScene->DuplicateEntity(selectedEntity);
 				}
 				break;
 			}
@@ -488,10 +514,12 @@ namespace Pistachio {
 			OnSceneStop();
 		}
 
-		m_ActiveScene = CreateRef<Scene>();
-		m_ActiveScene->OnViewportResize((unsigned int)m_ViewportSize.x, (unsigned int)m_ViewportSize.y);
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_EditorScene = CreateRef<Scene>();
+		m_EditorScene->OnViewportResize((unsigned int)m_ViewportSize.x, (unsigned int)m_ViewportSize.y);
+		m_SceneHierarchyPanel.SetContext(m_EditorScene);
 		m_Filepath = "";
+
+		ChangeActiveSceneTo(m_EditorScene);
 	}
 
 	void EditorLayer::FileOpen() {
@@ -534,12 +562,14 @@ namespace Pistachio {
 		SceneSerializer serializer(m_ActiveScene);
 		serializer.Deserialize(filepath);
 
+		m_EditorScene = m_ActiveScene;
+
 		m_Filepath = filepath;
 		SetLastSave(filepath);
 	}
 
 	void EditorLayer::SaveSceneFile(std::string& filepath) {
-		SceneSerializer serializer(m_ActiveScene);
+		SceneSerializer serializer(m_EditorScene);
 		serializer.Serialize(filepath);
 
 		m_Filepath = filepath;
@@ -549,6 +579,11 @@ namespace Pistachio {
 	void EditorLayer::SetLastSave(std::string& filepath) {
 		std::ofstream outFile("assets/scenes/.pistachio_last_save");
 		outFile << filepath;
+	}
+
+	void EditorLayer::ChangeActiveSceneTo(Ref<Scene> scene) {
+		m_ActiveScene = scene;
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
 }
