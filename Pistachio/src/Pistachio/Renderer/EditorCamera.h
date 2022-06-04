@@ -23,6 +23,9 @@ namespace Pistachio {
 		inline glm::mat4 ViewMatrix() const { return m_ViewMatrix; }
 		inline glm::mat4 ProjectionViewMatrix() const { return m_ProjectionViewMatrix; }
 
+		void SetFocalPlane(const glm::vec3& focalPointOnPlane);
+		void SetFocalPoint(const glm::vec3& focalPoint) { m_FocalPointTarget = focalPoint; };
+
 		void SetViewportSize(unsigned int width, unsigned int height);
 
 		glm::mat4 Orientation() const;

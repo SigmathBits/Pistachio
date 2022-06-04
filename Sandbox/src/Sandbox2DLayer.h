@@ -22,11 +22,12 @@ private:
 	Pistachio::Ref<Pistachio::Texture2D> m_PistachioTexture;
 	Pistachio::Ref<Pistachio::Texture2D> m_RainbowDashTexture;
 	Pistachio::Ref<Pistachio::Texture2D> m_CheckerboardTexture;
+	Pistachio::Ref<Pistachio::Texture2D> m_ImageIconTexture;
 
 	Pistachio::Ref<Pistachio::Texture2D> m_SpriteSheet;
 	Pistachio::Ref<Pistachio::SubTexture2D> m_BarrelTexture;
 
-	Pistachio::Transform2D m_RotatedTransform{ { 0.0f, 0.0f, -0.51f }, 0.0f };
+	Pistachio::Transform2D m_Transform{ { 0.0f, 0.0f, -0.9f }, 0.0f };
 	float m_Angle = 0.0f;
 	glm::vec4 m_Colour{ 0.486f, 0.686f, 0.255f, 1.0f };
 };

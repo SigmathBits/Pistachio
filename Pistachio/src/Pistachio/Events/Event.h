@@ -84,7 +84,7 @@ namespace Pistachio {
 				return false;
 			}
 
-			event.m_Handled = pair->second(event);
+			event.m_Handled |= pair->second(event);
 
 			return true;
 		}

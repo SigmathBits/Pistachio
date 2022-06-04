@@ -65,13 +65,13 @@ namespace Pistachio {
         PST_PROFILE_FUNCTION();
 
         if (!event.m_Handled) {
-            event.m_Handled = OnEvent(event);
+            event.m_Handled |= OnEvent(event);
         }
 
         m_EventDispatcher.Dispatch(event);
 
         if (!event.m_Handled) {
-            event.m_Handled = OnEventAfter(event);
+            event.m_Handled |= OnEventAfter(event);
         }
     }
 

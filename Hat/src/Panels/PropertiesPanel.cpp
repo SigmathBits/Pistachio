@@ -19,7 +19,7 @@ namespace Pistachio {
 
 
 	PropertiesPanel::PropertiesPanel() {
-		m_ImageIcon = Texture2D::Create("resources/icons/content-browser/image.png");
+		m_ImageIcon = Texture2D::Create("resources/icons/content-browser/image.png", 3);
 	}
 
 	void PropertiesPanel::OnImGuiRender() {
@@ -162,7 +162,7 @@ namespace Pistachio {
 
 		DrawComponentProperties<SpriteRendererComponent>(entity, "Sprite Renderer", [this](auto& spriteComponent) {
 			if (spriteComponent.Sprite.SubTexture->Texture()) {
-				ImGui::ImageButton((ImTextureID)m_ImageIcon->RendererID(), { 100.0f, 100.0f }, { 0, 1 }, { 1, 0 }, 0);
+				ImGui::ImageButton((ImTextureID)m_ImageIcon->RendererID(), { 128.0f, 128.0f }, { 0, 1 }, { 1, 0 }, 0);
 				if (ImGui::BeginPopupContextItem(nullptr, ImGuiMouseButton_Right)) {
 					if (ImGui::MenuItem("Remove Texture")) {
 						spriteComponent.Sprite.SubTexture = CreateRef<SubTexture2D>(nullptr);
@@ -170,7 +170,7 @@ namespace Pistachio {
 					ImGui::EndPopup();
 				}
 			} else {
-				ImGui::Button("Drag & Drop\n   Texture  ", { 100.0f, 100.0f });
+				ImGui::Button("Drag & Drop\n   Texture  ", { 128.0f, 128.0f });
 			}
 
 			if (ImGui::BeginDragDropTarget()) {

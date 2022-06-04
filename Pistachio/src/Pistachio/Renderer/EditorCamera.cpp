@@ -14,6 +14,8 @@
 
 #include "Pistachio/Math/Math.h"
 
+#include "Pistachio/Core/LogOverloads.h"
+
 
 namespace Pistachio {
 
@@ -63,6 +65,17 @@ namespace Pistachio {
 		}
 	}
 
+	void EditorCamera::SetFocalPlane(const glm::vec3& focalPointOnPlane) {
+		auto focalZ = (m_ViewMatrix * glm::vec4(focalPointOnPlane, 1.0f)).z;
+		m_Distance = -focalZ;
+		m_FocalPoint = m_CameraViewMatrix * glm::vec4(0.0f, 0.0f, focalZ, 1.0f);
+
+		m_DistanceTarget = m_Distance;
+		m_FocalPointTarget = m_FocalPoint;
+
+		CalculateProjection();
+	}
+
 	void EditorCamera::SetViewportSize(unsigned int width, unsigned int height) {
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
@@ -76,7 +89,7 @@ namespace Pistachio {
 		m_ProjectionMatrix = glm::perspective(m_VerticalFOV, m_AspectRatio, m_NearClip, m_FarClip);
 		m_ProjectionViewMatrix = m_ProjectionMatrix * m_ViewMatrix;
 
-		m_ProjectionWidth = 2.0f * (m_ProjectionViewMatrix * glm::vec4( m_FocalPoint, 1.0f )).w;
+		m_ProjectionWidth = 2.0f * (m_ProjectionMatrix * glm::vec4(0.0f, 0.0f, -m_Distance, 1.0f)).w;
 	}
 
 	void EditorCamera::CalculateProjectionView() {
@@ -86,7 +99,7 @@ namespace Pistachio {
 		m_ViewMatrix = glm::inverse(m_CameraViewMatrix);
 		m_ProjectionViewMatrix = m_ProjectionMatrix * m_ViewMatrix;
 
-		m_ProjectionWidth = 2.0f * (m_ProjectionViewMatrix * glm::vec4( m_FocalPoint, 1.0f )).w;
+		m_ProjectionWidth = 2.0f * (m_ProjectionMatrix * glm::vec4(0.0f, 0.0f, -m_Distance, 1.0f)).w;
 	}
 
 	void EditorCamera::CalculatePosition() {

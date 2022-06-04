@@ -44,8 +44,8 @@ namespace Pistachio {
 		m_RainbowDashTexture = Texture2D::Create("assets/textures/Rainbow-Dash.png");
 		m_CheckerboardTexture = Texture2D::Create("assets/textures/Checkerboard.png");
 
-		m_PlayIcon = Texture2D::Create("resources/icons/toolbar/play.png");
-		m_StopIcon = Texture2D::Create("resources/icons/toolbar/stop.png");
+		m_PlayIcon = Texture2D::Create("resources/icons/toolbar/play.png", 9);
+		m_StopIcon = Texture2D::Create("resources/icons/toolbar/stop.png", 9);
 
 		FramebufferSpecification frameBufferSpec{ 1280, 720 };
 		frameBufferSpec.AttachmentsSpecification = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
@@ -366,6 +366,10 @@ namespace Pistachio {
 
 	bool EditorLayer::OnEvent(Event& event) {
 		m_ContentBrowserPanel.SendEvent(event);
+		return false;
+	}
+
+	bool EditorLayer::OnEventAfter(Event& event) {
 		if (m_SceneState == SceneState::Edit) {
 			m_EditorCamera.SendEvent(event);
 		}
@@ -380,6 +384,18 @@ namespace Pistachio {
 		bool shiftPressed = Input::IsKeyPressed(PST_KEY_LEFT_SHIFT) || Input::IsKeyPressed(PST_KEY_RIGHT_SHIFT);
 
 		switch (event.KeyCode()) {
+			// Contextual Escape actions
+			case PST_KEY_ESCAPE: {
+				if (m_GizmoType != -1) {
+					m_GizmoType = -1;
+				} else if (m_SceneHierarchyPanel.SelectedEntity()) {
+					m_SceneHierarchyPanel.SetSelectedEntity({});
+					m_PropertiesPanel.SetSelectedEntity({});
+				}
+				break;
+			}
+
+			// File Menu shortcuts
 			case PST_KEY_N: {
 				if (ctrlPressed) {
 					NewScene();
@@ -437,13 +453,27 @@ namespace Pistachio {
 		return false;
 	}
 
+	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& event) {
+		if (m_HoveredEntity && event.MouseButton() == PST_MOUSE_BUTTON_MIDDLE && Input::IsKeyPressed(PST_KEY_LEFT_CONTROL)) {
+			const auto& transformComponent = m_HoveredEntity.Component<TransformComponent>();
+			m_EditorCamera.SetFocalPlane(transformComponent.Translation);
+		}
+		return false;
+	}
+
 	bool EditorLayer::OnMouseButtonReleased(MouseButtonReleasedEvent& event) {
-		if (event.MouseButton() == PST_MOUSE_BUTTON_LEFT && m_ViewportHovered && (!ImGuizmo::IsOver() || m_GizmoType == -1)) {
+		if (m_ViewportHovered && event.MouseButton() == PST_MOUSE_BUTTON_LEFT && (m_GizmoType == -1 || !ImGuizmo::IsOver())) {
 			if (m_GizmoType == -1) {
 				m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 			}
+
 			m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
-			m_PropertiesPanel.SetSelectedEntity(m_SceneHierarchyPanel.SelectedEntity());
+			m_PropertiesPanel.SetSelectedEntity(m_HoveredEntity);
+
+			if (Input::IsKeyPressed(PST_KEY_LEFT_CONTROL)) {
+				const auto& transformComponent = m_HoveredEntity.Component<TransformComponent>();
+				m_EditorCamera.SetFocalPoint(transformComponent.Translation);
+			}
 		}
 		return false;
 	}

@@ -16,14 +16,17 @@ namespace Pistachio {
 
 
 	ContentBrowserPanel::ContentBrowserPanel(const std::string& directory) 
-		: EventListener({ EventType::MouseScrolled }), m_AssetsDirectory(directory), m_CurrentDirectory(directory) {
-		m_DirectoryIcon = Texture2D::Create("resources/icons/content-browser/folder.png");
-		m_FileIcon = Texture2D::Create("resources/icons/content-browser/file.png");
-		m_ImageIcon = Texture2D::Create("resources/icons/content-browser/image.png");
+		: EventListener({ EventType::MouseScrolled, EventType::KeyPressed }), m_AssetsDirectory(directory), m_CurrentDirectory(directory) {
+		m_DirectoryIcon = Texture2D::Create("resources/icons/content-browser/folder.png", 4);
+		m_FileIcon = Texture2D::Create("resources/icons/content-browser/file.png", 4);
+		m_ImageIcon = Texture2D::Create("resources/icons/content-browser/image.png", 4);
+		m_ShaderIcon = Texture2D::Create("resources/icons/content-browser/shader.png", 4);
 	}
 
 	void ContentBrowserPanel::OnImGuiRender() {
 		ImGui::Begin("Content Browser");
+
+		m_IsFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
 
 		// Allow events Pistachio Event's to pass through ImGui to us if the content browser is hovered and the user is holding control
 		// We need events to later capture MouseScolledEvents to adjust the icon size (when control is held)
@@ -69,6 +72,8 @@ namespace Pistachio {
 			Ref<Texture2D> icon;
 			if (Utils::EndsWith(filename, ".png")) {
 				icon = m_ImageIcon;
+			} else if (Utils::EndsWith(filename, ".glsl") || Utils::EndsWith(filename, ".frag") || Utils::EndsWith(filename, ".vert")) {
+				icon = m_ShaderIcon;
 			} else {
 				icon = directoryEntry.is_directory() ? m_DirectoryIcon : m_FileIcon;
 			}
@@ -116,6 +121,14 @@ namespace Pistachio {
 		if (m_IsHovered && Input::IsKeyPressed(PST_KEY_LEFT_CONTROL)) {
 			m_ThumbnailSize = std::clamp((int)std::round((float)m_ThumbnailSize * std::pow(2.0f, 0.25f * event.YOffset())), 64, 512);
 			m_Padding = std::max((int)std::round(16.0f * (1 - ((float)m_ThumbnailSize - 64.0f) / (128.0f - 64.0f)) + 16.0f), 16);
+			return true;
+		}
+		return false;
+	}
+
+	bool ContentBrowserPanel::OnKeyPressed(KeyPressedEvent& event) {
+		if (m_IsFocused && event.KeyCode() == PST_KEY_BACKSPACE && event.RepeatCount() == 0 && m_CurrentDirectory != m_AssetsDirectory) {
+			m_CurrentDirectory = m_CurrentDirectory.parent_path();
 			return true;
 		}
 		return false;

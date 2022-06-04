@@ -26,7 +26,7 @@ namespace Pistachio {
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& filepath)
+	OpenGLTexture2D::OpenGLTexture2D(const std::string& filepath, unsigned int levels /*= 1*/)
 		: m_Filepath(filepath) {
 		PST_PROFILE_FUNCTION();
 
@@ -61,16 +61,19 @@ namespace Pistachio {
 		}
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, width, height);
+		glTextureStorage2D(m_RendererID, levels, m_InternalFormat, width, height);
 
 		// How we scale the texture
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_R, GL_REPEAT);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, width, height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+		if (levels > 1) {
+			glGenerateTextureMipmap(m_RendererID);
+		}
 
 		stbi_image_free(data);
 	}

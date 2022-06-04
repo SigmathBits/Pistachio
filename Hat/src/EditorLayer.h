@@ -27,8 +27,10 @@ namespace Pistachio {
 		void OnSceneStop();
 
 		bool OnEvent(Event& event) override;
+		bool OnEventAfter(Event& event) override;
 
 		bool OnKeyPressed(KeyPressedEvent& event) override;
+		bool OnMouseButtonPressed(MouseButtonPressedEvent& event) override;
 		bool OnMouseButtonReleased(MouseButtonReleasedEvent& event) override;
 
 		void NewScene();

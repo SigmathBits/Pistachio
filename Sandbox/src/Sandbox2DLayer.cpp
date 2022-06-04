@@ -20,6 +20,7 @@ void Sandbox2DLayer::OnAttach() {
 	m_PistachioTexture = Pistachio::Texture2D::Create("assets/textures/Pistachio.png");
 	m_RainbowDashTexture = Pistachio::Texture2D::Create("assets/textures/Rainbow-Dash.png");
 	m_CheckerboardTexture = Pistachio::Texture2D::Create("assets/textures/Checkerboard.png");
+	m_ImageIconTexture = Pistachio::Texture2D::Create("assets/textures/image.png");
 }
 
 void Sandbox2DLayer::OnDetach() {
@@ -80,14 +81,14 @@ void Sandbox2DLayer::OnUpdate(Pistachio::Timestep timestep) {
 
 		Pistachio::Renderer2D::DrawQuad({ { -0.5f, -0.5f, -0.31f }, glm::radians(-60.0f),{ 0.25f, 0.25f } }, { .251f, 0.494f, 0.494f, 0.5f });
 
-		m_RotatedTransform.Rotation = glm::radians(m_Angle);
-		Pistachio::Renderer2D::DrawQuad(m_RotatedTransform, m_Colour);
-
 		static float rotation = 0.0f;
 		rotation += 30.0f * timestep;
 		Pistachio::Renderer2D::DrawSprite({ { 0.0f, 0.0f, -0.52f }, glm::radians(rotation) }, { m_PistachioTexture, 2.0f });
 
 		Pistachio::Renderer2D::DrawSprite({ { 0.5f, 0.5f, -0.6f } }, m_RainbowDashTexture);
+
+		m_Transform.Rotation = glm::radians(m_Angle);
+		Pistachio::Renderer2D::DrawSprite(m_Transform, m_ImageIconTexture);
 
 		Pistachio::Renderer2D::EndScene();
 	}
@@ -97,9 +98,9 @@ void Sandbox2DLayer::OnImGuiRender() {
 	PST_PROFILE_FUNCTION();
 
 	ImGui::Begin("Quad");
-	ImGui::DragFloat3("Position", glm::value_ptr(m_RotatedTransform.Position), 0.005f);
+	ImGui::DragFloat3("Position", glm::value_ptr(m_Transform.Position), 0.005f);
 	ImGui::DragFloat("Angle", &m_Angle, 1.0f, 0.0f, 360.0f);
-	ImGui::DragFloat2("Size", glm::value_ptr(m_RotatedTransform.Size), 0.01f, 0.01f, 10.0f);
+	ImGui::DragFloat2("Size", glm::value_ptr(m_Transform.Size), 0.01f, 0.01f, 10.0f);
 	ImGui::ColorEdit4("Colour", glm::value_ptr(m_Colour));
 	ImGui::End();
 
