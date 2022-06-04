@@ -35,6 +35,7 @@ namespace YAML {
 
 
 namespace Pistachio {
+
 	template<glm::length_t L, typename T, glm::qualifier Q>
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec<L, T, Q> vector) {
 		out << YAML::Flow;
@@ -45,14 +46,49 @@ namespace Pistachio {
 		return out << YAML::EndSeq;
 	}
 
+	static std::string RigidBody2DTypeToString(RigidBody2DComponent::BodyType bodyType) {
+		switch (bodyType) {
+			case RigidBody2DComponent::BodyType::Static:
+				return "Static";
+				break;
+			case RigidBody2DComponent::BodyType::Dynamic:
+				return "Dynamic";
+				break;
+			case RigidBody2DComponent::BodyType::Kinematic:
+				return "Kinematic";
+				break;
+			default:
+				break;
+		}
+
+		PST_CORE_ASSERT(false, "Unrecognised body type");
+		return "";
+	}
+
+	static RigidBody2DComponent::BodyType RigidBody2DTypeFromString(std::string string) {
+		if (string == "Static") {
+			return RigidBody2DComponent::BodyType::Static;
+		} else if (string == "Dynamic") {
+			return RigidBody2DComponent::BodyType::Dynamic;
+		} else if (string == "Kinematic") {
+			return RigidBody2DComponent::BodyType::Kinematic;
+		}
+
+		PST_CORE_ASSERT(false, "Unrecognised body type");
+		return RigidBody2DComponent::BodyType::Static;
+	}
+
+
 	SceneSerializer::SceneSerializer(const Ref<Scene>& scene) 
 		: m_Scene(scene) {
 	}
 
 	static void SerializeEntity(YAML::Emitter& out, Entity entity) {
+		PST_CORE_ASSERT(entity.HasComponent<IDComponent>(), "Entities must have an ID Component");
+
 		out << YAML::BeginMap;  // Entity
 
-		out << YAML::Key << "Entity" << YAML::Value << "1234567890";  // FIXME: Replace with a Entity UUID 
+		out << YAML::Key << "Entity" << YAML::Value << entity.ID();
 
 		if (entity.HasComponent<TagComponent>()) {
 			out << YAML::Key << "TagComponent";
@@ -118,6 +154,35 @@ namespace Pistachio {
 			out << YAML::EndMap;  // SpriteRendererComponent
 		}
 
+		if (entity.HasComponent<RigidBody2DComponent>()) {
+			out << YAML::Key << "RigidBody2DComponent";
+			out << YAML::BeginMap;  // RigidBody2DComponent
+
+			auto& rigidBodyComponent = entity.Component<RigidBody2DComponent>();
+
+			out << YAML::Key << "BodyType" << YAML::Value << RigidBody2DTypeToString(rigidBodyComponent.Type);
+			out << YAML::Key << "FixedRotation" << YAML::Value << rigidBodyComponent.FixedRotation;
+
+			out << YAML::EndMap;  // RigidBody2DComponent
+		}
+
+		if (entity.HasComponent<BoxCollider2DComponent>()) {
+			out << YAML::Key << "BoxCollider2DComponent";
+			out << YAML::BeginMap;  // BoxCollider2DComponent
+
+			auto& boxColliderComponent = entity.Component<BoxCollider2DComponent>();
+
+			out << YAML::Key << "Offset" << YAML::Value << boxColliderComponent.Offset;
+			out << YAML::Key << "Size" << YAML::Value << boxColliderComponent.Size;
+
+			out << YAML::Key << "Density" << YAML::Value << boxColliderComponent.Density;
+			out << YAML::Key << "Friction" << YAML::Value << boxColliderComponent.Friction;
+			out << YAML::Key << "Restitution" << YAML::Value << boxColliderComponent.Restitution;
+			out << YAML::Key << "RestitutionThreshold" << YAML::Value << boxColliderComponent.RestitutionThreshold;
+
+			out << YAML::EndMap;  // BoxCollider2DComponent
+		}
+
 		out << YAML::EndMap;  // Entity
 	}
 
@@ -156,7 +221,7 @@ namespace Pistachio {
 		if (!entitiesData) return false;
 
 		for (auto entityData : entitiesData) {
-			unsigned int uuid = entityData["Entity"].as<unsigned int>();
+			uint64_t uuid = entityData["Entity"].as<uint64_t>();
 
 			std::string name;
 			auto tagComponentData = entityData["TagComponent"];
@@ -166,7 +231,7 @@ namespace Pistachio {
 
 			PST_CORE_TRACE("Deserialized entity with ID = {}, name = {}", uuid, name);
 
-			Entity entity = m_Scene->CreateEntity(name);
+			Entity entity = m_Scene->CreateEntityWithUUID(uuid, name);
 
 			auto transformComponentData = entityData["TransformComponent"];
 			if (transformComponentData) {
@@ -211,6 +276,27 @@ namespace Pistachio {
 
 				spriteComponent.Sprite.TintColour = spriteRendererComponentData["Colour"].as<glm::vec4>();
 				spriteComponent.Sprite.TilingScale = spriteRendererComponentData["TilingScale"].as<float>();
+			}
+
+			auto rigidyBodyComponentData = entityData["RigidBody2DComponent"];
+			if (rigidyBodyComponentData) {
+				auto& rigidBodyComponent = entity.AddComponent<RigidBody2DComponent>();
+
+				rigidBodyComponent.Type = RigidBody2DTypeFromString(rigidyBodyComponentData["BodyType"].as<std::string>());
+				rigidBodyComponent.FixedRotation = rigidyBodyComponentData["FixedRotation"].as<bool>();
+			}
+
+			auto boxColliderComponentData = entityData["BoxCollider2DComponent"];
+			if (boxColliderComponentData) {
+				auto& boxColliderComponent = entity.AddComponent<BoxCollider2DComponent>();
+
+				boxColliderComponent.Offset = boxColliderComponentData["Offset"].as<glm::vec2>();
+				boxColliderComponent.Size = boxColliderComponentData["Size"].as<glm::vec2>();
+
+				boxColliderComponent.Density = boxColliderComponentData["Density"].as<float>();
+				boxColliderComponent.Friction = boxColliderComponentData["Friction"].as<float>();
+				boxColliderComponent.Restitution = boxColliderComponentData["Restitution"].as<float>();
+				boxColliderComponent.RestitutionThreshold = boxColliderComponentData["RestitutionThreshold"].as<float>();
 			}
 		}
 

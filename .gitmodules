@@ -20,3 +20,6 @@
 [submodule "Pistachio/vendor/ImGuizmo"]
 	path = Pistachio/vendor/ImGuizmo
 	url = https://github.com/TheCherno/ImGuizmo.git
+[submodule "Pistachio/vendor/Box2D"]
+	path = Pistachio/vendor/Box2D
+	url = https://github.com/TheCherno/box2d.git

@@ -358,10 +358,12 @@ namespace Pistachio {
 
 	void EditorLayer::OnScenePlay() {
 		m_SceneState = SceneState::Play;
+		m_ActiveScene->OnRuntimeStart();
 	}
 
 	void EditorLayer::OnSceneStop() {
 		m_SceneState = SceneState::Edit;
+		m_ActiveScene->OnRuntimeStop();
 	}
 
 	bool EditorLayer::OnEvent(Event& event) {
@@ -370,9 +372,8 @@ namespace Pistachio {
 	}
 
 	bool EditorLayer::OnEventAfter(Event& event) {
-		if (m_SceneState == SceneState::Edit) {
-			m_EditorCamera.SendEvent(event);
-		}
+		if (m_SceneState != SceneState::Edit) return false;
+		m_EditorCamera.SendEvent(event);
 		return false;
 	}
 
@@ -388,9 +389,11 @@ namespace Pistachio {
 			case PST_KEY_ESCAPE: {
 				if (m_GizmoType != -1) {
 					m_GizmoType = -1;
+					return true;
 				} else if (m_SceneHierarchyPanel.SelectedEntity()) {
 					m_SceneHierarchyPanel.SetSelectedEntity({});
 					m_PropertiesPanel.SetSelectedEntity({});
+					return true;
 				}
 				break;
 			}
@@ -454,6 +457,8 @@ namespace Pistachio {
 	}
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& event) {
+		if (m_SceneState != SceneState::Edit) return false;
+
 		if (m_HoveredEntity && event.MouseButton() == PST_MOUSE_BUTTON_MIDDLE && Input::IsKeyPressed(PST_KEY_LEFT_CONTROL)) {
 			const auto& transformComponent = m_HoveredEntity.Component<TransformComponent>();
 			m_EditorCamera.SetFocalPlane(transformComponent.Translation);
@@ -463,14 +468,14 @@ namespace Pistachio {
 
 	bool EditorLayer::OnMouseButtonReleased(MouseButtonReleasedEvent& event) {
 		if (m_ViewportHovered && event.MouseButton() == PST_MOUSE_BUTTON_LEFT && (m_GizmoType == -1 || !ImGuizmo::IsOver())) {
-			if (m_GizmoType == -1) {
+			if (m_GizmoType == -1 && m_HoveredEntity) {
 				m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 			}
 
 			m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
 			m_PropertiesPanel.SetSelectedEntity(m_HoveredEntity);
 
-			if (Input::IsKeyPressed(PST_KEY_LEFT_CONTROL)) {
+			if (Input::IsKeyPressed(PST_KEY_LEFT_CONTROL) && m_HoveredEntity && m_SceneState == SceneState::Edit) {
 				const auto& transformComponent = m_HoveredEntity.Component<TransformComponent>();
 				m_EditorCamera.SetFocalPoint(transformComponent.Translation);
 			}
@@ -479,6 +484,10 @@ namespace Pistachio {
 	}
 
 	void EditorLayer::NewScene() {
+		if (m_SceneState == SceneState::Play) {
+			OnSceneStop();
+		}
+
 		m_ActiveScene = CreateRef<Scene>();
 		m_ActiveScene->OnViewportResize((unsigned int)m_ViewportSize.x, (unsigned int)m_ViewportSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);

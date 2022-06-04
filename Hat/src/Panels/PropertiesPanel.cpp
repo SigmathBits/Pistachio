@@ -187,6 +187,39 @@ namespace Pistachio {
 			ImGui::ColorEdit4("Colour", glm::value_ptr(spriteComponent.Sprite.TintColour));
 			ImGui::DragFloat("Tiling Factor", &spriteComponent.Sprite.TilingScale, 0.1f, 0.0f, 10.0f);
 		});
+
+		DrawComponentProperties<RigidBody2DComponent>(entity, "Rigid Body 2D", [this](auto& rigidBodyComponent) {
+			const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
+			const char* currentBodyTypeString = bodyTypeStrings[(int)rigidBodyComponent.Type];
+
+			if (ImGui::BeginCombo("Projection", currentBodyTypeString)) {
+
+				for (size_t i = 0; i < 3; i++) {
+					bool isSelected = currentBodyTypeString == bodyTypeStrings[i];
+					if (ImGui::Selectable(bodyTypeStrings[i], isSelected)) {
+						currentBodyTypeString = bodyTypeStrings[i];
+						rigidBodyComponent.Type = (RigidBody2DComponent::BodyType)i;
+					}
+
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::Checkbox("Fixed Rotation", &rigidBodyComponent.FixedRotation);
+		});
+
+		DrawComponentProperties<BoxCollider2DComponent>(entity, "Box Collider 2D", [this](auto& boxColliderComponent) {
+			ImGui::DragFloat2("Offest", glm::value_ptr(boxColliderComponent.Offset));
+			ImGui::DragFloat2("Size", glm::value_ptr(boxColliderComponent.Size));
+
+			ImGui::DragFloat("Density", &boxColliderComponent.Density, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Friction", &boxColliderComponent.Friction, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Restitution", &boxColliderComponent.Restitution, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Restitution Threshold", &boxColliderComponent.RestitutionThreshold, 0.01f, 0.0f, +FLT_MAX);
+		});
 	}
 
 	void PropertiesPanel::DrawAddComponentPopup(Entity entity) {
@@ -205,6 +238,22 @@ namespace Pistachio {
 				isEmpty = false;
 				if (ImGui::MenuItem("Camera")) {
 					entity.AddComponent<CameraComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			if (!entity.HasComponent<RigidBody2DComponent>()) {
+				isEmpty = false;
+				if (ImGui::MenuItem("Rigid Body 2D")) {
+					entity.AddComponent<RigidBody2DComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			if (!entity.HasComponent<BoxCollider2DComponent>()) {
+				isEmpty = false;
+				if (ImGui::MenuItem("Box Collider 2D")) {
+					entity.AddComponent<BoxCollider2DComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 			}

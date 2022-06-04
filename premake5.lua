@@ -20,6 +20,7 @@ group "Dependencies"
 	include "Pistachio/vendor/Glad"
 	include "Pistachio/vendor/imgui"
 	include "Pistachio/vendor/yaml-cpp"
+	include "Pistachio/vendor/Box2D"
 group ""
 
 

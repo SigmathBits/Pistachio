@@ -14,6 +14,7 @@ IncludeDir["stb_image"] = "%{wks.location}/Pistachio/vendor/stb_image"
 IncludeDir["entt"] = "%{wks.location}/Pistachio/vendor/entt/include"
 IncludeDir["yaml_cpp"] = "%{wks.location}/Pistachio/vendor/yaml-cpp/include"
 IncludeDir["ImGuizmo"] = "%{wks.location}/Pistachio/vendor/ImGuizmo"
+IncludeDir["Box2D"] = "%{wks.location}/Pistachio/vendor/Box2D/include"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 
 

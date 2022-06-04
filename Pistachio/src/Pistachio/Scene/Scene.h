@@ -9,6 +9,10 @@
 #include "Pistachio/Scene/Components.h"
 
 
+class b2World;
+class b2Body;
+
+
 namespace Pistachio {
 
 	class Entity;
@@ -19,7 +23,11 @@ namespace Pistachio {
 		~Scene();
 
 		Entity CreateEntity(const std::string&name = std::string());
+		Entity CreateEntityWithUUID(UUID uuid, const std::string&name = std::string());
 		void DestroyEntity(Entity entity);
+
+		void OnRuntimeStart();
+		void OnRuntimeStop();
 
 		void OnUpdateEditor(Timestep timestep, EditorCamera& camera);
 		void OnUpdateRuntime(Timestep timestep);
@@ -34,24 +42,12 @@ namespace Pistachio {
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);
 
-		//template<>
-		//void OnComponentAdded(Entity entity, TagComponent& component);
-
-		//template<>
-		//void OnComponentAdded(Entity entity, TransformComponent& component);
-
-		//template<>
-		//void OnComponentAdded(Entity entity, SpriteRendererComponent& component);
-
-		//template<>
-		//void OnComponentAdded(Entity entity, CameraComponent& component);
-
-		//template<>
-		//void OnComponentAdded(Entity entity, NativeScriptComponent& component);
-
 	private:
 		entt::registry m_Registry;
 		unsigned int m_ViewportWidth = 9, m_ViewportHeight = 0;
+
+		b2World* m_PhysicsWorld = nullptr;
+		std::unordered_map<UUID, b2Body*> m_RuntimeBodies;
 
 		friend class Entity;
 	};

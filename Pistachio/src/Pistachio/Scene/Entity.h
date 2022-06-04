@@ -4,8 +4,10 @@
 
 #include "Pistachio/Core/Core.h"
 #include "Pistachio/Core/Log.h"
+#include "Pistachio/Core/UUID.h"
 
 #include "Pistachio/Scene/Scene.h"
+#include "Pistachio/Scene/Components.h"
 
 
 namespace Pistachio {
@@ -15,6 +17,8 @@ namespace Pistachio {
 		Entity() = default;
 		Entity(entt::entity entityHandle, Scene* scene);
 		Entity(const Entity& other) = default;
+
+		UUID ID() { return Component<IDComponent>().ID; }
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args) {
