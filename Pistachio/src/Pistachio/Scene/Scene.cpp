@@ -53,7 +53,8 @@ namespace Pistachio {
 		}
 	}
 
-	Scene::Scene() {
+	Scene::Scene(const std::string& name /*= "Untitled"*/)
+		: m_Name(name) {
 
 	}
 

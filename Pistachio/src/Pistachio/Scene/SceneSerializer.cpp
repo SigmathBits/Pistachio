@@ -67,7 +67,7 @@ namespace Pistachio {
 		return "";
 	}
 
-	static RigidBody2DComponent::BodyType RigidBody2DTypeFromString(std::string string) {
+	static RigidBody2DComponent::BodyType RigidBody2DTypeFromString(const std::string& string) {
 		if (string == "Static") {
 			return RigidBody2DComponent::BodyType::Static;
 		} else if (string == "Dynamic") {
@@ -188,11 +188,11 @@ namespace Pistachio {
 		out << YAML::EndMap;  // Entity
 	}
 
-	void SceneSerializer::Serialize(const std::string& filepath) {
+	void SceneSerializer::Serialize(const std::filesystem::path& filepath) {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "Scene" << YAML::Value << std::filesystem::path(filepath).filename().string();
+		out << YAML::Key << "Scene" << YAML::Value << m_Scene->Name();
 
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		m_Scene->EachEntity([&out](auto entity) {
@@ -204,11 +204,11 @@ namespace Pistachio {
 		fout << out.c_str();
 	}
 
-	void SceneSerializer::SerializeRuntime(const std::string& filepath) {
+	void SceneSerializer::SerializeRuntime(const std::filesystem::path& filepath) {
 
 	}
 
-	bool SceneSerializer::Deserialize(const std::string& filepath) {
+	bool SceneSerializer::Deserialize(const std::filesystem::path& filepath) {
 		std::ifstream stream(filepath);
 		std::stringstream stringStream;
 		stringStream << stream.rdbuf();
@@ -218,6 +218,8 @@ namespace Pistachio {
 
 		std::string sceneName = data["Scene"].as<std::string>();
 		PST_CORE_TRACE("Deserializing scene \"{}\"", sceneName);
+
+		m_Scene->SetName(sceneName);
 
 		auto entitiesData = data["Entities"];
 		if (!entitiesData) return false;
@@ -305,7 +307,7 @@ namespace Pistachio {
 		return true;
 	}
 
-	bool SceneSerializer::DeserializeRuntime(const std::string& filepath) {
+	bool SceneSerializer::DeserializeRuntime(const std::filesystem::path& filepath) {
 		PST_CORE_ASSERT(false, "Deserialization Runtime is not yet implemented");
 		return false;
 	}

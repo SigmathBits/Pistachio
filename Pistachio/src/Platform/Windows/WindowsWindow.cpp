@@ -184,6 +184,11 @@ namespace Pistachio {
 		m_Context->SwapBuffers();
 	}
 
+	void WindowsWindow::SetTitle(const std::string& title) {
+		m_Data.Title = title;
+		glfwSetWindowTitle(m_Window, title.c_str());
+	}
+
 	void WindowsWindow::SetVSync(bool enabled) {
 		PST_PROFILE_FUNCTION();
 

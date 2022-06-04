@@ -22,6 +22,8 @@ namespace Pistachio {
 
 		inline virtual void* NativeWindow() const override { return m_Window; };
 
+		virtual void SetTitle(const std::string& title);
+
 		inline virtual void SetEventCallback(const EventCallbackFunction& callback) override { m_Data.EventCallback = callback; };
 		virtual void SetVSync(bool enabled) override;
 		virtual bool IsVSync() const override;

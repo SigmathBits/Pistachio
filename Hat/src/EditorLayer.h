@@ -33,29 +33,30 @@ namespace Pistachio {
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& event) override;
 		bool OnMouseButtonReleased(MouseButtonReleasedEvent& event) override;
 
-		void NewScene();
+		void FileNew();
 		void FileOpen();
 		void FileSave();
 		void FileSaveAs();
 
-		void LoadSceneFile(std::string& filepath);
-		void SaveSceneFile(std::string& filepath);
-		void SetLastSave(std::string& filepath);
+		void NewScene();
+		void LoadSceneFile(const std::filesystem::path& filepath);
+		void SaveSceneFile(const std::filesystem::path& filepath);
+		void SetLastSave(const std::filesystem::path& filepath);
 
 	private:
 		void ChangeActiveSceneTo(Ref<Scene> scene);
 
+		void SetWindowTitle(const std::string& title, bool unsavedChanges = false);
+
+	private:
 		EditorCamera m_EditorCamera;
 
 		Ref<Framebuffer> m_Framebuffer; 
 
-		std::string m_Filepath;
+		std::filesystem::path m_Filepath;
 		Ref<Scene> m_ActiveScene;
-		Ref<Scene> m_EditorScene, m_RuntimeScene;
-
-		Ref<Texture2D> m_PistachioTexture;
-		Ref<Texture2D> m_RainbowDashTexture;
-		Ref<Texture2D> m_CheckerboardTexture;
+		Ref<Scene> m_EditorScene;
+		Ref<Scene> m_RuntimeScene;
 
 		glm::vec2 m_ViewportPosition{ 0.0f, 0.0f };
 		glm::vec2 m_ViewportSize{ 1280, 720 };

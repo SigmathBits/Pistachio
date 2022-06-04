@@ -39,19 +39,17 @@ namespace Pistachio {
 	void EditorLayer::OnAttach() {
 		PST_PROFILE_FUNCTION();
 
-		// Textures
-		m_PistachioTexture = Texture2D::Create("assets/textures/Pistachio.png");
-		m_RainbowDashTexture = Texture2D::Create("assets/textures/Rainbow-Dash.png");
-		m_CheckerboardTexture = Texture2D::Create("assets/textures/Checkerboard.png");
-
+		// Editor Resources
 		m_PlayIcon = Texture2D::Create("resources/icons/toolbar/play.png", 9);
 		m_StopIcon = Texture2D::Create("resources/icons/toolbar/stop.png", 9);
+
 
 		FramebufferSpecification frameBufferSpec{ 1280, 720 };
 		frameBufferSpec.AttachmentsSpecification = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
 		m_Framebuffer = Framebuffer::Create(frameBufferSpec);
 
-		m_ActiveScene = CreateRef<Scene>();
+
+		m_EditorScene = CreateRef<Scene>();
 
 		// Load save
 		auto args = Application::Instance().Arguments();
@@ -69,9 +67,11 @@ namespace Pistachio {
 		if (!sceneFilepath.empty() && std::filesystem::exists(sceneFilepath)) {
 			PST_INFO("Loading save \"{}\" ... ", sceneFilepath);
 			LoadSceneFile(sceneFilepath);
+		} else {
+			SetWindowTitle(m_EditorScene->Name(), true);
 		}
 
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		ChangeActiveSceneTo(m_EditorScene);
 	}
 
 	void EditorLayer::OnDetach() {
@@ -177,7 +177,7 @@ namespace Pistachio {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
 				if (ImGui::MenuItem("New", "Ctrl+N")) {
-					NewScene();
+					FileNew();
 				}
 
 				if (ImGui::MenuItem("Open...", "Ctrl+O")) {
@@ -224,7 +224,6 @@ namespace Pistachio {
 				std::string path = (const char*)payload->Data;
 
 				if (Utils::EndsWith(path, PistachioSceneFileExtension)) {
-					NewScene();
 					LoadSceneFile(std::string(path));
 				}
 			}
@@ -368,6 +367,7 @@ namespace Pistachio {
 
 	void EditorLayer::OnSceneStop() {
 		m_SceneState = SceneState::Edit;
+
 		m_RuntimeScene->OnRuntimeStop();
 
 		ChangeActiveSceneTo(m_EditorScene);
@@ -412,7 +412,7 @@ namespace Pistachio {
 			case PST_KEY_N:
 			{
 				if (ctrlPressed) {
-					NewScene();
+					FileNew();
 					return true;
 				}
 				break;
@@ -509,24 +509,15 @@ namespace Pistachio {
 		return false;
 	}
 
-	void EditorLayer::NewScene() {
-		if (m_SceneState == SceneState::Play) {
-			OnSceneStop();
-		}
+	void EditorLayer::FileNew() {
+		NewScene();
 
-		m_EditorScene = CreateRef<Scene>();
-		m_EditorScene->OnViewportResize((unsigned int)m_ViewportSize.x, (unsigned int)m_ViewportSize.y);
-		m_SceneHierarchyPanel.SetContext(m_EditorScene);
-		m_Filepath = "";
-
-		ChangeActiveSceneTo(m_EditorScene);
+		SetWindowTitle(m_EditorScene->Name(), true);
 	}
 
 	void EditorLayer::FileOpen() {
 		std::string filepath = FileDialog::OpenFile("Pistachio Scene (*.pistachio)\0*.pistachio\0");
 		if (!filepath.empty()) {
-			NewScene();
-
 			LoadSceneFile(filepath);
 		}
 	}
@@ -543,7 +534,6 @@ namespace Pistachio {
 	void EditorLayer::FileSaveAs() {
 		std::string filepath = FileDialog::SaveFile("Pistachio Scene (*.pistachio)\0*.pistachio\0");
 		if (!filepath.empty()) {
-			
 			if (!Utils::EndsWith(filepath, PistachioSceneFileExtension)) {
 				filepath = filepath.append(PistachioSceneFileExtension);
 			}
@@ -552,38 +542,62 @@ namespace Pistachio {
 		}
 	}
 
-	void EditorLayer::LoadSceneFile(std::string& filepath) {
-		// Currenty likely to throw exception if bad file is passed in
+	void EditorLayer::NewScene() {
+		if (m_SceneState == SceneState::Play) {
+			OnSceneStop();
+		}
 
+		m_EditorScene = CreateRef<Scene>();
+		ChangeActiveSceneTo(m_EditorScene);
+
+		m_EditorScene->OnViewportResize((unsigned int)m_ViewportSize.x, (unsigned int)m_ViewportSize.y);
+
+		m_Filepath = "";
+	}
+
+	void EditorLayer::LoadSceneFile(const std::filesystem::path& filepath) {
+		// Currenty likely to throw exception if bad file is passed in
+		NewScene();
+
+		SceneSerializer serializer(m_EditorScene);
+		serializer.Deserialize(filepath);
+
+		SetWindowTitle(m_EditorScene->Name());
+
+		ChangeActiveSceneTo(m_EditorScene);
+
+		m_Filepath = filepath;
+		SetLastSave(filepath);
+	}
+
+	void EditorLayer::SaveSceneFile(const std::filesystem::path& filepath) {
+		m_EditorScene->SetName(filepath.filename().string());
+
+		SceneSerializer serializer(m_EditorScene);
+		serializer.Serialize(filepath);
+
+		SetWindowTitle(m_EditorScene->Name(), false);
+
+		m_Filepath = filepath;
+		SetLastSave(filepath);
+	}
+
+	void EditorLayer::SetLastSave(const std::filesystem::path& filepath) {
+		std::ofstream outFile("assets/scenes/.pistachio_last_save");
+		outFile << filepath.string();
+	}
+
+	void EditorLayer::ChangeActiveSceneTo(Ref<Scene> scene) {
 		m_HoveredEntity = {};
 		m_SceneHierarchyPanel.SetSelectedEntity({});
 		m_PropertiesPanel.SetSelectedEntity({});
 
-		SceneSerializer serializer(m_ActiveScene);
-		serializer.Deserialize(filepath);
-
-		m_EditorScene = m_ActiveScene;
-
-		m_Filepath = filepath;
-		SetLastSave(filepath);
-	}
-
-	void EditorLayer::SaveSceneFile(std::string& filepath) {
-		SceneSerializer serializer(m_EditorScene);
-		serializer.Serialize(filepath);
-
-		m_Filepath = filepath;
-		SetLastSave(filepath);
-	}
-
-	void EditorLayer::SetLastSave(std::string& filepath) {
-		std::ofstream outFile("assets/scenes/.pistachio_last_save");
-		outFile << filepath;
-	}
-
-	void EditorLayer::ChangeActiveSceneTo(Ref<Scene> scene) {
 		m_ActiveScene = scene;
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::SetWindowTitle(const std::string& title, bool unsavedChanges /*= false*/) {
+		Application::Instance().CurrentWindow().SetTitle("Hat - " + title + (unsavedChanges ? "*" : ""));
 	}
 
 }
