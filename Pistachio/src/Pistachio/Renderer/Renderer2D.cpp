@@ -34,6 +34,14 @@ namespace Pistachio {
 		int EntityID = -1;
 	};
 
+	struct LineVertex {
+		glm::vec3 Position;
+		glm::vec4 Colour;
+
+		// Editor-Only
+		int EntityID = -1;
+	};
+
 	struct Renderer2DData {
 		static constexpr unsigned int MaxQuads = 10000;
 		static constexpr unsigned int MaxVertices = 4 * MaxQuads;
@@ -54,6 +62,7 @@ namespace Pistachio {
 			{ 0.0f, 1.0f },
 		};
 
+
 		// Quads
 		unsigned int QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr;
@@ -73,6 +82,18 @@ namespace Pistachio {
 		Ref<VertexBuffer> CircleVertexBuffer;
 
 		Ref<Shader> CircleShader;
+
+		float LineThickness = 2.0f;
+
+		// Lines
+		unsigned int LineVertexCount = 0;
+		LineVertex* LineVertexBufferBase = nullptr;
+		LineVertex* LineVertexBufferPtr = nullptr;
+
+		Ref<VertexArray>  LineVertexArray;
+		Ref<VertexBuffer> LineVertexBuffer;
+
+		Ref<Shader> LineShader;
 
 
 		Ref<Texture> WhiteTexture;
@@ -162,6 +183,24 @@ namespace Pistachio {
 		s_Data.CircleShader = Shader::Create("assets/shaders/Renderer2D_Circle.glsl");
 
 
+		/// Line Renderer Objects
+		s_Data.LineVertexArray = VertexArray::Create();
+
+		s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxVertices];
+
+		s_Data.LineVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(LineVertex));
+
+		s_Data.LineVertexBuffer->SetLayout({
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float4, "a_Colour" },
+			// Editor-Only
+			{ ShaderDataType::Int,    "a_EntityID" },
+			});
+		s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
+		
+		s_Data.LineShader = Shader::Create("assets/shaders/Renderer2D_Line.glsl");
+
+
 		/// Default White Texture
 		s_Data.WhiteTexture = Texture2D::Create(1, 1);
 		unsigned int whiteTextureData = 0xFFFFFFFF;
@@ -180,36 +219,35 @@ namespace Pistachio {
 		delete[] s_Data.QuadVertexBufferBase;
 	}
 
-	void Renderer2D::BeginScene(const Camera& camera, glm::mat4& transform) {
+	void Renderer2D::BeginScene(const glm::mat4& projectionViewMatrix) {
 		PST_PROFILE_FUNCTION();
-
-		glm::mat4 projectionViewMatrix = camera.ProjectionMatrix() * glm::inverse(transform);
 
 		s_Data.CameraBuffer.ProjectionViewMatrix = projectionViewMatrix;
 		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
 		StartQuadBatch();
 		StartCircleBatch();
+		StartLineBatch();
+	}
+
+	void Renderer2D::BeginScene(const Camera& camera, glm::mat4& transform) {
+		PST_PROFILE_FUNCTION();
+
+		glm::mat4 projectionViewMatrix = camera.ProjectionMatrix() * glm::inverse(transform);
+
+		BeginScene(projectionViewMatrix);
 	}
 
 	void Renderer2D::BeginScene(const EditorCamera& camera) {
 		PST_PROFILE_FUNCTION();
 
-		s_Data.CameraBuffer.ProjectionViewMatrix = camera.ProjectionViewMatrix();
-		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
-
-		StartQuadBatch();
-		StartCircleBatch();
+		BeginScene(camera.ProjectionViewMatrix());
 	}
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera) {
 		PST_PROFILE_FUNCTION();
 
-		s_Data.CameraBuffer.ProjectionViewMatrix = camera.ProjectionViewMatrix();
-		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
-
-		StartQuadBatch();
-		StartCircleBatch();
+		BeginScene(camera.ProjectionViewMatrix());
 	}
 
 	void Renderer2D::EndScene() {
@@ -217,6 +255,7 @@ namespace Pistachio {
 
 		FlushQuadBatch();
 		FlushCircleBatch();
+		FlushLineBatch();
 	}
 
 	void Renderer2D::StartQuadBatch() {
@@ -229,6 +268,11 @@ namespace Pistachio {
 	void Renderer2D::StartCircleBatch() {
 		s_Data.CircleIndexCount = 0;
 		s_Data.CircleVertexBufferPtr = s_Data.CircleVertexBufferBase;
+	}
+
+	void Renderer2D::StartLineBatch() {
+		s_Data.LineVertexCount = 0;
+		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
 	}
 
 	void Renderer2D::FlushQuadBatch() {
@@ -263,6 +307,21 @@ namespace Pistachio {
 		s_Data.Stats.DrawCalls++;
 	}
 
+	void Renderer2D::FlushLineBatch() {
+		PST_PROFILE_FUNCTION();
+
+		if (s_Data.LineVertexCount == 0) return;
+
+		size_t dataSize = (size_t)((uint8_t*)s_Data.LineVertexBufferPtr - (uint8_t*)s_Data.LineVertexBufferBase);
+		s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, dataSize);
+
+		s_Data.LineShader->Bind();
+		RenderCommand::SetLineThickness(s_Data.LineThickness);
+		RenderCommand::DrawLines(s_Data.LineVertexArray, s_Data.LineVertexCount);
+
+		s_Data.Stats.DrawCalls++;
+	}
+
 	void Renderer2D::NextQuadBatch() {
 		FlushQuadBatch();
 		StartQuadBatch();
@@ -271,6 +330,11 @@ namespace Pistachio {
 	void Renderer2D::NextCircleBatch() {
 		FlushCircleBatch();
 		StartCircleBatch();
+	}
+
+	void Renderer2D::NextLineBatch() {
+		FlushLineBatch();
+		StartLineBatch();
 	}
 
 	void Renderer2D::DrawQuad(const glm::mat4& transformMatrix, const glm::vec4& colour) {
@@ -357,6 +421,48 @@ namespace Pistachio {
 		s_Data.CircleIndexCount += 6;
 
 		s_Data.Stats.QuadCount++;
+	}
+
+	void Renderer2D::DrawLine(const glm::vec3& startPosition, const glm::vec3& endPosition, const glm::vec4& colour, int entityID /*= -1*/) {
+		*(s_Data.LineVertexBufferPtr++) = { startPosition, colour, entityID };
+		*(s_Data.LineVertexBufferPtr++) = { endPosition, colour, entityID };
+
+		s_Data.LineVertexCount += 2;
+	}
+
+	void Renderer2D::DrawRect(const glm::mat4& transformMatrix, const glm::vec4& colour, int entityID /*= -1*/) {
+		glm::vec4 lineVertices[Renderer2DData::QuadVertexCount];
+		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
+			lineVertices[i] = transformMatrix * Renderer2DData::QuadVertexPositions[i];
+		}
+
+		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
+			DrawLine(
+				lineVertices[i],
+				lineVertices[(i + 1) % Renderer2DData::QuadVertexCount],
+				colour,
+				entityID
+			);
+		}
+	}
+
+	void Renderer2D::DrawPolygon(const glm::mat4& transformMatrix, const std::vector<glm::vec3>& points, const glm::vec4& colour, int entityID) {
+		for (size_t i = 0; i < points.size(); i++) {
+			DrawLine(
+				points[i],
+				points[(i + 1) % points.size()],
+				colour,
+				entityID
+			);
+		}
+	}
+
+	float Renderer2D::LineThickness() const {
+		return s_Data.LineThickness;
+	}
+
+	void Renderer2D::SetLineThickness(float thickness) {
+		s_Data.LineThickness = thickness;
 	}
 
 	void Renderer2D::ResetStats() {

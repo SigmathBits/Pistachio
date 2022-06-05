@@ -16,6 +16,9 @@ namespace Pistachio {
 		virtual void Clear() const override;
 
 		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount = 0) const override;
+		virtual void DrawLines(const Ref<VertexArray>& vertexArray, unsigned int vertexCount) const override;
+
+		virtual void SetLineThickness(float thickness) const override;
 	};
 
 }

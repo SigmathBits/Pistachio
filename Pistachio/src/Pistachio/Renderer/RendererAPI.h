@@ -25,6 +25,9 @@ namespace Pistachio {
 		virtual void Clear() const = 0;
 
 		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount = 0) const = 0;
+		virtual void DrawLines(const Ref<VertexArray>& vertexArray, unsigned int vertexCount) const = 0;
+
+		virtual void SetLineThickness(float thickness) const = 0;
 
 		inline static RenderAPI API() { return s_RenderAPI; }
 

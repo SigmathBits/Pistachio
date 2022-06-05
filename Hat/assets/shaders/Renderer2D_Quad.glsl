@@ -52,11 +52,11 @@ layout (location = 0) in Vertex v_Vertex;
 layout (location = 3) flat in uint v_TextureIndex;
 layout (location = 4) flat in int v_EntityID;
 
-layout(location = 0) out vec4 colour;
-layout(location = 1) out int entityID;
+layout(location = 0) out vec4 o_Colour;
+layout(location = 1) out int o_EntityID;
 
 
 void main () {
-	colour = texture(u_Textures[v_TextureIndex], v_Vertex.TilingScale * v_Vertex.TextureCoords) * v_Vertex.Colour;
-	entityID = v_EntityID;
+	o_Colour = texture(u_Textures[v_TextureIndex], v_Vertex.TilingScale * v_Vertex.TextureCoords) * v_Vertex.Colour;
+	o_EntityID = v_EntityID;
 }
