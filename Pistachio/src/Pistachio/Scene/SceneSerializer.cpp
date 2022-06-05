@@ -197,6 +197,23 @@ namespace Pistachio {
 
 			out << YAML::EndMap;  // BoxCollider2DComponent
 		}
+		
+		if (entity.HasComponent<CircleCollider2DComponent>()) {
+			out << YAML::Key << "CircleCollider2DComponent";
+			out << YAML::BeginMap;  // CircleCollider2DComponent
+
+			auto& circleColliderComponent = entity.Component<CircleCollider2DComponent>();
+
+			out << YAML::Key << "Offset" << YAML::Value << circleColliderComponent.Offset;
+			out << YAML::Key << "Radius" << YAML::Value << circleColliderComponent.Radius;
+
+			out << YAML::Key << "Density" << YAML::Value << circleColliderComponent.Density;
+			out << YAML::Key << "Friction" << YAML::Value << circleColliderComponent.Friction;
+			out << YAML::Key << "Restitution" << YAML::Value << circleColliderComponent.Restitution;
+			out << YAML::Key << "RestitutionThreshold" << YAML::Value << circleColliderComponent.RestitutionThreshold;
+
+			out << YAML::EndMap;  // CircleCollider2DComponent
+		}
 
 		out << YAML::EndMap;  // Entity
 	}
@@ -323,6 +340,19 @@ namespace Pistachio {
 				boxColliderComponent.Friction = boxColliderComponentData["Friction"].as<float>();
 				boxColliderComponent.Restitution = boxColliderComponentData["Restitution"].as<float>();
 				boxColliderComponent.RestitutionThreshold = boxColliderComponentData["RestitutionThreshold"].as<float>();
+			}
+
+			auto circleColliderComponentData = entityData["CircleCollider2DComponent"];
+			if (circleColliderComponentData) {
+				auto& circleColliderComponent = entity.AddComponent<CircleCollider2DComponent>();
+
+				circleColliderComponent.Offset = circleColliderComponentData["Offset"].as<glm::vec2>();
+				circleColliderComponent.Radius = circleColliderComponentData["Radius"].as<float>();
+
+				circleColliderComponent.Density = circleColliderComponentData["Density"].as<float>();
+				circleColliderComponent.Friction = circleColliderComponentData["Friction"].as<float>();
+				circleColliderComponent.Restitution = circleColliderComponentData["Restitution"].as<float>();
+				circleColliderComponent.RestitutionThreshold = circleColliderComponentData["RestitutionThreshold"].as<float>();
 			}
 		}
 

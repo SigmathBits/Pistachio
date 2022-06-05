@@ -18,6 +18,8 @@ namespace Pistachio {
 		virtual void OnDetach() override;
 		virtual void OnUpdate(Pistachio::Timestep timestep) override;
 
+		virtual void OnOverlayRender();
+
 		virtual void OnImGuiRender() override;
 
 		void UIToolbar();
@@ -67,6 +69,7 @@ namespace Pistachio {
 		bool m_ViewportIsDragging = false;
 
 		int m_GizmoType = -1;
+		bool m_ShowPhysicsColliders = true;
 		
 		Entity m_HoveredEntity;
 

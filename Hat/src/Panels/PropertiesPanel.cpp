@@ -218,13 +218,23 @@ namespace Pistachio {
 		});
 
 		DrawComponentProperties<BoxCollider2DComponent>(entity, "Box Collider 2D", [this](auto& boxColliderComponent) {
-			ImGui::DragFloat2("Offest", glm::value_ptr(boxColliderComponent.Offset));
-			ImGui::DragFloat2("Size", glm::value_ptr(boxColliderComponent.Size));
+			ImGui::DragFloat2("Offset", glm::value_ptr(boxColliderComponent.Offset), 0.05f);
+			ImGui::DragFloat2("Size", glm::value_ptr(boxColliderComponent.Size), 0.05f);
 
 			ImGui::SliderFloat("Density", &boxColliderComponent.Density, 0.0f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp);
 			ImGui::SliderFloat("Friction", &boxColliderComponent.Friction, 0.0f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp);
 			ImGui::SliderFloat("Restitution", &boxColliderComponent.Restitution, 0.0f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp);
 			ImGui::DragFloat("Restitution Threshold", &boxColliderComponent.RestitutionThreshold, 0.01f, 0.0f, +FLT_MAX, nullptr, ImGuiSliderFlags_AlwaysClamp);
+		});
+
+		DrawComponentProperties<CircleCollider2DComponent>(entity, "Circle Collider 2D", [this](auto& circleColliderComponent) {
+			ImGui::DragFloat2("Offest", glm::value_ptr(circleColliderComponent.Offset), 0.05f);
+			ImGui::DragFloat("Radius", &circleColliderComponent.Radius, 0.05f, 0.0f, +FLT_MAX, nullptr, ImGuiSliderFlags_AlwaysClamp);
+
+			ImGui::SliderFloat("Density", &circleColliderComponent.Density, 0.0f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp);
+			ImGui::SliderFloat("Friction", &circleColliderComponent.Friction, 0.0f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp);
+			ImGui::SliderFloat("Restitution", &circleColliderComponent.Restitution, 0.0f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat("Restitution Threshold", &circleColliderComponent.RestitutionThreshold, 0.01f, 0.0f, +FLT_MAX, nullptr, ImGuiSliderFlags_AlwaysClamp);
 		});
 	}
 
@@ -268,6 +278,14 @@ namespace Pistachio {
 				isEmpty = false;
 				if (ImGui::MenuItem("Box Collider 2D")) {
 					entity.AddComponent<BoxCollider2DComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			
+			if (!entity.HasComponent<CircleCollider2DComponent>()) {
+				isEmpty = false;
+				if (ImGui::MenuItem("Circle Collider 2D")) {
+					entity.AddComponent<CircleCollider2DComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 			}

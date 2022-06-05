@@ -8,6 +8,7 @@
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_polygon_shape.h>
+#include <box2d/b2_circle_shape.h>
 
 #include "Pistachio/Renderer/Renderer2D.h"
 #include "Pistachio/Renderer/EditorCamera.h"
@@ -86,6 +87,7 @@ namespace Pistachio {
 		CopyComponent<NativeScriptComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
 		CopyComponent<RigidBody2DComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
 		CopyComponent<BoxCollider2DComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
+		CopyComponent<CircleCollider2DComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
 
 		return newScene;
 	}
@@ -112,6 +114,7 @@ namespace Pistachio {
 		CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
 		CopyComponentIfExists<RigidBody2DComponent>(newEntity, entity);
 		CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
+		CopyComponentIfExists<CircleCollider2DComponent>(newEntity, entity);
 
 		return newEntity;
 	}
@@ -150,24 +153,43 @@ namespace Pistachio {
 
 				m_RuntimeBodies[entity.UUID()] = body;
 
-				if (!entity.HasComponent<BoxCollider2DComponent>()) continue;
+				if (entity.HasComponent<BoxCollider2DComponent>()) {
+					auto& boxCollider = entity.Component<BoxCollider2DComponent>();
 
-				auto& boxCollider = entity.Component<BoxCollider2DComponent>();
+					b2PolygonShape boxShape;
+					boxShape.SetAsBox(
+						transform.Scale.x * 0.5f * boxCollider.Size.x,
+						transform.Scale.y * 0.5f * boxCollider.Size.y,
+						{ boxCollider.Offset.x, boxCollider.Offset.y },
+						0.0f
+					);
 
-				b2PolygonShape boxShape;
-				boxShape.SetAsBox(
-					transform.Scale.x * 0.5f * boxCollider.Size.x,
-					transform.Scale.y * 0.5f * boxCollider.Size.y
-				);
+					b2FixtureDef fixtureDef;
+					fixtureDef.shape = &boxShape;
+					fixtureDef.density = boxCollider.Density;
+					fixtureDef.friction = boxCollider.Friction;
+					fixtureDef.restitution = boxCollider.Restitution;
+					fixtureDef.restitutionThreshold = boxCollider.RestitutionThreshold;
 
-				b2FixtureDef fixtureDef;
-				fixtureDef.shape = &boxShape;
-				fixtureDef.density = boxCollider.Density;
-				fixtureDef.friction = boxCollider.Friction;
-				fixtureDef.restitution = boxCollider.Restitution;
-				fixtureDef.restitutionThreshold = boxCollider.RestitutionThreshold;
+					b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+				}
 
-				b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+				if (entity.HasComponent<CircleCollider2DComponent>()) {
+					auto& circleCollider = entity.Component<CircleCollider2DComponent>();
+
+					b2CircleShape circleShape;
+					circleShape.m_p.Set(circleCollider.Offset.x, circleCollider.Offset.y);
+					circleShape.m_radius = transform.Scale.x * circleCollider.Radius;  // Only respects x-axis scale
+
+					b2FixtureDef fixtureDef;
+					fixtureDef.shape = &circleShape;
+					fixtureDef.density = circleCollider.Density;
+					fixtureDef.friction = circleCollider.Friction;
+					fixtureDef.restitution = circleCollider.Restitution;
+					fixtureDef.restitutionThreshold = circleCollider.RestitutionThreshold;
+
+					b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+				}
 			}
 		}
 
@@ -372,5 +394,11 @@ namespace Pistachio {
 
 	}
 	template void Scene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component);
+
+	template<>
+	void Scene::OnComponentAdded(Entity entity, CircleCollider2DComponent& component) {
+
+	}
+	template void Scene::OnComponentAdded<CircleCollider2DComponent>(Entity entity, CircleCollider2DComponent& component);
 
 }

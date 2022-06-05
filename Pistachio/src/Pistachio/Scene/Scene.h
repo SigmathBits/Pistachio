@@ -40,9 +40,17 @@ namespace Pistachio {
 
 		void OnViewportResize(unsigned int width, unsigned int height);
 
+		Entity PrimaryCameraEntity();
+
 		void EachEntity(std::function<void(Entity)> callback);
 
-		Entity PrimaryCameraEntity();
+		template<typename... C>
+		void EachEntityWith(std::function<void(Entity)> callback) {
+			auto view = m_Registry.view<C...>();
+			view.each([&callback, this](auto enttID, C&... components) {
+				callback(Entity{ enttID, this });
+			});
+		}
 
 	private:
 		template<typename T>

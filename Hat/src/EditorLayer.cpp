@@ -135,7 +135,61 @@ namespace Pistachio {
 			m_HoveredEntity = pixelData == -1 ? Entity{} : Entity{ (entt::entity)pixelData, m_ActiveScene.get() };
 		}
 
+		OnOverlayRender();
+
 		m_Framebuffer->Unbind();
+	}
+
+	void EditorLayer::OnOverlayRender() {
+		switch (m_SceneState) {
+			case SceneState::Edit:
+			{
+				Renderer2D::BeginScene(m_EditorCamera);
+				break;
+			}
+			case SceneState::Play:
+			{
+				Entity entity = m_ActiveScene->PrimaryCameraEntity();
+				Renderer2D::BeginScene(entity.Component<CameraComponent>().Camera, entity.Component<TransformComponent>().Transform());
+				break;
+			}
+		}
+		
+
+		if (m_ShowPhysicsColliders) {
+			m_ActiveScene->EachEntityWith<BoxCollider2DComponent>([](Entity entity) {
+				auto transformComponent = entity.Component<TransformComponent>();
+				auto circleCollider = entity.Component<BoxCollider2DComponent>();
+
+				glm::vec3 scale = transformComponent.Scale * glm::vec3(circleCollider.Size, 1.0f);
+
+				// Require this order to correctly replicate where the box colider is positioned
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), transformComponent.Translation);
+				transform = glm::rotate(transform, transformComponent.Rotation.z, { 0.0f, 0.0f, 1.0f });
+				transform = glm::translate(transform, glm::vec3(circleCollider.Offset, 0.01f));
+				transform = glm::scale(transform, scale);
+
+				Renderer2D::DrawRect(transform, { 0, 0.792, 0.969, 1.0f });
+			});
+
+			m_ActiveScene->EachEntityWith<CircleCollider2DComponent>([](Entity entity) {
+				auto transformComponent = entity.Component<TransformComponent>();
+				auto circleCollider = entity.Component<CircleCollider2DComponent>();
+
+				glm::vec3 scale = glm::vec3(transformComponent.Scale.x * 2.0f * glm::vec2(circleCollider.Radius), 1.0f);  // Only respects x-axis scale
+
+				// Require this order to correctly replicate where the circle colider is positioned
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), transformComponent.Translation);
+				transform = glm::rotate(transform, transformComponent.Rotation.z, { 0.0f, 0.0f, 1.0f });
+				transform = glm::translate(transform, glm::vec3(circleCollider.Offset, 0.01f));
+				transform = glm::scale(transform, scale);
+
+				Renderer2D::DrawCircle(transform, { 0, 0.792, 0.969, 1.0f }, 0.05f);
+			});
+		}
+
+
+		Renderer2D::EndScene();
 	}
 
 	void EditorLayer::OnImGuiRender() {
@@ -305,6 +359,13 @@ namespace Pistachio {
 		m_PropertiesPanel.OnImGuiRender();
 
 		m_ContentBrowserPanel.OnImGuiRender();
+		
+
+		{
+			ImGui::Begin("Settings");
+			ImGui::Checkbox("Show Physics Colliders", &m_ShowPhysicsColliders);
+			ImGui::End();
+		}
 
 
 		{
@@ -494,7 +555,8 @@ namespace Pistachio {
 	}
 
 	bool EditorLayer::OnMouseButtonReleased(MouseButtonReleasedEvent& event) {
-		if (m_ViewportHovered && event.MouseButton() == PST_MOUSE_BUTTON_LEFT && (m_GizmoType == -1 || !ImGuizmo::IsOver())) {
+		if (m_ViewportHovered && event.MouseButton() == PST_MOUSE_BUTTON_LEFT
+			&& (m_GizmoType == -1 || !ImGuizmo::IsOver() || !m_SceneHierarchyPanel.SelectedEntity())) {
 			m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
 			m_PropertiesPanel.SetSelectedEntity(m_HoveredEntity);
 

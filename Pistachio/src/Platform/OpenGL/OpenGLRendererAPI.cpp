@@ -54,7 +54,7 @@ namespace Pistachio {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_LINE_SMOOTH);
+		//glEnable(GL_LINE_SMOOTH);
 	}
 
 	void OpenGLRendererAPI::Shutdown() {
