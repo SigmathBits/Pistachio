@@ -18,9 +18,18 @@ namespace Pistachio {
 		static void BeginScene(const Camera& camera, glm::mat4& transform);
 		static void BeginScene(const EditorCamera& camera);
 		static void BeginScene(const OrthographicCamera& camera);  // TODO: Remove
+
 		static void EndScene();
-		static void StartBatch();
-		static void Flush();
+
+		static void StartQuadBatch();
+		static void StartCircleBatch();
+
+		static void FlushQuadBatch();
+		static void FlushCircleBatch();
+
+		static void NextQuadBatch();
+		static void NextCircleBatch();
+
 
 		// Primitives
 		static void DrawQuad(const glm::mat4& transformMatrix, const glm::vec4& colour);
@@ -28,6 +37,8 @@ namespace Pistachio {
 
 		static void DrawSprite(const glm::mat4& transformMatrix, const Sprite& sprite, int entityID = -1);
 		static void DrawSprite(const Transform2D& transform, const Sprite& sprite, int entityID = -1);
+
+		static void DrawCircle(const glm::mat4& transformMatrix, const glm::vec4& colour, float thickness = 1.0f, float blur = 0.005f, int entityID = -1);
 
 		// Stats
 		struct Statistics {
@@ -40,9 +51,6 @@ namespace Pistachio {
 
 		static void ResetStats();
 		static Statistics RetrieveStats();
-
-	private:
-		static void NextBatch();
 	};
 
 }

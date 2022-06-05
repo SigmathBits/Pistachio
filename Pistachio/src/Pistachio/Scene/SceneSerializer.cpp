@@ -156,6 +156,19 @@ namespace Pistachio {
 			out << YAML::EndMap;  // SpriteRendererComponent
 		}
 
+		if (entity.HasComponent<CircleRendererComponent>()) {
+			out << YAML::Key << "CircleRendererComponent";
+			out << YAML::BeginMap;  // CircleRendererComponent
+
+			auto& circleComponent = entity.Component<CircleRendererComponent>();
+
+			out << YAML::Key << "Colour" << YAML::Value << circleComponent.Colour;
+			out << YAML::Key << "Thickness" << YAML::Value << circleComponent.Thickness;
+			out << YAML::Key << "Blur" << YAML::Value << circleComponent.Blur;
+
+			out << YAML::EndMap;  // CircleRendererComponent
+		}
+
 		if (entity.HasComponent<RigidBody2DComponent>()) {
 			out << YAML::Key << "RigidBody2DComponent";
 			out << YAML::BeginMap;  // RigidBody2DComponent
@@ -280,6 +293,15 @@ namespace Pistachio {
 
 				spriteComponent.Sprite.TintColour = spriteRendererComponentData["Colour"].as<glm::vec4>();
 				spriteComponent.Sprite.TilingScale = spriteRendererComponentData["TilingScale"].as<float>();
+			}
+
+			auto circleRendererComponentData = entityData["CircleRendererComponent"];
+			if (circleRendererComponentData) {
+				auto& circleComponent = entity.AddComponent<CircleRendererComponent>();
+
+				circleComponent.Colour = circleRendererComponentData["Colour"].as<glm::vec4>();
+				circleComponent.Thickness = circleRendererComponentData["Thickness"].as<float>();
+				circleComponent.Blur = circleRendererComponentData["Blur"].as<float>();
 			}
 
 			auto rigidyBodyComponentData = entityData["RigidBody2DComponent"];

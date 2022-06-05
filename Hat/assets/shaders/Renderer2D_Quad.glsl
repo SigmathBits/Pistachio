@@ -1,3 +1,6 @@
+// Pistachio
+// Quad Shader
+
 #shader vertex
 #version 450 core
 

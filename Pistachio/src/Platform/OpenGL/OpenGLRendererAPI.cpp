@@ -35,8 +35,8 @@ namespace Pistachio {
 	}
 
 	void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount /*= 0*/) const {
-		unsigned int count = indexCount ? indexCount : vertexArray->CurrentIndexBuffer()->Count();
 		vertexArray->Bind();
+		unsigned int count = indexCount ? indexCount : vertexArray->CurrentIndexBuffer()->Count();
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}
 

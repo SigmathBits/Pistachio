@@ -119,17 +119,17 @@ namespace Pistachio {
 				case SceneCamera::ProjectionType::Perspective:
 				{
 					float perspectiveVerticalFOV = glm::degrees(camera.PerspectiveVerticalFOV());
-					if (ImGui::DragFloat("Vertical FOV", &perspectiveVerticalFOV, 0.1f, 0.0f, 180.0f)) {
+					if (ImGui::SliderFloat("Vertical FOV", &perspectiveVerticalFOV, 0.0f, 180.0f, "%.1f deg", ImGuiSliderFlags_AlwaysClamp)) {
 						camera.SetPerspectiveVerticalFOV(glm::radians(perspectiveVerticalFOV));
 					}
 
 					float perspectiveNearClip = camera.PerspectiveNearClip();
-					if (ImGui::DragFloat("Near Clip", &perspectiveNearClip, 0.1f, -FLT_MAX, camera.PerspectiveFarClip())) {
+					if (ImGui::DragFloat("Near Clip", &perspectiveNearClip, 0.1f, -FLT_MAX, camera.PerspectiveFarClip(), nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 						camera.SetPerspectiveNearClip(perspectiveNearClip);
 					}
 
 					float perspectiveFarClip = camera.PerspectiveFarClip();
-					if (ImGui::DragFloat("Far Clip", &perspectiveFarClip, 0.1f, camera.PerspectiveNearClip(), +FLT_MAX)) {
+					if (ImGui::DragFloat("Far Clip", &perspectiveFarClip, 0.1f, camera.PerspectiveNearClip(), +FLT_MAX, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 						camera.SetPerspectiveFarClip(perspectiveFarClip);
 					}
 
@@ -141,17 +141,17 @@ namespace Pistachio {
 					ImGui::Checkbox("Fixed Aspect Ratio", &cameraComponent.FixedAspectRatio);
 
 					float orthoSize = camera.OrthographicSize();
-					if (ImGui::DragFloat("Size", &orthoSize, 0.1f, 0.0f, +FLT_MAX)) {
+					if (ImGui::DragFloat("Size", &orthoSize, 0.1f, 0.0f, +FLT_MAX, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 						camera.SetOrthographicSize(orthoSize);
 					}
 
 					float orthoNearClip = camera.OrthographicNearClip();
-					if (ImGui::DragFloat("Near Clip", &orthoNearClip, 0.1f, -FLT_MAX, camera.OrthographicFarClip())) {
+					if (ImGui::DragFloat("Near Clip", &orthoNearClip, 0.1f, -FLT_MAX, camera.OrthographicFarClip(), nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 						camera.SetOrthographicNearClip(orthoNearClip);
 					}
 
 					float orthoFarClip = camera.OrthographicFarClip();
-					if (ImGui::DragFloat("Far Clip", &orthoFarClip, 0.1f, camera.OrthographicNearClip(), +FLT_MAX)) {
+					if (ImGui::DragFloat("Far Clip", &orthoFarClip, 0.1f, camera.OrthographicNearClip(), +FLT_MAX, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 						camera.SetOrthographicFarClip(orthoFarClip);
 					}
 
@@ -188,6 +188,12 @@ namespace Pistachio {
 			ImGui::DragFloat("Tiling Factor", &spriteComponent.Sprite.TilingScale, 0.1f, 0.0f, 10.0f);
 		});
 
+		DrawComponentProperties<CircleRendererComponent>(entity, "Circle Renderer", [this](auto& circleComponent) {
+			ImGui::ColorEdit4("Colour", glm::value_ptr(circleComponent.Colour));
+			ImGui::SliderFloat("Thickness", &circleComponent.Thickness, 0.0f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp);
+			ImGui::SliderFloat("Blur", &circleComponent.Blur, 0.0f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp);
+		});
+
 		DrawComponentProperties<RigidBody2DComponent>(entity, "Rigid Body 2D", [this](auto& rigidBodyComponent) {
 			const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
 			const char* currentBodyTypeString = bodyTypeStrings[(int)rigidBodyComponent.Type];
@@ -215,10 +221,10 @@ namespace Pistachio {
 			ImGui::DragFloat2("Offest", glm::value_ptr(boxColliderComponent.Offset));
 			ImGui::DragFloat2("Size", glm::value_ptr(boxColliderComponent.Size));
 
-			ImGui::DragFloat("Density", &boxColliderComponent.Density, 0.01f, 0.0f, 1.0f);
-			ImGui::DragFloat("Friction", &boxColliderComponent.Friction, 0.01f, 0.0f, 1.0f);
-			ImGui::DragFloat("Restitution", &boxColliderComponent.Restitution, 0.01f, 0.0f, 1.0f);
-			ImGui::DragFloat("Restitution Threshold", &boxColliderComponent.RestitutionThreshold, 0.01f, 0.0f, +FLT_MAX);
+			ImGui::SliderFloat("Density", &boxColliderComponent.Density, 0.0f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp);
+			ImGui::SliderFloat("Friction", &boxColliderComponent.Friction, 0.0f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp);
+			ImGui::SliderFloat("Restitution", &boxColliderComponent.Restitution, 0.0f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat("Restitution Threshold", &boxColliderComponent.RestitutionThreshold, 0.01f, 0.0f, +FLT_MAX, nullptr, ImGuiSliderFlags_AlwaysClamp);
 		});
 	}
 
@@ -230,6 +236,14 @@ namespace Pistachio {
 				isEmpty = false;
 				if (ImGui::MenuItem("Sprite Renderer")) {
 					entity.AddComponent<SpriteRendererComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			if (!entity.HasComponent<CircleRendererComponent>()) {
+				isEmpty = false;
+				if (ImGui::MenuItem("Circle Renderer")) {
+					entity.AddComponent<CircleRendererComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 			}

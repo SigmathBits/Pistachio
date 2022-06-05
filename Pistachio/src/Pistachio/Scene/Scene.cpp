@@ -81,6 +81,7 @@ namespace Pistachio {
 		// Copy components (Except IDComponent and TagComponent)
 		CopyComponent<TransformComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
 		CopyComponent<SpriteRendererComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
+		CopyComponent<CircleRendererComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
 		CopyComponent<CameraComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
 		CopyComponent<NativeScriptComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
 		CopyComponent<RigidBody2DComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
@@ -106,6 +107,7 @@ namespace Pistachio {
 
 		CopyComponentIfExists<TransformComponent>(newEntity, entity);
 		CopyComponentIfExists<SpriteRendererComponent>(newEntity, entity);
+		CopyComponentIfExists<CircleRendererComponent>(newEntity, entity);
 		CopyComponentIfExists<CameraComponent>(newEntity, entity);
 		CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
 		CopyComponentIfExists<RigidBody2DComponent>(newEntity, entity);
@@ -192,10 +194,19 @@ namespace Pistachio {
 	void Scene::OnUpdateEditor(Timestep timestep, EditorCamera& camera) {
 		Renderer2D::BeginScene(camera);
 
+		// Sprites
 		{
 			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 			for (auto&& [enttID, transform, spriteComponent] : view.each()) {
 				Renderer2D::DrawSprite(transform.Transform(), spriteComponent.Sprite, (int)enttID);
+			}
+		}
+		
+		// Circles
+		{
+			auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
+			for (auto&& [enttID, transform, circleComponent] : view.each()) {
+				Renderer2D::DrawCircle(transform.Transform(), circleComponent.Colour, circleComponent.Thickness, circleComponent.Blur, (int)enttID);
 			}
 		}
 
@@ -254,10 +265,19 @@ namespace Pistachio {
 
 		Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
+		// Sprites
 		{
 			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 			for (auto&& [enttID, transform, spriteComponent] : view.each()) {
 				Renderer2D::DrawSprite(transform.Transform(), spriteComponent.Sprite, (int)enttID);
+			}
+		}
+
+		// Circles
+		{
+			auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
+			for (auto&& [enttID, transform, circleComponent] : view.each()) {
+				Renderer2D::DrawCircle(transform.Transform(), circleComponent.Colour, circleComponent.Thickness, circleComponent.Blur, (int)enttID);
 			}
 		}
 
@@ -322,6 +342,12 @@ namespace Pistachio {
 
 	}
 	template void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component);
+
+	template<>
+	void Scene::OnComponentAdded(Entity entity, CircleRendererComponent& component) {
+
+	}
+	template void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component);
 
 	template<>
 	void Scene::OnComponentAdded(Entity entity, CameraComponent& component) {

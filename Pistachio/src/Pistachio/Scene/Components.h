@@ -61,6 +61,15 @@ namespace Pistachio {
 			: Sprite(sprite) {}
 	};
 
+	struct CircleRendererComponent {
+		glm::vec4 Colour = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float Thickness = 1.0f;
+		float Blur = 0.005f;
+
+		CircleRendererComponent() = default;
+		CircleRendererComponent(const CircleRendererComponent&) = default;
+	};
+
 	struct CameraComponent {
 		Pistachio::SceneCamera Camera;
 		bool Primary = true;  // TODO: Think about moving to Scene

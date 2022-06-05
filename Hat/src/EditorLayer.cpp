@@ -12,6 +12,7 @@
 #include "Pistachio/Scene/SceneSerializer.h"
 
 #include "Pistachio/Math/Math.h"
+
 #include "Pistachio/Utils/Utils.h"
 #include "Pistachio/Utils/PlatformUtils.h"
 
@@ -494,14 +495,16 @@ namespace Pistachio {
 
 	bool EditorLayer::OnMouseButtonReleased(MouseButtonReleasedEvent& event) {
 		if (m_ViewportHovered && event.MouseButton() == PST_MOUSE_BUTTON_LEFT && (m_GizmoType == -1 || !ImGuizmo::IsOver())) {
-			if (m_GizmoType == -1 && m_HoveredEntity) {
-				m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
-			}
-
 			m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
 			m_PropertiesPanel.SetSelectedEntity(m_HoveredEntity);
 
-			if (Input::IsKeyPressed(PST_KEY_LEFT_CONTROL) && m_HoveredEntity && m_SceneState == SceneState::Edit) {
+			if (m_SceneState != SceneState::Edit || !m_HoveredEntity) return false;
+
+			if (m_GizmoType == -1) {
+				m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+			}
+
+			if (Input::IsKeyPressed(PST_KEY_LEFT_CONTROL)) {
 				const auto& transformComponent = m_HoveredEntity.Component<TransformComponent>();
 				m_EditorCamera.SetFocalPoint(transformComponent.Translation);
 			}

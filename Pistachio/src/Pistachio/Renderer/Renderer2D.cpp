@@ -22,6 +22,17 @@ namespace Pistachio {
 		// Editor-Only
 		int EntityID = -1;
 	};
+	
+	struct CircleVertex {
+		glm::vec4 Position;
+		glm::vec3 LocalPosition;
+		glm::vec4 Colour;
+		float Thickness;
+		float Blur;
+
+		// Editor-Only
+		int EntityID = -1;
+	};
 
 	struct Renderer2DData {
 		static constexpr unsigned int MaxQuads = 10000;
@@ -43,6 +54,7 @@ namespace Pistachio {
 			{ 0.0f, 1.0f },
 		};
 
+		// Quads
 		unsigned int QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr;
 		QuadVertex* QuadVertexBufferPtr = nullptr;
@@ -50,7 +62,18 @@ namespace Pistachio {
 		Ref<VertexArray> QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
 
-		Ref<Shader> Shader;
+		Ref<Shader> QuadShader;
+
+		// Circles
+		unsigned int CircleIndexCount = 0;
+		CircleVertex* CircleVertexBufferBase = nullptr;
+		CircleVertex* CircleVertexBufferPtr = nullptr;
+
+		Ref<VertexArray>  CircleVertexArray;
+		Ref<VertexBuffer> CircleVertexBuffer;
+
+		Ref<Shader> CircleShader;
+
 
 		Ref<Texture> WhiteTexture;
 
@@ -73,27 +96,25 @@ namespace Pistachio {
 
 		/// Rendering objects
 
-		// Vertex Array
+		/// Quad Renderer Objects
 		s_Data.QuadVertexArray = VertexArray::Create();
 
-		// Vertex Buffer
 		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
 
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
 
-		// Layout
 		s_Data.QuadVertexBuffer->SetLayout({
 			{ ShaderDataType::Float4, "a_Position" },
 			{ ShaderDataType::Float4, "a_Colour" },
 			{ ShaderDataType::Float2, "a_TextureCoords" },
-			{ ShaderDataType::Int,  "a_TextureIndex" },
+			{ ShaderDataType::Int,    "a_TextureIndex" },
 			{ ShaderDataType::Float,  "a_TilingScale" },
 			// Editor-Only
 			{ ShaderDataType::Int,    "a_EntityID" },
 		});
 		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
 
-		// Index Buffer
+		// Index Buffer Indices
 		Scoped<unsigned int[]> quadIndices(new unsigned int[s_Data.MaxIndices]);
 		
 		unsigned int offset = 0;
@@ -110,21 +131,46 @@ namespace Pistachio {
 		}
 
 		Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices.get(), s_Data.MaxIndices);
+
 		s_Data.QuadVertexArray->SetIndexBuffer(quadIndexBuffer);
 
-		// Shader
-		s_Data.Shader = Shader::Create("assets/shaders/EditorUniformBuffer.glsl");
-		s_Data.Shader->Bind();
+		s_Data.QuadShader = Shader::Create("assets/shaders/Renderer2D_Quad.glsl");
+
+
+		/// Circle Renderer Objects
+		s_Data.CircleVertexArray = VertexArray::Create();
+
+		s_Data.CircleVertexBufferBase = new CircleVertex[s_Data.MaxVertices];
+
+		s_Data.CircleVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(CircleVertex));
+
+		s_Data.CircleVertexBuffer->SetLayout({
+			{ ShaderDataType::Float4, "a_Position" },
+			{ ShaderDataType::Float3, "a_LocalPosition" },
+			{ ShaderDataType::Float4, "a_Colour" },
+			{ ShaderDataType::Float,  "a_Thickness" },
+			{ ShaderDataType::Float,  "a_Blur" },
+			// Editor-Only
+			{ ShaderDataType::Int,    "a_EntityID" },
+			});
+		s_Data.CircleVertexArray->AddVertexBuffer(s_Data.CircleVertexBuffer);
+
+		Ref<IndexBuffer> circleIndexBuffer = IndexBuffer::Create(quadIndices.get(), s_Data.MaxIndices);  // Reuse quadIndices for Circle rendering
+
+		s_Data.CircleVertexArray->SetIndexBuffer(circleIndexBuffer);
 		
-		// Texture
-		// Default White Texture
+		s_Data.CircleShader = Shader::Create("assets/shaders/Renderer2D_Circle.glsl");
+
+
+		/// Default White Texture
 		s_Data.WhiteTexture = Texture2D::Create(1, 1);
 		unsigned int whiteTextureData = 0xFFFFFFFF;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
 		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 
-		// Uniform Buffer
+
+		/// Uniform Buffer for Camera Data
 		s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
 	}
 
@@ -142,7 +188,8 @@ namespace Pistachio {
 		s_Data.CameraBuffer.ProjectionViewMatrix = projectionViewMatrix;
 		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
-		StartBatch();
+		StartQuadBatch();
+		StartCircleBatch();
 	}
 
 	void Renderer2D::BeginScene(const EditorCamera& camera) {
@@ -151,7 +198,8 @@ namespace Pistachio {
 		s_Data.CameraBuffer.ProjectionViewMatrix = camera.ProjectionViewMatrix();
 		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
-		StartBatch();
+		StartQuadBatch();
+		StartCircleBatch();
 	}
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera) {
@@ -160,10 +208,30 @@ namespace Pistachio {
 		s_Data.CameraBuffer.ProjectionViewMatrix = camera.ProjectionViewMatrix();
 		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
-		StartBatch();
+		StartQuadBatch();
+		StartCircleBatch();
 	}
 
 	void Renderer2D::EndScene() {
+		PST_PROFILE_FUNCTION();
+
+		FlushQuadBatch();
+		FlushCircleBatch();
+	}
+
+	void Renderer2D::StartQuadBatch() {
+		s_Data.QuadIndexCount = 0;
+		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+
+		s_Data.TextureSlotIndex = 1;
+	}
+
+	void Renderer2D::StartCircleBatch() {
+		s_Data.CircleIndexCount = 0;
+		s_Data.CircleVertexBufferPtr = s_Data.CircleVertexBufferBase;
+	}
+
+	void Renderer2D::FlushQuadBatch() {
 		PST_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount == 0) return;
@@ -171,38 +239,45 @@ namespace Pistachio {
 		size_t dataSize = (size_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
 		s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 
-		Flush();
-	}
-
-	void Renderer2D::StartBatch() {
-		s_Data.QuadIndexCount = 0;
-		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-
-		s_Data.TextureSlotIndex = 1;
-	}
-
-	void Renderer2D::Flush() {
-		PST_PROFILE_FUNCTION();
-
 		for (size_t i = 0; i < s_Data.TextureSlotIndex; i++) {
 			s_Data.TextureSlots[i]->Bind((unsigned int)i);
 		}
 
+		s_Data.QuadShader->Bind();
 		RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
 
 		s_Data.Stats.DrawCalls++;
 	}
 
-	void Renderer2D::NextBatch() {
-		Flush();
-		StartBatch();
+	void Renderer2D::FlushCircleBatch() {
+		PST_PROFILE_FUNCTION();
+
+		if (s_Data.CircleIndexCount == 0) return;
+
+		size_t dataSize = (size_t)((uint8_t*)s_Data.CircleVertexBufferPtr - (uint8_t*)s_Data.CircleVertexBufferBase);
+		s_Data.CircleVertexBuffer->SetData(s_Data.CircleVertexBufferBase, dataSize);
+
+		s_Data.CircleShader->Bind();
+		RenderCommand::DrawIndexed(s_Data.CircleVertexArray, s_Data.CircleIndexCount);
+
+		s_Data.Stats.DrawCalls++;
+	}
+
+	void Renderer2D::NextQuadBatch() {
+		FlushQuadBatch();
+		StartQuadBatch();
+	}
+
+	void Renderer2D::NextCircleBatch() {
+		FlushCircleBatch();
+		StartCircleBatch();
 	}
 
 	void Renderer2D::DrawQuad(const glm::mat4& transformMatrix, const glm::vec4& colour) {
 		PST_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices) {
-			NextBatch();
+			NextQuadBatch();
 		}
 
 		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
@@ -224,7 +299,7 @@ namespace Pistachio {
 		PST_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices) {
-			NextBatch();
+			NextQuadBatch();
 		}
 
 		unsigned int textureIndex = 0;
@@ -242,7 +317,7 @@ namespace Pistachio {
 
 		if (textureIndex == 0) {
 			if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots) {
-				NextBatch();
+				NextQuadBatch();
 			}
 
 			textureIndex = s_Data.TextureSlotIndex;
@@ -266,6 +341,22 @@ namespace Pistachio {
 		PST_PROFILE_FUNCTION();
 
 		DrawSprite(transform.TransformMatrix(), sprite, entityID);
+	}
+
+	void Renderer2D::DrawCircle(const glm::mat4& transformMatrix, const glm::vec4& colour, float thickness, float blur, int entityID) {
+		PST_PROFILE_FUNCTION();
+
+		if (s_Data.CircleIndexCount >= Renderer2DData::MaxIndices) {
+			NextCircleBatch();
+		}
+
+		for (size_t i = 0; i < Renderer2DData::QuadVertexCount; i++) {
+			*(s_Data.CircleVertexBufferPtr++) = { transformMatrix * Renderer2DData::QuadVertexPositions[i], 2.0f * Renderer2DData::QuadVertexPositions[i], colour, thickness, blur, entityID};
+		}
+
+		s_Data.CircleIndexCount += 6;
+
+		s_Data.Stats.QuadCount++;
 	}
 
 	void Renderer2D::ResetStats() {
