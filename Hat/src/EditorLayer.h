@@ -28,6 +28,8 @@ namespace Pistachio {
 		void OnScenePlay();
 		void OnSceneStop();
 
+		void OnSceneSimulationPlay();
+
 		bool OnEvent(Event& event) override;
 		bool OnEventAfter(Event& event) override;
 
@@ -75,6 +77,7 @@ namespace Pistachio {
 
 		enum class SceneState {
 			Edit = 0, Play,
+			Simulate,
 		};
 
 		SceneState m_SceneState = SceneState::Edit;
@@ -86,6 +89,7 @@ namespace Pistachio {
 
 		// Editor Resources
 		Ref<Texture2D> m_PlayIcon;
+		Ref<Texture2D> m_SimulateIcon;
 		Ref<Texture2D> m_StopIcon;
 	};
 

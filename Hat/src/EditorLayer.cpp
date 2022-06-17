@@ -42,6 +42,7 @@ namespace Pistachio {
 
 		// Editor Resources
 		m_PlayIcon = Texture2D::Create("resources/icons/toolbar/play.png", 9);
+		m_SimulateIcon = Texture2D::Create("resources/icons/toolbar/simulate.png", 9);
 		m_StopIcon = Texture2D::Create("resources/icons/toolbar/stop.png", 9);
 
 
@@ -119,6 +120,12 @@ namespace Pistachio {
 				m_ActiveScene->OnUpdateRuntime(timestep);
 				break;
 			}
+			case SceneState::Simulate: {
+				m_EditorCamera.OnUpdate(timestep);
+
+				m_ActiveScene->OnUpdateSimulation(timestep, m_EditorCamera);
+				break;
+			}
 		}
 
 
@@ -150,6 +157,7 @@ namespace Pistachio {
 			case SceneState::Play:
 			{
 				Entity entity = m_ActiveScene->PrimaryCameraEntity();
+				if (!entity) return;
 				Renderer2D::BeginScene(entity.Component<CameraComponent>().Camera, entity.Component<TransformComponent>().Transform());
 				break;
 			}
@@ -208,11 +216,6 @@ namespace Pistachio {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-		// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
-		// and handle the pass-thru hole, so we ask Begin() to not render a background.
-		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-			window_flags |= ImGuiWindowFlags_NoBackground;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("Hat DockSpace", nullptr, window_flags);
@@ -399,15 +402,50 @@ namespace Pistachio {
 		ImGui::Begin("##Toolbar", nullptr,
 			ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-		float size = ImGui::GetWindowHeight() - 4.0f;
-		Ref<Texture2D> icon = m_SceneState == SceneState::Edit ? m_PlayIcon : m_StopIcon;
 
+		float size = ImGui::GetWindowHeight() - 4.0f;
 		ImGui::SetCursorPosX(0.5f * ImGui::GetWindowContentRegionMax().x - 0.5f * size);
-		if (ImGui::ImageButton((ImTextureID)icon->RendererID(), { size, size }, { 0, 1 }, { 1, 0 }, 0)) {
-			if (m_SceneState == SceneState::Edit) {
-				OnScenePlay();
-			} else if (m_SceneState == SceneState::Play) {
-				OnSceneStop();
+
+
+		// Play button
+		{
+			Ref<Texture2D> icon = m_SceneState != SceneState::Play ? m_PlayIcon : m_StopIcon;
+
+			if (ImGui::ImageButton((ImTextureID)icon->RendererID(), { size, size }, { 0, 1 }, { 1, 0 }, 0)) {
+				switch (m_SceneState) {
+					case SceneState::Simulate:
+					case SceneState::Edit:
+						OnScenePlay();
+						break;
+					case SceneState::Play:
+						OnSceneStop();
+						break;
+					default:
+						PST_ASSERT(false, "Invalid Scene State transition");
+						break;
+				}
+			}
+		}
+
+		ImGui::SameLine();
+
+		// Simulate button
+		{
+			Ref<Texture2D> icon = m_SceneState != SceneState::Simulate ? m_SimulateIcon : m_StopIcon;
+
+			if (ImGui::ImageButton((ImTextureID)icon->RendererID(), { size, size }, { 0, 1 }, { 1, 0 }, 0)) {
+				switch (m_SceneState) {
+					case SceneState::Play:
+					case SceneState::Edit:
+						OnSceneSimulationPlay();
+						break;
+					case SceneState::Simulate:
+						OnSceneStop();
+						break;
+					default:
+						PST_ASSERT(false, "Invalid Scene State transition");
+						break;
+				}
 			}
 		}
 
@@ -418,6 +456,10 @@ namespace Pistachio {
 	}
 
 	void EditorLayer::OnScenePlay() {
+		if (m_SceneState == SceneState::Simulate) {
+			OnSceneStop();
+		}
+
 		m_SceneState = SceneState::Play;
 
 		m_RuntimeScene = Scene::Copy(m_EditorScene);
@@ -428,13 +470,37 @@ namespace Pistachio {
 	}
 
 	void EditorLayer::OnSceneStop() {
-		m_SceneState = SceneState::Edit;
-
-		m_RuntimeScene->OnRuntimeStop();
+		switch (m_SceneState) {
+			case SceneState::Play:
+				m_RuntimeScene->OnRuntimeStop();
+				break;
+			case SceneState::Simulate:
+				m_RuntimeScene->OnSimulationStop();
+				break;
+			default:
+				PST_ASSERT(false, "Invalid playing Scene State");
+				break;
+		}
 
 		ChangeActiveSceneTo(m_EditorScene);
 
 		m_RuntimeScene = nullptr;
+
+		m_SceneState = SceneState::Edit;
+	}
+
+	void EditorLayer::OnSceneSimulationPlay() {
+		if (m_SceneState == SceneState::Play) {
+			OnSceneStop();
+		}
+
+		m_SceneState = SceneState::Simulate;
+
+		m_RuntimeScene = Scene::Copy(m_EditorScene);
+
+		m_RuntimeScene->OnSimulationStart();
+
+		ChangeActiveSceneTo(m_RuntimeScene);
 	}
 
 	bool EditorLayer::OnEvent(Event& event) {
@@ -443,7 +509,7 @@ namespace Pistachio {
 	}
 
 	bool EditorLayer::OnEventAfter(Event& event) {
-		if (m_SceneState != SceneState::Edit) return false;
+		if (m_SceneState == SceneState::Play) return false;
 		m_EditorCamera.SendEvent(event);
 		return false;
 	}
@@ -545,7 +611,7 @@ namespace Pistachio {
 	}
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& event) {
-		if (m_SceneState != SceneState::Edit) return false;
+		if (m_SceneState == SceneState::Play) return false;
 
 		if (m_HoveredEntity && event.MouseButton() == PST_MOUSE_BUTTON_MIDDLE && Input::IsKeyPressed(PST_KEY_LEFT_CONTROL)) {
 			const auto& transformComponent = m_HoveredEntity.Component<TransformComponent>();
@@ -560,7 +626,7 @@ namespace Pistachio {
 			m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
 			m_PropertiesPanel.SetSelectedEntity(m_HoveredEntity);
 
-			if (m_SceneState != SceneState::Edit || !m_HoveredEntity) return false;
+			if (m_SceneState == SceneState::Play || !m_HoveredEntity) return false;
 
 			if (m_GizmoType == -1) {
 				m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
@@ -608,7 +674,7 @@ namespace Pistachio {
 	}
 
 	void EditorLayer::NewScene() {
-		if (m_SceneState == SceneState::Play) {
+		if (m_SceneState != SceneState::Edit) {
 			OnSceneStop();
 		}
 

@@ -35,8 +35,12 @@ namespace Pistachio {
 		void OnRuntimeStart();
 		void OnRuntimeStop();
 
+		void OnSimulationStart();
+		void OnSimulationStop();
+
 		void OnUpdateEditor(Timestep timestep, EditorCamera& camera);
 		void OnUpdateRuntime(Timestep timestep);
+		void OnUpdateSimulation(Timestep timestep, EditorCamera& camera);
 
 		void OnViewportResize(unsigned int width, unsigned int height);
 
@@ -55,6 +59,12 @@ namespace Pistachio {
 	private:
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);
+
+		void Init2DPhysics();
+		void Destroy2DPhysics();
+		void Update2DPhysics(Timestep timestep);
+
+		void RenderScene();
 
 	private:
 		std::string m_Name;

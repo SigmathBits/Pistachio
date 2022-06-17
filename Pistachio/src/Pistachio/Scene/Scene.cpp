@@ -136,62 +136,7 @@ namespace Pistachio {
 
 
 		// Initialise Physics world
-		{
-			m_PhysicsWorld = new b2World({ 0.0f, -9.8f });
-
-			auto view = m_Registry.view<TransformComponent, RigidBody2DComponent>();
-			for (auto&& [enntID, transform, rigidBody] : view.each()) {
-				Entity entity = { enntID, this };
-
-				b2BodyDef bodyDef;
-				bodyDef.type = RigidBody2DTypeToBox2DType(rigidBody.Type);
-				bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
-				bodyDef.angle = transform.Rotation.z;
-
-				b2Body* body = m_PhysicsWorld->CreateBody(&bodyDef);
-				body->SetFixedRotation(rigidBody.FixedRotation);
-
-				m_RuntimeBodies[entity.UUID()] = body;
-
-				if (entity.HasComponent<BoxCollider2DComponent>()) {
-					auto& boxCollider = entity.Component<BoxCollider2DComponent>();
-
-					b2PolygonShape boxShape;
-					boxShape.SetAsBox(
-						transform.Scale.x * 0.5f * boxCollider.Size.x,
-						transform.Scale.y * 0.5f * boxCollider.Size.y,
-						{ boxCollider.Offset.x, boxCollider.Offset.y },
-						0.0f
-					);
-
-					b2FixtureDef fixtureDef;
-					fixtureDef.shape = &boxShape;
-					fixtureDef.density = boxCollider.Density;
-					fixtureDef.friction = boxCollider.Friction;
-					fixtureDef.restitution = boxCollider.Restitution;
-					fixtureDef.restitutionThreshold = boxCollider.RestitutionThreshold;
-
-					b2Fixture* fixture = body->CreateFixture(&fixtureDef);
-				}
-
-				if (entity.HasComponent<CircleCollider2DComponent>()) {
-					auto& circleCollider = entity.Component<CircleCollider2DComponent>();
-
-					b2CircleShape circleShape;
-					circleShape.m_p.Set(circleCollider.Offset.x, circleCollider.Offset.y);
-					circleShape.m_radius = transform.Scale.x * circleCollider.Radius;  // Only respects x-axis scale
-
-					b2FixtureDef fixtureDef;
-					fixtureDef.shape = &circleShape;
-					fixtureDef.density = circleCollider.Density;
-					fixtureDef.friction = circleCollider.Friction;
-					fixtureDef.restitution = circleCollider.Restitution;
-					fixtureDef.restitutionThreshold = circleCollider.RestitutionThreshold;
-
-					b2Fixture* fixture = body->CreateFixture(&fixtureDef);
-				}
-			}
-		}
+		Init2DPhysics();
 
 
 		// Update cameras
@@ -207,30 +152,21 @@ namespace Pistachio {
 
 
 		// Destroy physics world
-		delete m_PhysicsWorld;
-		m_PhysicsWorld = nullptr;
+		Destroy2DPhysics();
+	}
 
-		m_RuntimeBodies.clear();
+	void Scene::OnSimulationStart() {
+		Init2DPhysics();
+	}
+
+	void Scene::OnSimulationStop() {
+		Destroy2DPhysics();
 	}
 
 	void Scene::OnUpdateEditor(Timestep timestep, EditorCamera& camera) {
 		Renderer2D::BeginScene(camera);
 
-		// Sprites
-		{
-			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-			for (auto&& [enttID, transform, spriteComponent] : view.each()) {
-				Renderer2D::DrawSprite(transform.Transform(), spriteComponent.Sprite, (int)enttID);
-			}
-		}
-		
-		// Circles
-		{
-			auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
-			for (auto&& [enttID, transform, circleComponent] : view.each()) {
-				Renderer2D::DrawCircle(transform.Transform(), circleComponent.Colour, circleComponent.Thickness, circleComponent.Blur, (int)enttID);
-			}
-		}
+		RenderScene();
 
 		Renderer2D::EndScene();
 	}
@@ -245,28 +181,8 @@ namespace Pistachio {
 		}
 
 
-		// Physics
-		{
-			// TODO: Tweak / expose to editor
-			const int velocityIteration = 6;
-			const int positionIteration = 2;
-
-			m_PhysicsWorld->Step(timestep, velocityIteration, positionIteration);
-
-			// Retrieve transform from Box2D
-			auto view = m_Registry.view<TransformComponent, RigidBody2DComponent>();
-			for (auto&& [enntID, transform, rigidBody] : view.each()) {
-				Entity entity = { enntID, this };
-
-				b2Body* body = m_RuntimeBodies[entity.UUID()];
-
-				const auto& position = body->GetPosition();
-				transform.Translation.x = position.x;
-				transform.Translation.y = position.y;
-
-				transform.Rotation.z = body->GetAngle();
-			}
-		}
+		// Update Physics 2D
+		Update2DPhysics(timestep);
 
 
 		// Render 2D 
@@ -287,22 +203,16 @@ namespace Pistachio {
 
 		Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
-		// Sprites
-		{
-			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-			for (auto&& [enttID, transform, spriteComponent] : view.each()) {
-				Renderer2D::DrawSprite(transform.Transform(), spriteComponent.Sprite, (int)enttID);
-			}
-		}
+		RenderScene();
 
-		// Circles
-		{
-			auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
-			for (auto&& [enttID, transform, circleComponent] : view.each()) {
-				Renderer2D::DrawCircle(transform.Transform(), circleComponent.Colour, circleComponent.Thickness, circleComponent.Blur, (int)enttID);
-			}
-		}
+		Renderer2D::EndScene();
+	}
 
+	void Scene::OnUpdateSimulation(Timestep timestep, EditorCamera& camera) {
+		Update2DPhysics(timestep);
+
+		Renderer2D::BeginScene(camera);
+		RenderScene();
 		Renderer2D::EndScene();
 	}
 
@@ -323,6 +233,110 @@ namespace Pistachio {
 		m_Registry.each([this, &callback](auto entity) {
 			callback(Entity(entity, this));
 		});
+	}
+
+	void Scene::Init2DPhysics() {
+		m_PhysicsWorld = new b2World({ 0.0f, -9.8f });
+
+		auto view = m_Registry.view<TransformComponent, RigidBody2DComponent>();
+		for (auto&& [enntID, transform, rigidBody] : view.each()) {
+			Entity entity = { enntID, this };
+
+			b2BodyDef bodyDef;
+			bodyDef.type = RigidBody2DTypeToBox2DType(rigidBody.Type);
+			bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
+			bodyDef.angle = transform.Rotation.z;
+
+			b2Body* body = m_PhysicsWorld->CreateBody(&bodyDef);
+			body->SetFixedRotation(rigidBody.FixedRotation);
+
+			m_RuntimeBodies[entity.UUID()] = body;
+
+			if (entity.HasComponent<BoxCollider2DComponent>()) {
+				auto& boxCollider = entity.Component<BoxCollider2DComponent>();
+
+				b2PolygonShape boxShape;
+				boxShape.SetAsBox(
+					transform.Scale.x * 0.5f * boxCollider.Size.x,
+					transform.Scale.y * 0.5f * boxCollider.Size.y,
+					{ boxCollider.Offset.x, boxCollider.Offset.y },
+					0.0f
+				);
+
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &boxShape;
+				fixtureDef.density = boxCollider.Density;
+				fixtureDef.friction = boxCollider.Friction;
+				fixtureDef.restitution = boxCollider.Restitution;
+				fixtureDef.restitutionThreshold = boxCollider.RestitutionThreshold;
+
+				b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+			}
+
+			if (entity.HasComponent<CircleCollider2DComponent>()) {
+				auto& circleCollider = entity.Component<CircleCollider2DComponent>();
+
+				b2CircleShape circleShape;
+				circleShape.m_p.Set(circleCollider.Offset.x, circleCollider.Offset.y);
+				circleShape.m_radius = transform.Scale.x * circleCollider.Radius;  // Only respects x-axis scale
+
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &circleShape;
+				fixtureDef.density = circleCollider.Density;
+				fixtureDef.friction = circleCollider.Friction;
+				fixtureDef.restitution = circleCollider.Restitution;
+				fixtureDef.restitutionThreshold = circleCollider.RestitutionThreshold;
+
+				b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+			}
+		}
+	}
+
+	void Scene::Destroy2DPhysics() {
+		delete m_PhysicsWorld;
+		m_PhysicsWorld = nullptr;
+
+		m_RuntimeBodies.clear();
+	}
+
+	void Scene::Update2DPhysics(Timestep timestep) {
+					// TODO: Tweak / expose to editor
+		const int velocityIteration = 6;
+		const int positionIteration = 2;
+
+		m_PhysicsWorld->Step(timestep, velocityIteration, positionIteration);
+
+		// Retrieve transform from Box2D
+		auto view = m_Registry.view<TransformComponent, RigidBody2DComponent>();
+		for (auto&& [enntID, transform, rigidBody] : view.each()) {
+			Entity entity = { enntID, this };
+
+			b2Body* body = m_RuntimeBodies[entity.UUID()];
+
+			const auto& position = body->GetPosition();
+			transform.Translation.x = position.x;
+			transform.Translation.y = position.y;
+
+			transform.Rotation.z = body->GetAngle();
+		}
+	}
+
+	void Scene::RenderScene() {
+		// Sprites
+		{
+			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+			for (auto&& [enttID, transform, spriteComponent] : view.each()) {
+				Renderer2D::DrawSprite(transform.Transform(), spriteComponent.Sprite, (int)enttID);
+			}
+		}
+
+		// Circles
+		{
+			auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
+			for (auto&& [enttID, transform, circleComponent] : view.each()) {
+				Renderer2D::DrawCircle(transform.Transform(), circleComponent.Colour, circleComponent.Thickness, circleComponent.Blur, (int)enttID);
+			}
+		}
 	}
 
 	Entity Scene::PrimaryCameraEntity() {

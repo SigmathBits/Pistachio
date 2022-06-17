@@ -230,7 +230,7 @@ namespace Pistachio {
 		StartLineBatch();
 	}
 
-	void Renderer2D::BeginScene(const Camera& camera, glm::mat4& transform) {
+	void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform) {
 		PST_PROFILE_FUNCTION();
 
 		glm::mat4 projectionViewMatrix = camera.ProjectionMatrix() * glm::inverse(transform);
