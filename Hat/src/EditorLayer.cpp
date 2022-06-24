@@ -516,15 +516,14 @@ namespace Pistachio {
 
 	bool EditorLayer::OnKeyPressed(Pistachio::KeyPressedEvent& event) {
 		// Shortcuts
-		if (event.RepeatCount() > 0) return false;
+		if (event.IsRepeated()) return false;
 
 		bool ctrlPressed = Input::IsKeyPressed(PST_KEY_LEFT_CONTROL) || Input::IsKeyPressed(PST_KEY_RIGHT_CONTROL);
 		bool shiftPressed = Input::IsKeyPressed(PST_KEY_LEFT_SHIFT) || Input::IsKeyPressed(PST_KEY_RIGHT_SHIFT);
 
 		switch (event.KeyCode()) {
 			// Contextual Escape actions
-			case PST_KEY_ESCAPE:
-			{
+			case PST_KEY_ESCAPE: {
 				if (m_GizmoType != -1) {
 					m_GizmoType = -1;
 					return true;
@@ -537,24 +536,21 @@ namespace Pistachio {
 			}
 
 			// File Menu shortcuts
-			case PST_KEY_N:
-			{
+			case PST_KEY_N: {
 				if (ctrlPressed) {
 					FileNew();
 					return true;
 				}
 				break;
 			}
-			case PST_KEY_O:
-			{
+			case PST_KEY_O: {
 				if (ctrlPressed) {
 					FileOpen();
 					return true;
 				}
 				break;
 			}
-			case PST_KEY_S:
-			{
+			case PST_KEY_S: {
 				if (ctrlPressed && !shiftPressed) {
 					FileSave();
 					return true;

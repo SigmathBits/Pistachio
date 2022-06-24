@@ -22,8 +22,9 @@ IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 LibraryDir = {}
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
 LibraryDir["VulkanSDK_DLL"] = "%{VULKAN_SDK}/Bin"
-LibraryDir["VulkanSDK_Debug"] = "%{wks.location}/Pistachio/vendor/VulkanSDK/Lib"
-LibraryDir["VulkanSDK_DebugDLL"] = "%{wks.location}/Pistachio/vendor/VulkanSDK/Bin"
+-- These are located  in the same place as the VulkanSDK for v1.3.204.1 and later
+LibraryDir["VulkanSDK_Debug"] = LibraryDir["VulkanSDK"]
+LibraryDir["VulkanSDK_DebugDLL"] = LibraryDir["VulkanSDK_DLL"]
 
 
 -- VulkanSDK library files

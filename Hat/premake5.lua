@@ -41,16 +41,8 @@ project "Hat"
 		runtime "Release"
 		optimize "on"
 
-		postbuildcommands {
-			"{COPYDIR} %{LibraryDir.VulkanSDK_DLL}/**shared.dll \"%{cfg.targetdir}\""
-		}
-
 	filter "configurations:Dist"
 		defines "PST_DIST"
 		runtime "Release"
 		optimize "on"
-
-		postbuildcommands {
-			"{COPYDIR} %{LibraryDir.VulkanSDK_DLL}/**shared.dll \"%{cfg.targetdir}\""
-		}
  

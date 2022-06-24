@@ -105,7 +105,7 @@ namespace Pistachio {
 
 			switch (action) {
 				case GLFW_PRESS: {
-					KeyPressedEvent event((PistachioKey)key, 0);
+					KeyPressedEvent event((PistachioKey)key, false);
 					data.EventCallback(event);
 					break;
 				}
@@ -115,7 +115,7 @@ namespace Pistachio {
 					break;
 				}
 				case GLFW_REPEAT: {
-					KeyPressedEvent event((PistachioKey)key, 1);
+					KeyPressedEvent event((PistachioKey)key, true);
 					data.EventCallback(event);
 					break;
 				}

@@ -28,21 +28,21 @@ namespace Pistachio {
 
 	class KeyPressedEvent : public KeyEvent {
 	public:
-		KeyPressedEvent(PistachioKey keycode, unsigned int repeatCount)
-			: KeyEvent(keycode), m_RepeatCount(repeatCount) {}
+		KeyPressedEvent(PistachioKey keycode, bool isRepeated = false)
+			: KeyEvent(keycode), m_IsRepeated(isRepeated) {}
 
-		inline int RepeatCount() const { return m_RepeatCount; }
+		inline bool IsRepeated() const { return m_IsRepeated; }
 
 		std::string ToString() const override {
 			std::stringstream ss;
-			ss << KeyEvent::ToString() << ", RepeatCount=" << m_RepeatCount;
+			ss << KeyEvent::ToString() << ", IsRepeated=" << (m_IsRepeated ? "true" : "false");
 			return ss.str();
 		}
 
 		EVENT_TYPE(KeyPressed)
 
 	private:
-		unsigned int m_RepeatCount;
+		unsigned int m_IsRepeated;
 	};
 	
 	class KeyReleasedEvent : public KeyEvent {

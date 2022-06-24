@@ -13,7 +13,7 @@ namespace Pistachio {
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Instance().CurrentWindow().NativeWindow());
 
 		int state = glfwGetKey(window, keyCode);
-		return state == GLFW_PRESS || state == GLFW_REPEAT;
+		return state == GLFW_PRESS;
 	}
 
 	bool Input::IsMouseButtonPressed(PistachioMouseButton button) {

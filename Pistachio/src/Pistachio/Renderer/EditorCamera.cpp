@@ -198,7 +198,7 @@ namespace Pistachio {
 
 		if (Input::IsMouseButtonPressed(PST_MOUSE_BUTTON_MIDDLE)) return false;
 
-		if (Input::IsKeyPressed(PST_KEY_LEFT_ALT) && event.KeyCode() == PST_KEY_R && event.RepeatCount() == 0) {
+		if (Input::IsKeyPressed(PST_KEY_LEFT_ALT) && event.KeyCode() == PST_KEY_R && !event.IsRepeated()) {
 			m_FocalPointTarget = { 0.0f, 0.0f, 0.0f };
 
 			m_YawTarget = 0.0f;

@@ -32,10 +32,9 @@ namespace Pistachio {
 				PST_CORE_CRITICAL("OpenGL: {}", message);
 				break;
 			default:
+				PST_CORE_ASSERT(false, "Unrecognised OpenGL severity level");
 				break;
 		}
-
-		PST_CORE_ASSERT(false, "Unrecognised OpenGL severity level");
 	}
 
 	void OpenGLRendererAPI::Init() {

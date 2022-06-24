@@ -181,7 +181,7 @@ namespace Pistachio {
 
 		if (Input::IsMouseButtonPressed(PST_MOUSE_BUTTON_LEFT)) return false;
 
-		if (event.KeyCode() == PST_KEY_R && event.RepeatCount() == 0) {
+		if (event.KeyCode() == PST_KEY_R && !event.IsRepeated()) {
 			m_ZoomLevelTarget = 1.0f;
 			m_PositionTarget = { 0.0f, 0.0f, 0.0f };
 			m_RotationTarget = 0.0f;

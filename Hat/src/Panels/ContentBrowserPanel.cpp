@@ -127,7 +127,7 @@ namespace Pistachio {
 	}
 
 	bool ContentBrowserPanel::OnKeyPressed(KeyPressedEvent& event) {
-		if (m_IsFocused && event.KeyCode() == PST_KEY_BACKSPACE && event.RepeatCount() == 0 && m_CurrentDirectory != m_AssetsDirectory) {
+		if (m_IsFocused && event.KeyCode() == PST_KEY_BACKSPACE && !event.IsRepeated() && m_CurrentDirectory != m_AssetsDirectory) {
 			m_CurrentDirectory = m_CurrentDirectory.parent_path();
 			return true;
 		}

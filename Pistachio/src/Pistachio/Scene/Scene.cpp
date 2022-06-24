@@ -38,25 +38,39 @@ namespace Pistachio {
 		return b2_staticBody;
 	}
 
-	template<typename C>
-	static void CopyComponent(entt::registry& dest, entt::registry& source, const std::unordered_map<UUID, entt::entity>& destEnttIDsByUUID) {
-		auto view = source.view<UUIDComponent, C>();
-		for (auto&& [enttID, uuidComponent, component] : view.each()) {
-			entt::entity destEnttID = destEnttIDsByUUID.at(uuidComponent.UUID);
-			dest.emplace_or_replace<C>(destEnttID, component);
-		}
+	template<typename... C>
+	static void CopyComponents(entt::registry& dest, entt::registry& source, const std::unordered_map<UUID, entt::entity>& destEnttIDsByUUID) {
+		([&]() {
+			auto view = source.view<UUIDComponent, C>();
+			for (auto&& [enttID, uuidComponent, component] : view.each()) {
+				entt::entity destEnttID = destEnttIDsByUUID.at(uuidComponent.UUID);
+				dest.emplace_or_replace<C>(destEnttID, component);
+			}
+		}(), ...);
 	}
 
-	template<typename C>
-	static void CopyComponentIfExists(Entity dest, Entity source) {
-		if (source.HasComponent<C>()) {
-			dest.AddOrReplaceComponent<C>(source.Component<C>());
-		}
+	template<typename... C>
+	static void CopyComponentGroup(ComponentGroup<C...> componentGroup,
+		entt::registry& dest, entt::registry& source, const std::unordered_map<UUID, entt::entity>& destEnttIDsByUUID) {
+		CopyComponents<C...>(dest, source, destEnttIDsByUUID);
+	}
+
+	template<typename... C>
+	static void CopyComponentsIfExists(Entity dest, Entity source) {
+		([&]() {
+			if (source.HasComponent<C>()) {
+				dest.AddOrReplaceComponent<C>(source.Component<C>());
+			}
+		}(), ...);
+	}
+
+	template<typename... C>
+	static void CopyComponentGroupIfExists(ComponentGroup<C...> componentGroup, Entity dest, Entity source) {
+		CopyComponentsIfExists<C...>(dest, source);
 	}
 
 	Scene::Scene(const std::string& name /*= "Untitled"*/)
 		: m_Name(name) {
-
 	}
 
 	Scene::~Scene() {
@@ -79,15 +93,7 @@ namespace Pistachio {
 			destEnttIDsByUUID[uuidComponent.UUID] = destEnttID;
 		}
 
-		// Copy components (Except IDComponent and TagComponent)
-		CopyComponent<TransformComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
-		CopyComponent<SpriteRendererComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
-		CopyComponent<CircleRendererComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
-		CopyComponent<CameraComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
-		CopyComponent<NativeScriptComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
-		CopyComponent<RigidBody2DComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
-		CopyComponent<BoxCollider2DComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
-		CopyComponent<CircleCollider2DComponent>(destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
+		CopyComponentGroup(AllComponents{}, destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
 
 		return newScene;
 	}
@@ -107,14 +113,7 @@ namespace Pistachio {
 	Entity Scene::DuplicateEntity(Entity entity) {
 		Entity newEntity = CreateEntity(entity.Name());
 
-		CopyComponentIfExists<TransformComponent>(newEntity, entity);
-		CopyComponentIfExists<SpriteRendererComponent>(newEntity, entity);
-		CopyComponentIfExists<CircleRendererComponent>(newEntity, entity);
-		CopyComponentIfExists<CameraComponent>(newEntity, entity);
-		CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
-		CopyComponentIfExists<RigidBody2DComponent>(newEntity, entity);
-		CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
-		CopyComponentIfExists<CircleCollider2DComponent>(newEntity, entity);
+		CopyComponentGroupIfExists(AllComponents{}, newEntity, entity);
 
 		return newEntity;
 	}
