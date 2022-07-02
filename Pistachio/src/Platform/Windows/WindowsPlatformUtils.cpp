@@ -15,6 +15,11 @@
 
 namespace Pistachio {
 
+	float Platform::Time() {
+		return (float)glfwGetTime();
+	}
+
+
 	std::string FileDialog::OpenFile(const char* filter) {
 		OPENFILENAMEA openFilename;  // A at the end means ASCII version
 		CHAR filepathBuffer[260] = { 0 };

@@ -42,12 +42,12 @@ namespace Pistachio {
 		void FileSave();
 		void FileSaveAs();
 
-		void NewScene();
 		void LoadSceneFile(const std::filesystem::path& filepath);
 		void SaveSceneFile(const std::filesystem::path& filepath);
 		void SetLastSave(const std::filesystem::path& filepath);
 
 	private:
+		void ChangeSceneTo(Ref<Scene> scene);
 		void ChangeActiveSceneTo(Ref<Scene> scene);
 
 		void SetWindowTitle(const std::string& title, bool unsavedChanges = false);

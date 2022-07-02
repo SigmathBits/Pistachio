@@ -25,7 +25,7 @@ namespace std {
 	template<>
 	struct hash<Pistachio::UUID> {
 		std::size_t operator()(const Pistachio::UUID& uuid) const {
-			return hash<uint64_t>()((uint64_t)uuid);
+			return (uint64_t)uuid;
 		}
 	};
 

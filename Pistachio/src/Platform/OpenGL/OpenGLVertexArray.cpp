@@ -10,27 +10,24 @@ namespace Pistachio {
 	static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type) {
 		switch (type) {
 			case ShaderDataType::Float:
-				return GL_FLOAT;
 			case ShaderDataType::Float2:
-				return GL_FLOAT;
 			case ShaderDataType::Float3:
-				return GL_FLOAT;
 			case ShaderDataType::Float4:
 				return GL_FLOAT;
+
 			case ShaderDataType::Mat3:
-				return GL_FLOAT;
 			case ShaderDataType::Mat4:
 				return GL_FLOAT;
+
 			case ShaderDataType::Int:
-				return GL_INT;
 			case ShaderDataType::Int2:
-				return GL_INT;
 			case ShaderDataType::Int3:
-				return GL_INT;
 			case ShaderDataType::Int4:
 				return GL_INT;
+
 			case ShaderDataType::Bool:
 				return GL_BOOL;
+
 			default:
 				PST_CORE_ASSERT(false, "Unrecognised ShaderDataType");
 				return 0;
@@ -76,19 +73,37 @@ namespace Pistachio {
 				case ShaderDataType::Float:
 				case ShaderDataType::Float2:
 				case ShaderDataType::Float3:
-				case ShaderDataType::Float4:
-				case ShaderDataType::Mat3:
-				case ShaderDataType::Mat4: {
+				case ShaderDataType::Float4: {
 					glEnableVertexAttribArray(index);
 					glVertexAttribPointer(
 						index,
 						element.ComponentCount(),
 						ShaderDataTypeToOpenGLBaseType(element.Type),
 						element.Normalised ? GL_TRUE : GL_FALSE,
-						(GLsizei)layout.Stride(), (void*)element.Offset
+						(GLsizei)layout.Stride(), (const void*)element.Offset
 					);
+					index++;
 					break;
 				}
+
+				case ShaderDataType::Mat3:
+				case ShaderDataType::Mat4: {
+					unsigned int count = element.ComponentCount();
+					for (size_t i = 0; i < count; i++) {
+						glEnableVertexAttribArray(index);
+						glVertexAttribPointer(
+							index,
+							count,
+							ShaderDataTypeToOpenGLBaseType(element.Type),
+							element.Normalised ? GL_TRUE : GL_FALSE,
+							(GLsizei)layout.Stride(), (const void*)(element.Offset + i * count * sizeof(float))
+						);
+						glVertexAttribDivisor(index, 1);
+						index++;
+					}
+					break;
+				}
+
 				case ShaderDataType::Int:
 				case ShaderDataType::Int2:
 				case ShaderDataType::Int3:
@@ -99,15 +114,16 @@ namespace Pistachio {
 						index,
 						element.ComponentCount(),
 						ShaderDataTypeToOpenGLBaseType(element.Type),
-						(GLsizei)layout.Stride(), (void*)element.Offset
+						(GLsizei)layout.Stride(), (const void*)element.Offset
 					);
+					index++;
 					break;
 				}
+
 				default:
 					PST_CORE_ASSERT(false, "Unsupported Shader Data Type");
 					break;
 			}
-			index++;
 		}
 
 		m_VertexBuffers.push_back(vertexBuffer);

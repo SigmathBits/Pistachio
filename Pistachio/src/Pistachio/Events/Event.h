@@ -21,7 +21,7 @@ namespace Pistachio {
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled,
 	};
 
-	// For easy subscribing based on  the kind of event
+	// For easy subscribing based on the kind of event
 	enum EventCategory {
 		EVENT_CATEGORY_NONE            = 0,
 		EVENT_CATEGORY_APPLICATION     = BIT(0),

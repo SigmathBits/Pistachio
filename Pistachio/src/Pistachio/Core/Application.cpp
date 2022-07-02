@@ -5,9 +5,10 @@
 #include "Pistachio/Core/Log.h"
 #include "Pistachio/Core/Input.h"
 #include "Pistachio/Core/Timestep.h"
-#include "Pistachio/Core/Platform.h"
 
 #include "Pistachio/Renderer/Renderer.h"
+
+#include "Pistachio/Utils/PlatformUtils.h"
 
 
 namespace Pistachio {

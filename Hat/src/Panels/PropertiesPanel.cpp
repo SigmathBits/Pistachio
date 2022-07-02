@@ -12,8 +12,11 @@
 
 namespace Pistachio {
 
-	template<typename T>
-	static void DrawComponentProperties(Entity entity, const std::string& label, std::function<void(T&)> drawFunction, bool removable = true);
+	template<typename C>
+	static void DrawComponentProperties(Entity entity, const std::string& label, std::function<void(C&)> drawFunction, bool removable = true);
+
+	template<typename C>
+	static bool DrawAddComponentPopupItem(Entity entity, const std::string& name);
 
 	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 
@@ -240,69 +243,30 @@ namespace Pistachio {
 
 	void PropertiesPanel::DrawAddComponentPopup(Entity entity) {
 		if (ImGui::BeginPopup("Add Component Popup")) {
-			bool isEmpty = true;
+			bool canAddComponents = false;
 
-			if (!entity.HasComponent<SpriteRendererComponent>()) {
-				isEmpty = false;
-				if (ImGui::MenuItem("Sprite Renderer")) {
-					entity.AddComponent<SpriteRendererComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
+			canAddComponents |= DrawAddComponentPopupItem<SpriteRendererComponent>(entity, "Sprite Renderer");
+			canAddComponents |= DrawAddComponentPopupItem<CircleRendererComponent>(entity, "Circle Renderer");
 
-			if (!entity.HasComponent<CircleRendererComponent>()) {
-				isEmpty = false;
-				if (ImGui::MenuItem("Circle Renderer")) {
-					entity.AddComponent<CircleRendererComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
+			canAddComponents |= DrawAddComponentPopupItem<CameraComponent>(entity, "Camera");
 
-			if (!entity.HasComponent<CameraComponent>()) {
-				isEmpty = false;
-				if (ImGui::MenuItem("Camera")) {
-					entity.AddComponent<CameraComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
+			canAddComponents |= DrawAddComponentPopupItem<RigidBody2DComponent>(entity, "Rigid Body 2D");
+			canAddComponents |= DrawAddComponentPopupItem<BoxCollider2DComponent>(entity, "Box Collider 2D");
+			canAddComponents |= DrawAddComponentPopupItem<CircleCollider2DComponent>(entity, "Circle Collider 2D");
 
-			if (!entity.HasComponent<RigidBody2DComponent>()) {
-				isEmpty = false;
-				if (ImGui::MenuItem("Rigid Body 2D")) {
-					entity.AddComponent<RigidBody2DComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			if (!entity.HasComponent<BoxCollider2DComponent>()) {
-				isEmpty = false;
-				if (ImGui::MenuItem("Box Collider 2D")) {
-					entity.AddComponent<BoxCollider2DComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-			
-			if (!entity.HasComponent<CircleCollider2DComponent>()) {
-				isEmpty = false;
-				if (ImGui::MenuItem("Circle Collider 2D")) {
-					entity.AddComponent<CircleCollider2DComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);  // 1 is italics
-			if (isEmpty) {
+			if (!canAddComponents) {
+				ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);  // 1 is italics
 				ImGui::TextDisabled("No Available Components");
+				ImGui::PopFont();
 			}
-			ImGui::PopFont();
 
 			ImGui::EndPopup();
 		}
 	}
 
-	template<typename T>
-	static void DrawComponentProperties(Entity entity, const std::string& label, std::function<void(T&)> drawFunction, bool removable /*= true*/) {
-		if (!entity.HasComponent<T>()) return;
+	template<typename C>
+	static void DrawComponentProperties(Entity entity, const std::string& label, std::function<void(C&)> drawFunction, bool removable /*= true*/) {
+		if (!entity.HasComponent<C>()) return;
 
 		ImGuiTreeNodeFlags flags =
 			ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowItemOverlap
@@ -341,14 +305,27 @@ namespace Pistachio {
 		ImGui::PopStyleVar();
 
 		if (open) {
-			T& component = entity.Component<T>();
+			C& component = entity.Component<C>();
 			drawFunction(component);
 			ImGui::TreePop();
 		}
 
 		if (removeComponent) {
-			entity.RemoveComponent<T>();
+			entity.RemoveComponent<C>();
 		}
+	}
+
+	/// <returns>Whether the add component popup item was drawn</returns>
+	template<typename C>
+	static bool DrawAddComponentPopupItem(Entity entity, const std::string& name) {
+		if (entity.HasComponent<C>()) return false;
+
+		if (ImGui::MenuItem(name.c_str())) {
+			entity.AddComponent<C>();
+			ImGui::CloseCurrentPopup();
+		}
+
+		return true;
 	}
 
 	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue /*= 0.0f*/, float columnWidth /*= 100.0f*/) {

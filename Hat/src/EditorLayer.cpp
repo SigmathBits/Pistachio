@@ -166,8 +166,8 @@ namespace Pistachio {
 
 		if (m_ShowPhysicsColliders) {
 			m_ActiveScene->EachEntityWith<BoxCollider2DComponent>([](Entity entity) {
-				auto transformComponent = entity.Component<TransformComponent>();
-				auto circleCollider = entity.Component<BoxCollider2DComponent>();
+				auto& transformComponent = entity.Component<TransformComponent>();
+				auto& circleCollider = entity.Component<BoxCollider2DComponent>();
 
 				glm::vec3 scale = transformComponent.Scale * glm::vec3(circleCollider.Size, 1.0f);
 
@@ -181,8 +181,8 @@ namespace Pistachio {
 			});
 
 			m_ActiveScene->EachEntityWith<CircleCollider2DComponent>([](Entity entity) {
-				auto transformComponent = entity.Component<TransformComponent>();
-				auto circleCollider = entity.Component<CircleCollider2DComponent>();
+				auto& transformComponent = entity.Component<TransformComponent>();
+				auto& circleCollider = entity.Component<CircleCollider2DComponent>();
 
 				glm::vec3 scale = glm::vec3(transformComponent.Scale.x * 2.0f * glm::vec2(circleCollider.Radius), 1.0f);  // Only respects x-axis scale
 
@@ -637,9 +637,11 @@ namespace Pistachio {
 	}
 
 	void EditorLayer::FileNew() {
-		NewScene();
+		ChangeSceneTo(CreateRef<Scene>());
 
 		SetWindowTitle(m_EditorScene->Name(), true);
+
+		m_Filepath = "";
 	}
 
 	void EditorLayer::FileOpen() {
@@ -669,29 +671,18 @@ namespace Pistachio {
 		}
 	}
 
-	void EditorLayer::NewScene() {
-		if (m_SceneState != SceneState::Edit) {
-			OnSceneStop();
-		}
-
-		m_EditorScene = CreateRef<Scene>();
-		ChangeActiveSceneTo(m_EditorScene);
-
-		m_EditorScene->OnViewportResize((unsigned int)m_ViewportSize.x, (unsigned int)m_ViewportSize.y);
-
-		m_Filepath = "";
-	}
-
 	void EditorLayer::LoadSceneFile(const std::filesystem::path& filepath) {
 		// Currenty likely to throw exception if bad file is passed in
-		NewScene();
+		Ref<Scene> newScene = CreateRef<Scene>();
 
-		SceneSerializer serializer(m_EditorScene);
-		serializer.Deserialize(filepath);
+		SceneSerializer serializer(newScene);
+		bool success = serializer.Deserialize(filepath);
+
+		if (!success) return;
+
+		ChangeSceneTo(newScene);
 
 		SetWindowTitle(m_EditorScene->Name());
-
-		ChangeActiveSceneTo(m_EditorScene);
 
 		m_Filepath = filepath;
 		SetLastSave(filepath);
@@ -712,6 +703,17 @@ namespace Pistachio {
 	void EditorLayer::SetLastSave(const std::filesystem::path& filepath) {
 		std::ofstream outFile("assets/scenes/.pistachio_last_save");
 		outFile << filepath.string();
+	}
+
+	void EditorLayer::ChangeSceneTo(Ref<Scene> scene) {
+		if (m_SceneState != SceneState::Edit) {
+			OnSceneStop();
+		}
+
+		m_EditorScene = scene;
+		m_EditorScene->OnViewportResize((unsigned int)m_ViewportSize.x, (unsigned int)m_ViewportSize.y);
+
+		ChangeActiveSceneTo(m_EditorScene);
 	}
 
 	void EditorLayer::ChangeActiveSceneTo(Ref<Scene> scene) {

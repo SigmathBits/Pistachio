@@ -173,7 +173,7 @@ namespace Pistachio {
 			{ ShaderDataType::Float,  "a_Blur" },
 			// Editor-Only
 			{ ShaderDataType::Int,    "a_EntityID" },
-			});
+		});
 		s_Data.CircleVertexArray->AddVertexBuffer(s_Data.CircleVertexBuffer);
 
 		Ref<IndexBuffer> circleIndexBuffer = IndexBuffer::Create(quadIndices.get(), s_Data.MaxIndices);  // Reuse quadIndices for Circle rendering
@@ -195,7 +195,7 @@ namespace Pistachio {
 			{ ShaderDataType::Float4, "a_Colour" },
 			// Editor-Only
 			{ ShaderDataType::Int,    "a_EntityID" },
-			});
+		});
 		s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
 		
 		s_Data.LineShader = Shader::Create("assets/shaders/Renderer2D_Line.glsl");

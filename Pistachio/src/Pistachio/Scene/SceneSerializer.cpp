@@ -238,12 +238,117 @@ namespace Pistachio {
 
 	}
 
-	bool SceneSerializer::Deserialize(const std::filesystem::path& filepath) {
-		std::ifstream stream(filepath);
-		std::stringstream stringStream;
-		stringStream << stream.rdbuf();
+	static void DeserializeEntity(Ref<Scene> scene, YAML::Node& entityData) {
+		uint64_t uuid = entityData["Entity"].as<uint64_t>();
 
-		YAML::Node data = YAML::Load(stringStream.str());
+		std::string name;
+		auto tagComponentData = entityData["TagComponent"];
+		if (tagComponentData) {
+			name = tagComponentData["Tag"].as<std::string>();
+		}
+
+		PST_CORE_TRACE("Deserialized entity with ID = {}, name = {}", uuid, name);
+
+		Entity entity = scene->CreateEntityWithUUID(uuid, name);
+
+		auto transformComponentData = entityData["TransformComponent"];
+		if (transformComponentData) {
+			auto& transformComponent = entity.Component<TransformComponent>();
+
+			transformComponent.Translation = transformComponentData["Translation"].as<glm::vec3>();
+			transformComponent.Rotation = transformComponentData["Rotation"].as<glm::vec3>();
+			transformComponent.Scale = transformComponentData["Scale"].as<glm::vec3>();
+		}
+
+		auto cameraComponentData = entityData["CameraComponent"];
+		if (cameraComponentData) {
+			auto& cameraComponent = entity.AddComponent<CameraComponent>();
+			auto& camera = cameraComponent.Camera;
+
+			auto cameraData = cameraComponentData["Camera"];
+
+			camera.SetProjectionType((SceneCamera::ProjectionType)cameraData["ProjectionType"].as<unsigned int>());
+
+			camera.SetPerspectiveVerticalFOV(cameraData["PerspectiveVerticalFOV"].as<float>());
+			camera.SetPerspectiveNearClip(cameraData["PerspectiveNearClip"].as<float>());
+			camera.SetPerspectiveFarClip(cameraData["PerspectiveFarClip"].as<float>());
+
+			camera.SetOrthographicSize(cameraData["OrthographicSize"].as<float>());
+			camera.SetOrthographicNearClip(cameraData["OrthographicNearClip"].as<float>());
+			camera.SetOrthographicFarClip(cameraData["OrthographicFarClip"].as<float>());
+
+			cameraComponent.Primary = cameraComponentData["Primary"].as<bool>();
+			cameraComponent.FixedAspectRatio = cameraComponentData["FixedAspectRatio"].as<bool>();
+		}
+
+		auto spriteRendererComponentData = entityData["SpriteRendererComponent"];
+		if (spriteRendererComponentData) {
+			auto& spriteComponent = entity.AddComponent<SpriteRendererComponent>();
+
+			if (auto node = spriteRendererComponentData["TextureResourceLocation"]) {
+				std::string textureResourceLocation = node.as<std::string>();
+				if (!textureResourceLocation.empty()) {
+					spriteComponent.Sprite.SubTexture = CreateRef<SubTexture2D>(Texture2D::Create(textureResourceLocation));
+				}
+			}
+
+			spriteComponent.Sprite.TintColour = spriteRendererComponentData["Colour"].as<glm::vec4>();
+			spriteComponent.Sprite.TilingScale = spriteRendererComponentData["TilingScale"].as<float>();
+		}
+
+		auto circleRendererComponentData = entityData["CircleRendererComponent"];
+		if (circleRendererComponentData) {
+			auto& circleComponent = entity.AddComponent<CircleRendererComponent>();
+
+			circleComponent.Colour = circleRendererComponentData["Colour"].as<glm::vec4>();
+			circleComponent.Thickness = circleRendererComponentData["Thickness"].as<float>();
+			circleComponent.Blur = circleRendererComponentData["Blur"].as<float>();
+		}
+
+		auto rigidyBodyComponentData = entityData["RigidBody2DComponent"];
+		if (rigidyBodyComponentData) {
+			auto& rigidBodyComponent = entity.AddComponent<RigidBody2DComponent>();
+
+			rigidBodyComponent.Type = RigidBody2DTypeFromString(rigidyBodyComponentData["BodyType"].as<std::string>());
+			rigidBodyComponent.FixedRotation = rigidyBodyComponentData["FixedRotation"].as<bool>();
+		}
+
+		auto boxColliderComponentData = entityData["BoxCollider2DComponent"];
+		if (boxColliderComponentData) {
+			auto& boxColliderComponent = entity.AddComponent<BoxCollider2DComponent>();
+
+			boxColliderComponent.Offset = boxColliderComponentData["Offset"].as<glm::vec2>();
+			boxColliderComponent.Size = boxColliderComponentData["Size"].as<glm::vec2>();
+
+			boxColliderComponent.Density = boxColliderComponentData["Density"].as<float>();
+			boxColliderComponent.Friction = boxColliderComponentData["Friction"].as<float>();
+			boxColliderComponent.Restitution = boxColliderComponentData["Restitution"].as<float>();
+			boxColliderComponent.RestitutionThreshold = boxColliderComponentData["RestitutionThreshold"].as<float>();
+		}
+
+		auto circleColliderComponentData = entityData["CircleCollider2DComponent"];
+		if (circleColliderComponentData) {
+			auto& circleColliderComponent = entity.AddComponent<CircleCollider2DComponent>();
+
+			circleColliderComponent.Offset = circleColliderComponentData["Offset"].as<glm::vec2>();
+			circleColliderComponent.Radius = circleColliderComponentData["Radius"].as<float>();
+
+			circleColliderComponent.Density = circleColliderComponentData["Density"].as<float>();
+			circleColliderComponent.Friction = circleColliderComponentData["Friction"].as<float>();
+			circleColliderComponent.Restitution = circleColliderComponentData["Restitution"].as<float>();
+			circleColliderComponent.RestitutionThreshold = circleColliderComponentData["RestitutionThreshold"].as<float>();
+		}
+	}
+
+	bool SceneSerializer::Deserialize(const std::filesystem::path& filepath) {
+		YAML::Node data;
+		try {
+			data = YAML::LoadFile(filepath.string());
+		} catch (YAML::ParserException e) {
+			PST_CORE_ERROR("Failed to load .pistachio file \"{}\"\n    {}", filepath, e.what());
+			return false;
+		}
+
 		if (!data["Scene"]) return false;
 
 		std::string sceneName = data["Scene"].as<std::string>();
@@ -252,108 +357,10 @@ namespace Pistachio {
 		m_Scene->SetName(sceneName);
 
 		auto entitiesData = data["Entities"];
-		if (!entitiesData) return false;
+		if (!entitiesData) return true;
 
 		for (auto entityData : entitiesData) {
-			uint64_t uuid = entityData["Entity"].as<uint64_t>();
-
-			std::string name;
-			auto tagComponentData = entityData["TagComponent"];
-			if (tagComponentData) {
-				name = tagComponentData["Tag"].as<std::string>();
-			}
-
-			PST_CORE_TRACE("Deserialized entity with ID = {}, name = {}", uuid, name);
-
-			Entity entity = m_Scene->CreateEntityWithUUID(uuid, name);
-
-			auto transformComponentData = entityData["TransformComponent"];
-			if (transformComponentData) {
-				auto& transformComponent = entity.Component<TransformComponent>();
-
-				transformComponent.Translation = transformComponentData["Translation"].as<glm::vec3>();
-				transformComponent.Rotation = transformComponentData["Rotation"].as<glm::vec3>();
-				transformComponent.Scale = transformComponentData["Scale"].as<glm::vec3>();
-			}
-
-			auto cameraComponentData = entityData["CameraComponent"];
-			if (cameraComponentData) {
-				auto& cameraComponent = entity.AddComponent<CameraComponent>();
-				auto& camera = cameraComponent.Camera;
-
-				auto cameraData = cameraComponentData["Camera"];
-
-				camera.SetProjectionType((SceneCamera::ProjectionType)cameraData["ProjectionType"].as<unsigned int>());
-
-				camera.SetPerspectiveVerticalFOV(cameraData["PerspectiveVerticalFOV"].as<float>());
-				camera.SetPerspectiveNearClip(cameraData["PerspectiveNearClip"].as<float>());
-				camera.SetPerspectiveFarClip(cameraData["PerspectiveFarClip"].as<float>());
-
-				camera.SetOrthographicSize(cameraData["OrthographicSize"].as<float>());
-				camera.SetOrthographicNearClip(cameraData["OrthographicNearClip"].as<float>());
-				camera.SetOrthographicFarClip(cameraData["OrthographicFarClip"].as<float>());
-
-				cameraComponent.Primary = cameraComponentData["Primary"].as<bool>();
-				cameraComponent.FixedAspectRatio = cameraComponentData["FixedAspectRatio"].as<bool>();
-			}
-
-			auto spriteRendererComponentData = entityData["SpriteRendererComponent"];
-			if (spriteRendererComponentData) {
-				auto& spriteComponent = entity.AddComponent<SpriteRendererComponent>();
-
-				if (auto node = spriteRendererComponentData["TextureResourceLocation"]) {
-					std::string textureResourceLocation = node.as<std::string>();
-					if (!textureResourceLocation.empty()) {
-						spriteComponent.Sprite.SubTexture = CreateRef<SubTexture2D>(Texture2D::Create(textureResourceLocation));
-					}
-				}
-
-				spriteComponent.Sprite.TintColour = spriteRendererComponentData["Colour"].as<glm::vec4>();
-				spriteComponent.Sprite.TilingScale = spriteRendererComponentData["TilingScale"].as<float>();
-			}
-
-			auto circleRendererComponentData = entityData["CircleRendererComponent"];
-			if (circleRendererComponentData) {
-				auto& circleComponent = entity.AddComponent<CircleRendererComponent>();
-
-				circleComponent.Colour = circleRendererComponentData["Colour"].as<glm::vec4>();
-				circleComponent.Thickness = circleRendererComponentData["Thickness"].as<float>();
-				circleComponent.Blur = circleRendererComponentData["Blur"].as<float>();
-			}
-
-			auto rigidyBodyComponentData = entityData["RigidBody2DComponent"];
-			if (rigidyBodyComponentData) {
-				auto& rigidBodyComponent = entity.AddComponent<RigidBody2DComponent>();
-
-				rigidBodyComponent.Type = RigidBody2DTypeFromString(rigidyBodyComponentData["BodyType"].as<std::string>());
-				rigidBodyComponent.FixedRotation = rigidyBodyComponentData["FixedRotation"].as<bool>();
-			}
-
-			auto boxColliderComponentData = entityData["BoxCollider2DComponent"];
-			if (boxColliderComponentData) {
-				auto& boxColliderComponent = entity.AddComponent<BoxCollider2DComponent>();
-
-				boxColliderComponent.Offset = boxColliderComponentData["Offset"].as<glm::vec2>();
-				boxColliderComponent.Size = boxColliderComponentData["Size"].as<glm::vec2>();
-
-				boxColliderComponent.Density = boxColliderComponentData["Density"].as<float>();
-				boxColliderComponent.Friction = boxColliderComponentData["Friction"].as<float>();
-				boxColliderComponent.Restitution = boxColliderComponentData["Restitution"].as<float>();
-				boxColliderComponent.RestitutionThreshold = boxColliderComponentData["RestitutionThreshold"].as<float>();
-			}
-
-			auto circleColliderComponentData = entityData["CircleCollider2DComponent"];
-			if (circleColliderComponentData) {
-				auto& circleColliderComponent = entity.AddComponent<CircleCollider2DComponent>();
-
-				circleColliderComponent.Offset = circleColliderComponentData["Offset"].as<glm::vec2>();
-				circleColliderComponent.Radius = circleColliderComponentData["Radius"].as<float>();
-
-				circleColliderComponent.Density = circleColliderComponentData["Density"].as<float>();
-				circleColliderComponent.Friction = circleColliderComponentData["Friction"].as<float>();
-				circleColliderComponent.Restitution = circleColliderComponentData["Restitution"].as<float>();
-				circleColliderComponent.RestitutionThreshold = circleColliderComponentData["RestitutionThreshold"].as<float>();
-			}
+			DeserializeEntity(m_Scene, entityData);
 		}
 
 		return true;
