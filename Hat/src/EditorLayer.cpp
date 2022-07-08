@@ -15,6 +15,7 @@
 
 #include "Pistachio/Utils/Utils.h"
 #include "Pistachio/Utils/PlatformUtils.h"
+#include "Pistachio/Utils/ImGuiUtils.h"
 
 
 inline std::ostream& operator<<(std::ostream& ostream, const ImVec2& vector) {
@@ -213,23 +214,25 @@ namespace Pistachio {
 	void EditorLayer::OnImGuiRender() {
 		PST_PROFILE_FUNCTION();
 
-		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-		// because it would be confusing to have two docking targets within each others.
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(viewport->WorkPos);
 		ImGui::SetNextWindowSize(viewport->WorkSize);
 		ImGui::SetNextWindowViewport(viewport->ID);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+		// because it would be confusing to have two docking targets within each others.
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
 		ImGui::Begin("Hat DockSpace", nullptr, window_flags);
+
 		ImGui::PopStyleVar(3);
+
 
 		// Submit the DockSpace
 		ImGuiIO& io = ImGui::GetIO();
@@ -238,9 +241,10 @@ namespace Pistachio {
 		style.WindowMinSize.x = 370.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
 			ImGuiID dockspace_id = ImGui::GetID("Hat DockSpace");
-			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 		}
 		style.WindowMinSize.x = windowMinSizeX;
+
 
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
@@ -271,7 +275,7 @@ namespace Pistachio {
 		}
 
 		/// Viewport
-		// Display framebuffer to viewport
+		// Update viewport size and bounds
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		ImGui::Begin("Viewport");
 
@@ -283,9 +287,9 @@ namespace Pistachio {
 		m_ViewportBounds[0] = { viewportPanelPosition.x + viewportOffset.x, viewportPanelPosition.y + viewportOffset.y };
 		m_ViewportBounds[1] = { viewportPanelPosition.x + m_ViewportSize.x, viewportPanelPosition.y + m_ViewportSize.y };
 
-		// Draw Colour Attachment buffer to viewport
+		// Draw Framebuffer Colour Attachment buffer to viewport
 		unsigned int colourAttachmentID = m_Framebuffer->ColourAttachmentRendererID(0);
-		ImGui::Image((void*)(size_t)colourAttachmentID, viewportPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)colourAttachmentID, viewportPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM")) {
@@ -363,10 +367,11 @@ namespace Pistachio {
 			}
 		}
 
-		ImGui::End();
+		ImGui::End();  // End Viewport
 		ImGui::PopStyleVar();
 
-		/// Dockspace windows begin
+
+		/// DockSpace windows begin
 		m_SceneHierarchyPanel.OnImGuiRender();
 		m_PropertiesPanel.SetSelectedEntity(m_SceneHierarchyPanel.SelectedEntity());
 		m_PropertiesPanel.OnImGuiRender();
@@ -399,7 +404,7 @@ namespace Pistachio {
 
 		UIToolbar();
 
-		ImGui::End();
+		ImGui::End();  // End Hat DockSpace
 	}
 
 	void EditorLayer::UIToolbar() {
@@ -421,7 +426,7 @@ namespace Pistachio {
 		{
 			Ref<Texture2D> icon = m_SceneState != SceneState::Play ? m_PlayIcon : m_StopIcon;
 
-			if (ImGui::ImageButton((ImTextureID)icon->RendererID(), { size, size }, { 0, 1 }, { 1, 0 }, 0)) {
+			if (Utils::ImGuiImageButton(icon, { size, size }, 0)) {
 				switch (m_SceneState) {
 					case SceneState::Simulate:
 					case SceneState::Edit:
@@ -443,7 +448,7 @@ namespace Pistachio {
 		{
 			Ref<Texture2D> icon = m_SceneState != SceneState::Simulate ? m_SimulateIcon : m_StopIcon;
 
-			if (ImGui::ImageButton((ImTextureID)icon->RendererID(), { size, size }, { 0, 1 }, { 1, 0 }, 0)) {
+			if (Utils::ImGuiImageButton(icon, { size, size }, 0)) {
 				switch (m_SceneState) {
 					case SceneState::Play:
 					case SceneState::Edit:

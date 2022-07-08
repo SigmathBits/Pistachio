@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Pistachio/Utils/Utils.h"
+#include "Pistachio/Utils/ImGuiUtils.h"
 
 
 namespace Pistachio {
@@ -41,9 +42,6 @@ namespace Pistachio {
 
 			DrawAddComponentPopup(m_SelectedEntity);
 		} else {
-			ImGuiIO& io = ImGui::GetIO();
-			auto italicFont = io.Fonts->Fonts[1];  // 1 is italics
-
 			constexpr char* noSelectionText = "No Entity Selected";
 
 			float windowWidth = ImGui::GetWindowSize().x;
@@ -51,7 +49,7 @@ namespace Pistachio {
 
 			ImGui::SetCursorPosX(0.5f * (windowWidth - textWidth));
 
-			ImGui::PushFont(italicFont);
+			Utils::ImGuiPushFontStyle(Utils::ITALICS);
 			ImGui::TextDisabled(noSelectionText);
 			ImGui::PopFont();
 		}
@@ -165,7 +163,7 @@ namespace Pistachio {
 
 		DrawComponentProperties<SpriteRendererComponent>(entity, "Sprite Renderer", [this](auto& spriteComponent) {
 			if (spriteComponent.Sprite.SubTexture->Texture()) {
-				ImGui::ImageButton((ImTextureID)m_ImageIcon->RendererID(), { 128.0f, 128.0f }, { 0, 1 }, { 1, 0 }, 0);
+				Utils::ImGuiImageButton(m_ImageIcon, { 128.0f, 128.0f });
 				if (ImGui::BeginPopupContextItem(nullptr, ImGuiMouseButton_Right)) {
 					if (ImGui::MenuItem("Remove Texture")) {
 						spriteComponent.Sprite.SubTexture = CreateRef<SubTexture2D>(nullptr);
@@ -255,7 +253,7 @@ namespace Pistachio {
 			canAddComponents |= DrawAddComponentPopupItem<CircleCollider2DComponent>(entity, "Circle Collider 2D");
 
 			if (!canAddComponents) {
-				ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);  // 1 is italics
+				Utils::ImGuiPushFontStyle(Utils::ITALICS);
 				ImGui::TextDisabled("No Available Components");
 				ImGui::PopFont();
 			}
@@ -284,15 +282,9 @@ namespace Pistachio {
 
 			ImGui::SameLine(contentRegionAvailable.x - 0.5f * lineHeight);
 
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.4f, 0.6f, 0.2f, 1.0f });
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.75f, 0.85f, 0.20f, 1.0f });
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.486f, 0.686f, 0.255f, 1.0f });
-			ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]);  // 0 is bold
-			if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight })) {
+			if (Utils::ImGuiButton("+", { lineHeight, lineHeight }, Utils::GREEN, Utils::BOLD)) {
 				ImGui::OpenPopup("Component Settings");
 			}
-			ImGui::PopFont();
-			ImGui::PopStyleColor(3);
 
 			if (ImGui::BeginPopup("Component Settings")) {
 				if (ImGui::MenuItem("Remove component")) {
@@ -302,7 +294,7 @@ namespace Pistachio {
 				ImGui::EndPopup();
 			}
 		}
-		ImGui::PopStyleVar();
+		ImGui::PopStyleVar();  // Pop Frame Padding
 
 		if (open) {
 			C& component = entity.Component<C>();
@@ -346,21 +338,15 @@ namespace Pistachio {
 
 		// How ImGui calculates line height
 		float lineHeight = GImGui->FontSize + 2.0f * GImGui->Style.FramePadding.y;
-		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+		glm::vec2 buttonSize = { lineHeight + 3.0f, lineHeight };
 
 		bool changed = false;
 
 		// X control
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.83f, 0.36f, 0.27f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.97f, 0.54f, 0.3f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.93f, 0.33f, 0.3f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("X", buttonSize)) {
+		if (Utils::ImGuiButton("X", buttonSize, Utils::RED, Utils::BOLD)) {
 			values.x = resetValue;
 			changed = true;
 		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		changed |= ImGui::DragFloat("##X", &values.x, 0.1f);
@@ -369,16 +355,10 @@ namespace Pistachio {
 		ImGui::SameLine();
 
 		// Y Control
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.4f, 0.6f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.75f, 0.85f, 0.20f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.486f, 0.686f, 0.255f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Y", buttonSize)) {
+		if (Utils::ImGuiButton("Y", buttonSize, Utils::GREEN, Utils::BOLD)) {
 			values.y = resetValue;
 			changed = true;
 		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		changed |= ImGui::DragFloat("##Y", &values.y, 0.1f);
@@ -387,22 +367,16 @@ namespace Pistachio {
 		ImGui::SameLine();
 
 		// Z Control
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.23f, 0.62f, 0.68f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.4f, 0.78f, 0.88f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.15f, 0.71f, 0.82f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Z", buttonSize)) {
+		if (Utils::ImGuiButton("Z", buttonSize, Utils::BLUE, Utils::BOLD)) {
 			values.z = resetValue;
 			changed = true;
 		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		changed |= ImGui::DragFloat("##Z", &values.z, 0.1f);
 		ImGui::PopItemWidth();
 
-		ImGui::PopStyleVar();
+		ImGui::PopStyleVar();  // Pop Item Spacing
 		ImGui::Columns(1);
 
 		ImGui::PopID();

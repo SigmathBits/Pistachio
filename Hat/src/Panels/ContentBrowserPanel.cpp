@@ -10,6 +10,7 @@
 #include "Pistachio/Renderer/Texture.h"
 
 #include "Pistachio/Utils/Utils.h"
+#include "Pistachio/Utils/ImGuiUtils.h"
 
 
 namespace Pistachio {
@@ -78,14 +79,14 @@ namespace Pistachio {
 				icon = directoryEntry.is_directory() ? m_DirectoryIcon : m_FileIcon;
 			}
 
-			ImGui::ImageButton((ImTextureID)icon->RendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
+			Utils::ImGuiImageButton(icon, { (float)m_ThumbnailSize, (float)m_ThumbnailSize });
 
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 				std::string itemPath = path.string();
 				ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath.c_str(), itemPath.size() + 1);
 
 				float lineHeight = ImGui::GetTextLineHeight();
-				ImGui::Image((ImTextureID)icon->RendererID(), { lineHeight, lineHeight }, { 0, 1 }, { 1, 0 });
+				Utils::ImGuiImage(icon, { lineHeight, lineHeight });
 				ImGui::SameLine();
 				ImGui::Text(filename.c_str());
 
