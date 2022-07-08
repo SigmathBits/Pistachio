@@ -23,10 +23,17 @@ namespace Pistachio {
 		}
 	};
 
+
+	struct ApplicationSpecification {
+		std::string Name = "Pistachio Application";
+		std::string WorkingDirectory;
+		ApplicationArguments Arguments;
+	};
+
 	
 	class Application : public EventListener {
 	public:
-		Application(const std::string& name = "Pistachio App", ApplicationArguments args = ApplicationArguments());
+		Application(const ApplicationSpecification& specification);
 		virtual ~Application();
 
 		void Run();
@@ -42,7 +49,7 @@ namespace Pistachio {
 
 		static inline Application& Instance() { return *s_Instance; }
 
-		ApplicationArguments Arguments() const { return m_ApplicationArguments; }
+		inline const ApplicationSpecification& Specification() const { return m_Specification; }
 
 	private:
 		bool OnEventAfter(Event& event);
@@ -51,7 +58,7 @@ namespace Pistachio {
 		bool OnWindowResize(WindowResizeEvent& event);
 
 	private:
-		ApplicationArguments m_ApplicationArguments;
+		ApplicationSpecification m_Specification;
 
 		Scoped<Window> m_Window;
 

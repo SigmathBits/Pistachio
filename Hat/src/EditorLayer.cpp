@@ -39,6 +39,7 @@ namespace Pistachio {
 
 	void EditorLayer::OnAttach() {
 		PST_PROFILE_FUNCTION();
+		
 
 		// Editor Resources
 		m_PlayIcon = Texture2D::Create("resources/icons/toolbar/play.png", 9);
@@ -46,15 +47,18 @@ namespace Pistachio {
 		m_StopIcon = Texture2D::Create("resources/icons/toolbar/stop.png", 9);
 
 
-		FramebufferSpecification frameBufferSpec{ 1280, 720 };
-		frameBufferSpec.AttachmentsSpecification = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
-		m_Framebuffer = Framebuffer::Create(frameBufferSpec);
+		FramebufferSpecification framebufferSpec{ 1280, 720 };
+		framebufferSpec.AttachmentsSpecification = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
+		m_Framebuffer = Framebuffer::Create(framebufferSpec);
+
+
+		Renderer2D::SetLineThickness(3.0f);
 
 
 		m_EditorScene = CreateRef<Scene>();
 
 		// Load save
-		auto args = Application::Instance().Arguments();
+		auto args = Application::Instance().Specification().Arguments;
 		std::string sceneFilepath = "";
 		if (args.Count > 1) {
 			sceneFilepath = args[1];
@@ -167,17 +171,17 @@ namespace Pistachio {
 		if (m_ShowPhysicsColliders) {
 			m_ActiveScene->EachEntityWith<BoxCollider2DComponent>([](Entity entity) {
 				auto& transformComponent = entity.Component<TransformComponent>();
-				auto& circleCollider = entity.Component<BoxCollider2DComponent>();
+				auto& boxCollider = entity.Component<BoxCollider2DComponent>();
 
-				glm::vec3 scale = transformComponent.Scale * glm::vec3(circleCollider.Size, 1.0f);
+				glm::vec3 scale = transformComponent.Scale * glm::vec3(boxCollider.Size, 1.0f);
 
 				// Require this order to correctly replicate where the box colider is positioned
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), transformComponent.Translation);
 				transform = glm::rotate(transform, transformComponent.Rotation.z, { 0.0f, 0.0f, 1.0f });
-				transform = glm::translate(transform, glm::vec3(circleCollider.Offset, 0.01f));
+				transform = glm::translate(transform, glm::vec3(boxCollider.Offset, 0.01f));
 				transform = glm::scale(transform, scale);
 
-				Renderer2D::DrawRect(transform, { 0, 0.792, 0.969, 1.0f });
+				Renderer2D::DrawRect(transform, { 0.0f, 0.792f, 0.969f, 1.0f });
 			});
 
 			m_ActiveScene->EachEntityWith<CircleCollider2DComponent>([](Entity entity) {
@@ -192,8 +196,14 @@ namespace Pistachio {
 				transform = glm::translate(transform, glm::vec3(circleCollider.Offset, 0.01f));
 				transform = glm::scale(transform, scale);
 
-				Renderer2D::DrawCircle(transform, { 0, 0.792, 0.969, 1.0f }, 0.05f);
+				Renderer2D::DrawCircle(transform, { 0.0f, 0.792f, 0.969f, 1.0f }, 0.05f);
 			});
+		}
+
+
+		if (Entity selectedEntity = m_SceneHierarchyPanel.SelectedEntity()) {
+			const auto& transformComponent = selectedEntity.Component<TransformComponent>();
+			Renderer2D::DrawRect(transformComponent.Transform(), { 0.804f, 0.914f, 0.29f, 1.0f });
 		}
 
 
@@ -681,6 +691,9 @@ namespace Pistachio {
 		if (!success) return;
 
 		ChangeSceneTo(newScene);
+
+		// Needs to be updated in case the file was renamed
+		m_EditorScene->SetName(filepath.filename().string());
 
 		SetWindowTitle(m_EditorScene->Name());
 

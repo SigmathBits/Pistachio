@@ -2,6 +2,8 @@
 
 #include "Application.h"
 
+#include <filesystem>
+
 #include "Pistachio/Core/Log.h"
 #include "Pistachio/Core/Input.h"
 #include "Pistachio/Core/Timestep.h"
@@ -15,14 +17,20 @@ namespace Pistachio {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const std::string& name /*= "Pistachio App"*/, ApplicationArguments args /*= ApplicationArguments()*/)
-		: EventListener(EVENT_CATEGORY_APPLICATION), m_ApplicationArguments(args) {
+	Application::Application(const ApplicationSpecification& specification)
+		: EventListener(EVENT_CATEGORY_APPLICATION), m_Specification(specification) {
 		PST_PROFILE_FUNCTION();
 
 		PST_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		m_Window = Scoped<Window>(Window::Create(WindowProperties{ name }));
+
+		if (!m_Specification.WorkingDirectory.empty()) {
+			std::filesystem::current_path(m_Specification.WorkingDirectory);
+		}
+
+
+		m_Window = Scoped<Window>(Window::Create(WindowProperties{ m_Specification.Name }));
 		m_Window->SetEventCallback(PST_BIND_EVENT_FUNCTION(SendEvent));
 
 		Renderer::Init();

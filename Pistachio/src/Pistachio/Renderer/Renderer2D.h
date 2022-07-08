@@ -50,8 +50,8 @@ namespace Pistachio {
 		static void DrawPolygon(const glm::mat4& transformMatrix, const std::vector<glm::vec3>& points, const glm::vec4& colour, int entityID = -1);
 
 
-		float LineThickness() const;
-		void SetLineThickness(float thickness);
+		static float LineThickness();
+		static void SetLineThickness(float thickness);
 
 		// Stats
 		struct Statistics {

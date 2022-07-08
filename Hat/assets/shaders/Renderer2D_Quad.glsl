@@ -57,6 +57,12 @@ layout(location = 1) out int o_EntityID;
 
 
 void main () {
-	o_Colour = texture(u_Textures[v_TextureIndex], v_Vertex.TilingScale * v_Vertex.TextureCoords) * v_Vertex.Colour;
+	vec4 textureColour = texture(u_Textures[v_TextureIndex], v_Vertex.TilingScale * v_Vertex.TextureCoords) * v_Vertex.Colour;
+
+	if (textureColour.a == 0.0f) {
+		discard;
+	}
+
+	o_Colour = textureColour;
 	o_EntityID = v_EntityID;
 }

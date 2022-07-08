@@ -6,7 +6,8 @@
 
 class Sandbox : public Pistachio::Application {
 public:
-	Sandbox() {
+	Sandbox(const Pistachio::ApplicationSpecification& specification) 
+		: Application(specification) {
 		//PushLayer(new ExampleLayer());
 
 		PushLayer(new Sandbox2DLayer());
@@ -19,5 +20,10 @@ public:
 
 
 Pistachio::Application* Pistachio::CreateApplication(ApplicationArguments args) {
-	return new Sandbox();
+	Pistachio::ApplicationSpecification spec;
+	spec.Name = "Sandbox";
+	spec.WorkingDirectory = "../Hat";
+	spec.Arguments = args;
+
+	return new Sandbox(spec);
 }

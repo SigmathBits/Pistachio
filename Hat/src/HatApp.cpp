@@ -11,17 +11,17 @@
 
 class Hat : public Pistachio::Application {
 public:
-	Hat(Pistachio::ApplicationArguments args)
-		: Application("Hat", args) {
+	Hat(Pistachio::ApplicationSpecification specification)
+		: Application(specification) {
 		PushLayer(new Pistachio::EditorLayer());
-	}
-
-	~Hat() override {
-
 	}
 };
 
 
 Pistachio::Application* Pistachio::CreateApplication(ApplicationArguments args) {
-	return new Hat(args);
+	ApplicationSpecification spec;
+	spec.Name = "Hat";
+	spec.Arguments = args;
+
+	return new Hat(spec);
 }

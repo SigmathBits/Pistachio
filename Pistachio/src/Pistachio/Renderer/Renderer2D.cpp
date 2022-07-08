@@ -457,7 +457,7 @@ namespace Pistachio {
 		}
 	}
 
-	float Renderer2D::LineThickness() const {
+	float Renderer2D::LineThickness() {
 		return s_Data.LineThickness;
 	}
 
