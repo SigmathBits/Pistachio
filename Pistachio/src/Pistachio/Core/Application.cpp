@@ -10,6 +10,8 @@
 
 #include "Pistachio/Renderer/Renderer.h"
 
+#include "Pistachio/Scripting/ScriptEngine.h"
+
 #include "Pistachio/Utils/PlatformUtils.h"
 
 
@@ -35,6 +37,8 @@ namespace Pistachio {
 
 		Renderer::Init();
 
+		ScriptEngine::Init();
+
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
 	}
@@ -45,6 +49,8 @@ namespace Pistachio {
 		for (auto& layer : m_LayerStack) {
 			layer->OnDetach();
 		}
+
+		ScriptEngine::Shutdown();
 
 		Renderer::Shutdown();
 	}

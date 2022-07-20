@@ -4,10 +4,11 @@
 **.vcxproj
 **.vcxproj.filters
 **.vcxproj.user
+**.csproj
 
 # Binary directories
 **/bin/**/
-intermediates/
+[Ii]ntermediates/
 bin-int/
 
 !vendor/premake/bin/  # Keep premake bin directory
@@ -16,6 +17,7 @@ bin-int/
 Pistachio/vendor/VulkanSDK
 Hat/assets/scenes
 Hat/assets/cache
+Hat/Resources/Scripts
 
 # Files / File types
 **/imgui.ini

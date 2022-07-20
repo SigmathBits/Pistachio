@@ -34,6 +34,7 @@ project "Pistachio"
 		"%{IncludeDir.yaml_cpp}",
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.Box2D}",
+		"%{IncludeDir.mono}",
 		"%{IncludeDir.VulkanSDK}",
 	}
 
@@ -44,12 +45,15 @@ project "Pistachio"
 		"yaml-cpp",
 		"Box2D",
 		"opengl32.lib",
+
+		"%{Library.mono}",
 	}
 	
 	defines {
 		"_CRT_SECURE_NO_WARNINGS",
 		"GLFW_INCLUDE_NONE",
 	}
+
 
 	filter "files:vendor/ImGuizmo/**.cpp"
 		flags {
@@ -58,6 +62,13 @@ project "Pistachio"
 
 	filter "system:windows"
 		systemversion "latest"
+
+		links {
+			"%{Library.WinSock}",
+			"%{Library.WinMultimedia}",
+			"%{Library.WinVersion}",
+			"%{Library.WinBCrypt}",
+		}
 
 	filter "configurations:Debug"
 		defines "PST_DEBUG"

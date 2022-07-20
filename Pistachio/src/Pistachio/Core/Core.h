@@ -58,13 +58,17 @@
 #endif
 
 
-// TODO: Allow Assert macro to take no varadic arguments
+#define _PST_EXPAND_MACRO(macro) macro
+
+
 #ifdef PST_ENABLE_ASSERTS
-	#define PST_CORE_ASSERT(x, ...) { if(!(x)) { PST_CORE_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); PST_DEBUGBREAK(); } }
-	#define PST_ASSERT(x, ...)      { if(!(x)) { PST_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); PST_DEBUGBREAK(); } }
+	#define _PST_INTERNAL_ASSERT_IMPL(type, check, message, ...) { if(!(check)) { PST##type##CRITICAL(std::string("Assertion Failed: ") + message, __VA_ARGS__); PST_DEBUGBREAK(); } }
+
+	#define PST_CORE_ASSERT(...) _PST_EXPAND_MACRO(_PST_INTERNAL_ASSERT_IMPL(_CORE_, __VA_ARGS__, "at {0}:{1}", __FILE__, __LINE__))
+	#define PST_ASSERT(...)      _PST_EXPAND_MACRO(_PST_INTERNAL_ASSERT_IMPL(_,      __VA_ARGS__, "at {0}:{1}", __FILE__, __LINE__))
 #else
-	#define PST_CORE_ASSERT(x, ...) 
-	#define PST_ASSERT(x, ...)      
+	#define PST_CORE_ASSERT(check, ...) 
+	#define PST_ASSERT(check, ...) 
 #endif
 
 

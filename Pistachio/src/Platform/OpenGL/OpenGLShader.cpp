@@ -351,18 +351,17 @@ namespace Pistachio {
 			} else {
 				PST_CORE_TRACE("Compiling Vulkan {} Shader SPIR-V binaries ... ", Utils::GLShaderTypeToString(type));
 
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(
+				shaderc::SpvCompilationResult compiledModule = compiler.CompileGlslToSpv(
 					source,
 					Utils::GLShaderTypeToShaderC(type),
 					m_Filepath.c_str(), options
 				);
 
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
-					PST_CORE_CRITICAL("{} Shader compilation failed", Utils::GLShaderTypeToString(type));
-					PST_CORE_ASSERT(false, module.GetErrorMessage());
+				if (compiledModule.GetCompilationStatus() != shaderc_compilation_status_success) {
+					PST_CORE_ASSERT(false, "{} Shader compilation failed with error:\n    {}", Utils::GLShaderTypeToString(type), compiledModule.GetErrorMessage());
 				}
 
-				shaderData[type] = std::vector<uint32_t>(module.cbegin(), module.cend());
+				shaderData[type] = std::vector<uint32_t>(compiledModule.cbegin(), compiledModule.cend());
 
 				// Cache binary
 				std::ofstream outFile(cachedPath, std::ios::out | std::ios::binary);
@@ -415,18 +414,17 @@ namespace Pistachio {
 				spirv_cross::CompilerGLSL glslCompiler(spirv);
 				auto& source = m_OpenGLSourceCodes[type] = glslCompiler.compile();
 
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(
+				shaderc::SpvCompilationResult compiledModule = compiler.CompileGlslToSpv(
 					source,
 					Utils::GLShaderTypeToShaderC(type),
 					m_Filepath.c_str(), options
 				);
 
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
-					PST_CORE_CRITICAL("{} Shader compilation failed", Utils::GLShaderTypeToString(type));
-					PST_CORE_ASSERT(false, module.GetErrorMessage());
+				if (compiledModule.GetCompilationStatus() != shaderc_compilation_status_success) {
+					PST_CORE_ASSERT(false, "{} Shader compilation failed with error:\n    {}", Utils::GLShaderTypeToString(type), compiledModule.GetErrorMessage());
 				}
 
-				shaderData[type] = std::vector<uint32_t>(module.cbegin(), module.cend());
+				shaderData[type] = std::vector<uint32_t>(compiledModule.cbegin(), compiledModule.cend());
 
 				// Cache binary
 				std::ofstream outFile(cachedPath, std::ios::out | std::ios::binary);
@@ -479,8 +477,7 @@ namespace Pistachio {
 				glDeleteShader(ID);
 			}
 
-			PST_CORE_ERROR("Shader Linking: {}", infoLog.data());
-			PST_CORE_ASSERT(false, "Shader linking failed");
+			PST_CORE_ASSERT(false, "Shader linking failed: {}", infoLog.data());
 			return;
 		}
 

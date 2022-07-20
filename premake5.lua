@@ -23,7 +23,15 @@ group "Dependencies"
 	include "Pistachio/vendor/Box2D"
 group ""
 
+group "Core"
+	include "Pistachio"
+	include "Pistachio-ScriptCore"
+group ""
 
-include "Pistachio"
-include "Hat"
-include "Sandbox"
+group "Tools"
+	include "Hat"
+group ""
+
+group "Miscellaneous"
+	include "Sandbox"
+group ""
