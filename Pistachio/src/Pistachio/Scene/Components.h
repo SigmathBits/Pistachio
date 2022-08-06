@@ -79,6 +79,13 @@ namespace Pistachio {
 		CameraComponent(const CameraComponent&) = default;
 	};
 
+	struct ScriptComponent {
+		std::string ClassName;
+
+		ScriptComponent() = default;
+		ScriptComponent(const ScriptComponent&) = default;
+	};
+
 	struct NativeScriptComponent {
 		ScriptableEntity* ScriptInstance = nullptr;
 
@@ -145,8 +152,8 @@ namespace Pistachio {
 		ComponentGroup<
 			TransformComponent, 
 			SpriteRendererComponent, CircleRendererComponent,
-			CameraComponent, 
-			NativeScriptComponent, 
+			CameraComponent,
+			ScriptComponent, NativeScriptComponent, 
 			RigidBody2DComponent, 
 			BoxCollider2DComponent, CircleCollider2DComponent
 		>;

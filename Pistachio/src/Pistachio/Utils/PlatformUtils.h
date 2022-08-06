@@ -13,9 +13,9 @@ namespace Pistachio {
 
 	class FileDialog {
 	public:
-		// These must return an empty string if cencelled
+		// These must return an empty string if cancelled
 		static std::string OpenFile(const char* filter);
 		static std::string SaveFile(const char* filter);
 	};
-
+	
 }

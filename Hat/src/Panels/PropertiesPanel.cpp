@@ -7,6 +7,8 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Pistachio/Scripting/ScriptEngine.h"
+
 #include "Pistachio/Utils/Utils.h"
 #include "Pistachio/Utils/ImGuiUtils.h"
 
@@ -161,6 +163,26 @@ namespace Pistachio {
 			}
 		});
 
+		DrawComponentProperties<ScriptComponent>(entity, "Script", [this](auto& scriptComponent) {
+			bool scriptClassExists = ScriptEngine::EntityClassExists(scriptComponent.ClassName);
+
+			if (!scriptClassExists) {
+				ImGui::PushStyleColor(ImGuiCol_Text, { 0.9f, 0.2f, 0.3f, 1.0f });
+			}
+
+			static char buffer[64];
+			strcpy(buffer, scriptComponent.ClassName.c_str());
+			if (ImGui::InputText("Class", buffer, sizeof(buffer))) {
+				
+				scriptComponent.ClassName = buffer;
+				
+			}
+
+			if (!scriptClassExists) {
+				ImGui::PopStyleColor();
+			}
+		});
+
 		DrawComponentProperties<SpriteRendererComponent>(entity, "Sprite Renderer", [this](auto& spriteComponent) {
 			if (spriteComponent.Sprite.SubTexture->Texture()) {
 				Utils::ImGuiImageButton(m_ImageIcon, { 128.0f, 128.0f });
@@ -199,7 +221,7 @@ namespace Pistachio {
 			const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
 			const char* currentBodyTypeString = bodyTypeStrings[(int)rigidBodyComponent.Type];
 
-			if (ImGui::BeginCombo("Projection", currentBodyTypeString)) {
+			if (ImGui::BeginCombo("Type", currentBodyTypeString)) {
 
 				for (size_t i = 0; i < 3; i++) {
 					bool isSelected = currentBodyTypeString == bodyTypeStrings[i];
@@ -245,6 +267,8 @@ namespace Pistachio {
 
 			canAddComponents |= DrawAddComponentPopupItem<SpriteRendererComponent>(entity, "Sprite Renderer");
 			canAddComponents |= DrawAddComponentPopupItem<CircleRendererComponent>(entity, "Circle Renderer");
+
+			canAddComponents |= DrawAddComponentPopupItem<ScriptComponent>(entity, "Script");
 
 			canAddComponents |= DrawAddComponentPopupItem<CameraComponent>(entity, "Camera");
 

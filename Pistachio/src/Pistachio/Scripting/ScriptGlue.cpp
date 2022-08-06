@@ -5,7 +5,10 @@
 
 #include "mono/metadata/object.h"
 
+#include "Pistachio/Core/Input.h"
 #include "Pistachio/Core/LogOverloads.h"
+
+#include "Pistachio/Scripting/ScriptEngine.h"
 
 
 #define PST_ADD_INTERNAL_CALL(function) mono_add_internal_call("Pistachio.InternalCalls::" #function, function)
@@ -13,27 +16,61 @@
 
 namespace Pistachio {
 
-	static void NativeLog(MonoString* monoString, int parameter) {
-		char* cString = mono_string_to_utf8(monoString);
-		std::string string(cString);
-		mono_free(cString);
-
-		std::cout << string << ": " << parameter << std::endl;
+	static bool Input_IsKeyDown(PistachioKey keyCode) {
+		return Input::IsKeyPressed(keyCode);
 	}
 
-	static void NativeLog_Vector3(glm::vec3* vector) {
-		PST_CORE_WARN("Value: {}", *vector);
+	static bool Input_IsMouseButtonDown(PistachioMouseButton button) {
+		return Input::IsMouseButtonPressed(button);
 	}
 
-	static void Cross(glm::vec3* vectorA, glm::vec3* vectorB, glm::vec3* resultOut) {
-		*resultOut = glm::cross(*vectorA, *vectorB);
+	static void Entity_Translation(UUID entityUUID, glm::vec3* outTranslation) {
+		Scene* scene = ScriptEngine::SceneContext();
+		Entity entity = scene->EntityByUUID(entityUUID);
+		*outTranslation = entity.Component<TransformComponent>().Translation;
+	}
+
+	static void Entity_SetTranslation(UUID entityUUID, glm::vec3* translation) {
+		Scene* scene = ScriptEngine::SceneContext();
+		Entity entity = scene->EntityByUUID(entityUUID);
+		entity.Component<TransformComponent>().Translation = *translation;
+	}
+
+	static void Entity_Rotation(UUID entityUUID, glm::vec3* outRotation) {
+		Scene* scene = ScriptEngine::SceneContext();
+		Entity entity = scene->EntityByUUID(entityUUID);
+		*outRotation = entity.Component<TransformComponent>().Rotation;
+	}
+
+	static void Entity_SetRotation(UUID entityUUID, glm::vec3* rotation) {
+		Scene* scene = ScriptEngine::SceneContext();
+		Entity entity = scene->EntityByUUID(entityUUID);
+		entity.Component<TransformComponent>().Rotation = *rotation;
+	}
+
+	static void Entity_Scale(UUID entityUUID, glm::vec3* outScale) {
+		Scene* scene = ScriptEngine::SceneContext();
+		Entity entity = scene->EntityByUUID(entityUUID);
+		*outScale = entity.Component<TransformComponent>().Scale;
+	}
+
+	static void Entity_SetScale(UUID entityUUID, glm::vec3* scale) {
+		Scene* scene = ScriptEngine::SceneContext();
+		Entity entity = scene->EntityByUUID(entityUUID);
+		entity.Component<TransformComponent>().Scale = *scale;
 	}
 
 
 	void ScriptGlue::RegisterInternalFunctions() {
-		PST_ADD_INTERNAL_CALL(NativeLog);
-		PST_ADD_INTERNAL_CALL(NativeLog_Vector3);
-		PST_ADD_INTERNAL_CALL(Cross);
+		PST_ADD_INTERNAL_CALL(Input_IsKeyDown);
+		PST_ADD_INTERNAL_CALL(Input_IsMouseButtonDown);
+
+		PST_ADD_INTERNAL_CALL(Entity_Translation);
+		PST_ADD_INTERNAL_CALL(Entity_SetTranslation);
+		PST_ADD_INTERNAL_CALL(Entity_Rotation);
+		PST_ADD_INTERNAL_CALL(Entity_SetRotation);
+		PST_ADD_INTERNAL_CALL(Entity_Scale);
+		PST_ADD_INTERNAL_CALL(Entity_SetScale);
 	}
 
 }

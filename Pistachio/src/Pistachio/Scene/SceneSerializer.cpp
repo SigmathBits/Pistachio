@@ -138,6 +138,15 @@ namespace Pistachio {
 			out << YAML::EndMap;  // CameraComponent
 		}
 
+		if (entity.HasComponent<ScriptComponent>()) {
+			out << YAML::Key << "ScriptComponent";
+			out << YAML::BeginMap;  // ScriptComponent
+
+			out << YAML::Key << "ClassName" << YAML::Value << entity.Component<ScriptComponent>().ClassName;
+
+			out << YAML::EndMap;  // ScriptComponent
+		}
+
 		if (entity.HasComponent<SpriteRendererComponent>()) {
 			out << YAML::Key << "SpriteRendererComponent";
 			out << YAML::BeginMap;  // SpriteRendererComponent
@@ -279,6 +288,13 @@ namespace Pistachio {
 
 			cameraComponent.Primary = cameraComponentData["Primary"].as<bool>();
 			cameraComponent.FixedAspectRatio = cameraComponentData["FixedAspectRatio"].as<bool>();
+		}
+
+		auto scriptComponentData = entityData["ScriptComponent"];
+		if (scriptComponentData) {
+			auto& scriptComponent = entity.AddComponent<ScriptComponent>();
+
+			scriptComponent.ClassName = scriptComponentData["ClassName"].as<std::string>();
 		}
 
 		auto spriteRendererComponentData = entityData["SpriteRendererComponent"];

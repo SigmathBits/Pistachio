@@ -16,6 +16,8 @@
 #include "Pistachio/Scene/Entity.h"
 #include "Pistachio/Scene/ScriptableEntity.h"
 
+#include "Pistachio/Scripting/ScriptEngine.h"
+
 
 namespace Pistachio {
 
@@ -107,6 +109,9 @@ namespace Pistachio {
 		entity.AddComponent<UUIDComponent>(uuid);
 		entity.AddComponent<TagComponent>(name.empty() ? "Unnamed Entity" : name);
 		entity.AddComponent<TransformComponent>();
+
+		m_EntityMap[uuid] = entity;
+
 		return entity;
 	}
 
@@ -120,10 +125,24 @@ namespace Pistachio {
 
 	void Scene::DestroyEntity(Entity entity) {
 		m_Registry.destroy(entity);
+		m_EntityMap.erase(entity.UUID());
+	}
+
+	Entity Scene::EntityByUUID(UUID uuid) {
+		auto entity = m_EntityMap.find(uuid);
+		// TODO: Maybe should be an assert
+		if (entity != m_EntityMap.end()) {
+			return { entity->second, this };
+		}
+		return Entity();
 	}
 
 	void Scene::OnRuntimeStart() {
-		// Instantiate Scripts
+		// Initialise Physics world
+		Init2DPhysics();
+
+
+		// Instantiate Native Scripts
 		{
 			auto view = m_Registry.view<NativeScriptComponent>();
 			for (auto&& [entity, script] : view.each()) {
@@ -134,8 +153,16 @@ namespace Pistachio {
 		}
 
 
-		// Initialise Physics world
-		Init2DPhysics();
+		// C# Scripts On Runtime Start
+		{
+			ScriptEngine::OnRuntimeStart(this);
+
+			// Instantiate all Script entities
+			auto view = m_Registry.view<ScriptComponent>();
+			for (auto& enttID : view) {
+				ScriptEngine::EntityCreateClassInstance({ enttID, this });
+			}
+		}
 
 
 		// Update cameras
@@ -143,6 +170,9 @@ namespace Pistachio {
 	}
 
 	void Scene::OnRuntimeStop() {
+		// C# Scripts On Runtime Stop
+		ScriptEngine::OnRuntimeStop();
+
 		// Destroy Script Instance
 		auto view = m_Registry.view<NativeScriptComponent>();
 		for (auto&& [enttID, script] : view.each()) {
@@ -171,7 +201,11 @@ namespace Pistachio {
 	}
 
 	void Scene::OnUpdateRuntime(Timestep timestep) {
-		// Update Scripts
+		// Update Physics 2D
+		Update2DPhysics(timestep);
+
+
+		// Update Internal Scripts
 		{
 			auto view = m_Registry.view<NativeScriptComponent>();
 			for (auto&& [enttID, script] : view.each()) {
@@ -180,8 +214,13 @@ namespace Pistachio {
 		}
 
 
-		// Update Physics 2D
-		Update2DPhysics(timestep);
+		// Update C# Scripts
+		{
+			auto view = m_Registry.view<ScriptComponent>();
+			for (auto enttID : view) {
+				ScriptEngine::EntityOnUpdate({ enttID, this }, timestep);
+			}
+		}
 
 
 		// Render 2D 
@@ -299,7 +338,7 @@ namespace Pistachio {
 	}
 
 	void Scene::Update2DPhysics(Timestep timestep) {
-					// TODO: Tweak / expose to editor
+		// TODO: Tweak / expose to editor
 		const int velocityIteration = 6;
 		const int positionIteration = 2;
 
@@ -395,6 +434,12 @@ namespace Pistachio {
 
 	}
 	template void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component);
+
+	template<>
+	void Scene::OnComponentAdded(Entity entity, ScriptComponent& component) {
+
+	}
+	template void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component);
 
 	template<>
 	void Scene::OnComponentAdded(Entity entity, RigidBody2DComponent& component) {
