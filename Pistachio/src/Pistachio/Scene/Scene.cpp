@@ -18,27 +18,10 @@
 
 #include "Pistachio/Scripting/ScriptEngine.h"
 
+#include "Pistachio/Utils/Box2DUtils.h"
+
 
 namespace Pistachio {
-
-	static b2BodyType RigidBody2DTypeToBox2DType(RigidBody2DComponent::BodyType bodyType) {
-		switch (bodyType) {
-			case RigidBody2DComponent::BodyType::Static:
-				return b2_staticBody;
-				break;
-			case RigidBody2DComponent::BodyType::Dynamic:
-				return b2_dynamicBody;
-				break;
-			case RigidBody2DComponent::BodyType::Kinematic:
-				return b2_kinematicBody;
-				break;
-			default:
-				break;
-		}
-
-		PST_CORE_ASSERT(false, "Unrecognised body type");
-		return b2_staticBody;
-	}
 
 	template<typename... C>
 	static void CopyComponents(entt::registry& dest, entt::registry& source, const std::unordered_map<UUID, entt::entity>& destEnttIDsByUUID) {
@@ -70,6 +53,7 @@ namespace Pistachio {
 	static void CopyComponentGroupIfExists(ComponentGroup<C...> componentGroup, Entity dest, Entity source) {
 		CopyComponentsIfExists<C...>(dest, source);
 	}
+
 
 	Scene::Scene(const std::string& name /*= "Untitled"*/)
 		: m_Name(name) {
@@ -129,12 +113,21 @@ namespace Pistachio {
 	}
 
 	Entity Scene::EntityByUUID(UUID uuid) {
-		auto entity = m_EntityMap.find(uuid);
+		auto& entity = m_EntityMap.find(uuid);
 		// TODO: Maybe should be an assert
-		if (entity != m_EntityMap.end()) {
-			return { entity->second, this };
+		if (entity == m_EntityMap.end()) {
+			return Entity();
 		}
-		return Entity();
+		return { entity->second, this };
+	}
+
+	b2Body* Scene::RigidBodyByUUID(UUID uuid) {
+		auto& rigidbody = m_RuntimeBodies.find(uuid);
+		// TODO: Maybe should be an assert
+		if (rigidbody == m_RuntimeBodies.end()) {
+			return nullptr;
+		}
+		return rigidbody->second;
 	}
 
 	void Scene::OnRuntimeStart() {
@@ -281,7 +274,7 @@ namespace Pistachio {
 			Entity entity = { enntID, this };
 
 			b2BodyDef bodyDef;
-			bodyDef.type = RigidBody2DTypeToBox2DType(rigidBody.Type);
+			bodyDef.type = Utils::RigidBody2DTypeToBox2DType(rigidBody.Type);
 			bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
 			bodyDef.angle = transform.Rotation.z;
 

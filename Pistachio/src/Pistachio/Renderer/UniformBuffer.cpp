@@ -9,8 +9,6 @@
 
 namespace Pistachio {
 
-
-
 	Ref<UniformBuffer> UniformBuffer::Create(size_t size, unsigned int binding) {
 		switch (Renderer::RenderAPI()) {
 			case RendererAPI::RenderAPI::None:

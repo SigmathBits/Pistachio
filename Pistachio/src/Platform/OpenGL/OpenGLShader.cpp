@@ -16,6 +16,8 @@
 
 #include "Pistachio/Core/Core.h"
 
+#include "Pistachio/Utils/FileSystemUtils.h"
+
 
 namespace Pistachio {
 
@@ -107,7 +109,7 @@ namespace Pistachio {
 
 		Utils::CreateCacheDirectory();
 
-		std::string shaderSource = ReadFile(filepath);
+		std::string shaderSource = FileSystem::ReadFile(filepath);
 		auto shaderSources = Preprocess(shaderSource);
 
 		{
@@ -139,7 +141,7 @@ namespace Pistachio {
 		: m_Name(name), m_Filepath(filepath) {
 		PST_PROFILE_FUNCTION();
 
-		std::string shaderSource = ReadFile(filepath);
+		std::string shaderSource = FileSystem::ReadFile(filepath);
 		auto shaderSources = Preprocess(shaderSource);
 
 		{
@@ -261,28 +263,6 @@ namespace Pistachio {
 
 	void OpenGLShader::UploadUniformMat4(const std::string& name, const glm::mat4& matrix) const {
 		glUniformMatrix4fv(UniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
-	}
-
-	std::string OpenGLShader::ReadFile(const std::string& filepath) {
-		PST_PROFILE_FUNCTION();
-
-		std::string result;
-		std::ifstream inFile(filepath, std::ios::in | std::ios::binary);
-
-		if (!inFile) {
-			PST_CORE_ERROR("Could not open file \"{}\"", filepath);
-			return "";
-		}
-
-		inFile.seekg(0, std::ios::end);
-		result.resize(inFile.tellg());
-		inFile.seekg(0, std::ios::beg);
-
-		inFile.read(&result[0], result.size());
-
-		inFile.close();
-
-		return result;
 	}
 
 	std::unordered_map<GLenum, std::string> OpenGLShader::Preprocess(const std::string& source) {

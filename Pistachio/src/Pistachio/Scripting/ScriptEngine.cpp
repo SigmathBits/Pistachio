@@ -10,6 +10,8 @@
 
 #include "Pistachio/Scripting/ScriptGlue.h"
 
+#include "Pistachio/Utils/FileSystemUtils.h"
+
 
 namespace Pistachio {
 
@@ -23,30 +25,6 @@ namespace Pistachio {
 
 
 	namespace Utils {
-
-		// TODO: Move to some FileSystem namespace
-		static char* ReadBytes(const std::filesystem::path& filepath, size_t* outSize) {
-			std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
-
-			if (!stream) {
-				return nullptr;
-			}
-
-			std::streampos end = stream.tellg();
-			stream.seekg(0, std::ios::beg);
-			size_t size = end - stream.tellg();
-
-			if (size == 0) {
-				return nullptr;
-			}
-
-			char* buffer = new char[size];
-			stream.read((char*)buffer, size);
-			stream.close();
-
-			*outSize = size;
-			return buffer;
-		}
 
 		static Accessibility MonoToPistachioAccessibility(uint32_t accessibilityFlags) {
 			switch (accessibilityFlags) {
@@ -105,7 +83,7 @@ namespace Pistachio {
 
 		MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath) {
 			size_t fileSize = 0;
-			char* fileData = ReadBytes(assemblyPath, &fileSize);
+			char* fileData = FileSystem::ReadBytes(assemblyPath, &fileSize);
 
 			MonoImageOpenStatus status;
 			MonoImage* image = mono_image_open_from_data_full(fileData, fileSize, true, &status, false);
@@ -198,6 +176,7 @@ namespace Pistachio {
 
 
 		// Set up internal calls
+		ScriptGlue::RegisterAllComponents();
 		ScriptGlue::RegisterInternalFunctions();
 
 		// Get Entity Class
@@ -211,6 +190,10 @@ namespace Pistachio {
 
 		delete s_Data;
 		s_Data = nullptr;
+	}
+
+	MonoImage* ScriptEngine::CoreAssemblyImage() {
+		return s_Data->CoreAssemblyImage;
 	}
 
 	void ScriptEngine::OnRuntimeStart(Scene* scene) {
@@ -228,6 +211,7 @@ namespace Pistachio {
 
 		auto entityClass = s_Data->EntityClasses.find(scriptComponent.ClassName);
 		if (entityClass == s_Data->EntityClasses.end()) {
+			PST_CORE_WARN("The class name \"{}\" does not exist", scriptComponent.ClassName);
 			return;
 		}
 
@@ -238,9 +222,13 @@ namespace Pistachio {
 
 	void ScriptEngine::EntityOnUpdate(Entity entity, Timestep timestep) {
 		UUID entityUUID = entity.UUID();
-		PST_CORE_ASSERT(s_Data->EntityInstances.find(entityUUID) != s_Data->EntityInstances.end(), "Enity class script not instantiated");
 
-		s_Data->EntityInstances[entityUUID]->InvokeOnUpdate(timestep);
+		auto entityInstance = s_Data->EntityInstances.find(entityUUID);
+		if (entityInstance == s_Data->EntityInstances.end()) {
+			return;
+		}
+
+		entityInstance->second->InvokeOnUpdate(timestep);
 	}
 
 	bool ScriptEngine::EntityClassExists(const std::string& fullClassName) {
@@ -328,7 +316,7 @@ namespace Pistachio {
 		MonoMethod* method = mono_class_get_method_from_name(m_MonoClass, methodName.c_str(), paramCount);
 
 		if (method == nullptr) {
-			PST_CORE_ERROR("No method called \"{}\" with {} parameters", methodName, paramCount);
+			PST_CORE_WARN("No method called \"{}\" with {} parameters", methodName, paramCount);
 			return nullptr;
 		}
 	}
@@ -337,7 +325,7 @@ namespace Pistachio {
 		MonoClassField* field = mono_class_get_field_from_name(m_MonoClass, fieldName.c_str());
 
 		if (field == nullptr) {
-			PST_CORE_ERROR("No field called \"{}\"", fieldName);
+			PST_CORE_WARN("No field called \"{}\"", fieldName);
 			return nullptr;
 		}
 
@@ -348,7 +336,7 @@ namespace Pistachio {
 		MonoProperty* monoProperty = mono_class_get_property_from_name(m_MonoClass, propertyName.c_str());
 
 		if (monoProperty == nullptr) {
-			PST_CORE_ERROR("No property called \"{}\"", propertyName);
+			PST_CORE_WARN("No property called \"{}\"", propertyName);
 			return nullptr;
 		}
 
@@ -373,14 +361,18 @@ namespace Pistachio {
 	}
 
 	void ScriptObject::InvokeOnCreate() {
-		InvokeMethod(m_OnCreateMethod, nullptr);
+		if (m_OnCreateMethod) {
+			InvokeMethod(m_OnCreateMethod);
+		}
 	}
 
 	void ScriptObject::InvokeOnUpdate(float timestep) {
-		void* params[1] = {
-			&timestep
-		};
-		InvokeMethod(m_OnUpdateMethod, params);
+		if (m_OnUpdateMethod) {
+			void* params[1] = {
+				&timestep
+			};
+			InvokeMethod(m_OnUpdateMethod, params);
+		}
 	}
 
 	void ScriptObject::InvokeMethod(const std::string& methodName, void** params /*= nullptr*/, size_t paramCount /*= 0*/, MonoObject** exception /*= nullptr*/) {
@@ -388,7 +380,7 @@ namespace Pistachio {
 		mono_runtime_invoke(method, m_MonoObject, params, nullptr);
 	}
 
-	void ScriptObject::InvokeMethod(MonoMethod* method, void** params, MonoObject** exception /*= nullptr*/) {
+	void ScriptObject::InvokeMethod(MonoMethod* method, void** params /*= nullptr*/, MonoObject** exception /*= nullptr*/) {
 		mono_runtime_invoke(method, m_MonoObject, params, exception);
 	}
 

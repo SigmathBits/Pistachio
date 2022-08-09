@@ -24,6 +24,15 @@ namespace Pistachio
             Z = scalar;
         }
 
+        public Vector2 XY { 
+            get => new Vector2(X, Y); 
+            set
+            {
+                X = value.X;
+                Y = value.Y;
+            }
+        }
+
         public float Length()
         {
             return (float)Math.Sqrt(X * X + Y * Y + Z * Z);

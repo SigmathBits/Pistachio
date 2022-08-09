@@ -17,6 +17,7 @@ namespace Pistachio {
 
 	class Entity;
 
+
 	class Scene {
 	public:
 		Scene(const std::string& name = "Untitled");
@@ -30,6 +31,7 @@ namespace Pistachio {
 		void DestroyEntity(Entity entity);
 
 		Entity EntityByUUID(UUID uuid);
+		b2Body* RigidBodyByUUID(UUID uuid);
 
 		inline const std::string& Name() const { return m_Name; }
 		inline void SetName(const std::string& name) { m_Name = name; }

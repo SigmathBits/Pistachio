@@ -21,6 +21,13 @@ namespace Pistachio {
 		UUID UUID() { return Component<UUIDComponent>().UUID; }
 		const std::string& Name() { return Component<TagComponent>().Tag; }
 
+		template<typename T>
+		T& Component() {
+			PST_CORE_ASSERT(HasComponent<T>(), "Entity does not have component");
+
+			return m_Scene->m_Registry.get<T>(m_EntityHandle);
+		}
+
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args) {
 			PST_CORE_ASSERT(!HasComponent<T>(), "Entity already has component");
@@ -36,13 +43,6 @@ namespace Pistachio {
 			T& component = m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
 			m_Scene->OnComponentAdded<T>(*this, component);
 			return component;
-		}
-
-		template<typename T>
-		T& Component() {
-			PST_CORE_ASSERT(HasComponent<T>(), "Entity does not have component");
-
-			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
 
 		template<typename T>

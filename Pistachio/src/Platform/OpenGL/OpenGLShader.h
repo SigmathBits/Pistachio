@@ -48,7 +48,6 @@ namespace Pistachio {
 		void UploadUniformMat4(const std::string& name, const glm::mat4& matrix) const;
 
 	private:
-		std::string ReadFile(const std::string& filepath);
 		std::unordered_map<GLenum, std::string> Preprocess(const std::string& source);
 
 		void CompileVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources, bool force = false);

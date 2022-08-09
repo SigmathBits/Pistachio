@@ -14,13 +14,15 @@ extern "C" {
 	typedef struct _MonoProperty MonoProperty;
 
 	typedef struct _MonoAssembly MonoAssembly;
+
+	typedef struct _MonoImage MonoImage;
 }
 
 
-class Scene;
-
-
 namespace Pistachio {
+
+	class Scene;
+
 
 	class ScriptClass {
 	public:
@@ -80,6 +82,8 @@ namespace Pistachio {
 	public:
 		static void Init();
 		static void Shutdown();
+
+		static MonoImage* CoreAssemblyImage();
 
 		static void OnRuntimeStart(Scene* scene);
 		static void OnRuntimeStop();
