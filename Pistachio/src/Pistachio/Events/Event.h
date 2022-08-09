@@ -34,7 +34,7 @@ namespace Pistachio {
 	};
 
 
-#define EVENT_TYPE(type) static EventType StaticType() { return EventType::##type; } \
+#define EVENT_TYPE(type) static EventType StaticType() { return EventType::type; } \
 	virtual EventType Type() const override { return StaticType(); } \
 	virtual const char* Name() const override { return #type "Event"; }
 

@@ -19,9 +19,19 @@
 
 namespace Pistachio {
 
+	namespace Utils {
+
+		// Workaround because bug with G++ 9.4.0 prevents use of std::fabsf ...
+		static float fabsf(float value) {
+			return std::abs(value);
+		}
+
+	}
+
+
 	template<typename T>
 	static bool easeTowards(T& value, const T target, float threshold, float delta,
-		std::function<float(T)> absFunction = std::fabsf, std::function<T(T)> diffFunction = [](T a) {return a; }) {
+		std::function<float(T)> absFunction = Utils::fabsf, std::function<T(T)> diffFunction = [](T a) {return a; }) {
 		if (value != target) {
 			const T distanceDiff = diffFunction(target - value);
 			if (absFunction(distanceDiff) < threshold) {
@@ -54,9 +64,9 @@ namespace Pistachio {
 
 		changed |= easeTowards<glm::vec3>(m_FocalPoint, m_FocalPointTarget, focalPointThreshold, delta, [](glm::vec3 vector) { return glm::length(vector); });
 
-		changed |= easeTowards<float>(m_Pitch, m_PitchTarget, rotationThreshold, delta, std::fabsf, Math::wrap_rotation);
-		changed |= easeTowards<float>(m_Yaw, m_YawTarget, rotationThreshold, delta, std::fabsf, Math::wrap_rotation);
-		changed |= easeTowards<float>(m_Roll, m_RollTarget, rotationThreshold, delta, std::fabsf, Math::wrap_rotation);
+		changed |= easeTowards<float>(m_Pitch, m_PitchTarget, rotationThreshold, delta, Utils::fabsf, Math::wrap_rotation);
+		changed |= easeTowards<float>(m_Yaw, m_YawTarget, rotationThreshold, delta, Utils::fabsf, Math::wrap_rotation);
+		changed |= easeTowards<float>(m_Roll, m_RollTarget, rotationThreshold, delta, Utils::fabsf, Math::wrap_rotation);
 
 		changed |= easeTowards<float>(m_Distance, m_DistanceTarget, distanceThreshold, delta);
 
@@ -120,7 +130,7 @@ namespace Pistachio {
 
 		if (event.MouseButton() != PST_MOUSE_BUTTON_MIDDLE) return false;
 
-		auto& [x, y] = Input::MousePosition();
+		auto [x, y] = Input::MousePosition();
 		m_InitialMousePosition = ViewportDeltaToCameraDelta({x, y});
 
 		m_CameraMoveMode = Input::IsKeyPressed(PST_KEY_LEFT_ALT) ? CAMERA_ROTATE : CAMERA_PAN;
@@ -147,7 +157,7 @@ namespace Pistachio {
 
 		if (m_CameraMoveMode == CAMERA_NONE) return false;
 
-		auto& [x, y] = Input::MousePosition();
+		auto [x, y] = Input::MousePosition();
 		glm::vec4 mouse = ViewportDeltaToCameraDelta({ x, y });
 
 		if (m_CameraMoveMode == CAMERA_PAN) {

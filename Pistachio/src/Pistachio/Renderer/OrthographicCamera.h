@@ -18,7 +18,7 @@ namespace Pistachio {
 
 		const glm::mat4& ProjectionMatrix() const { return m_ProjectionMatrix;  }
 		const glm::mat4& CameraViewMatrix() const { return m_CameraViewMatrix;  }
-		const glm::mat4& ViewMatrix() const { return glm::inverse(m_CameraViewMatrix);  }
+		glm::mat4 ViewMatrix() const { return glm::inverse(m_CameraViewMatrix);  }
 		const glm::mat4& ProjectionViewMatrix() const { return m_ProjectionViewMatrix;  }
 
 		inline const glm::vec3& Position() const { return m_Position; };

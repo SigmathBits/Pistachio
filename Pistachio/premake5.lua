@@ -51,13 +51,21 @@ project "Pistachio"
 		"GLFW_INCLUDE_NONE",
 	}
 
+
 	filter "files:vendor/ImGuizmo/**.cpp"
 		flags {
 			"NoPCH"
 		}
 
+
 	filter "system:windows"
 		systemversion "latest"
+	
+	filter "system:linux"
+		buildoptions {
+			"-fpermissive",
+		}
+
 
 	filter "configurations:Debug"
 		defines "PST_DEBUG"

@@ -15,13 +15,13 @@ IncludeDir["entt"] = "%{wks.location}/Pistachio/vendor/entt/include"
 IncludeDir["yaml_cpp"] = "%{wks.location}/Pistachio/vendor/yaml-cpp/include"
 IncludeDir["ImGuizmo"] = "%{wks.location}/Pistachio/vendor/ImGuizmo"
 IncludeDir["Box2D"] = "%{wks.location}/Pistachio/vendor/Box2D/include"
-IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
+IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/include"
 
 
 -- VulkanSDK Library locations
 LibraryDir = {}
-LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
-LibraryDir["VulkanSDK_DLL"] = "%{VULKAN_SDK}/Bin"
+LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/lib"
+LibraryDir["VulkanSDK_DLL"] = "%{VULKAN_SDK}/bin"
 -- These are located  in the same place as the VulkanSDK for v1.3.204.1 and later
 LibraryDir["VulkanSDK_Debug"] = LibraryDir["VulkanSDK"]
 LibraryDir["VulkanSDK_DebugDLL"] = LibraryDir["VulkanSDK_DLL"]

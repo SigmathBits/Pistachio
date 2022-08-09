@@ -37,7 +37,7 @@
 	#error "Android is currently not supported!"
 #elif defined(__linux__)
 	#define PST_PLATFORM_LINUX
-	#error "Linux is currently not supported!"
+	//#error "Linux is currently not supported!"
 #else
 	#error "Unrecognised platform!"
 #endif

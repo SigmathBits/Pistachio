@@ -14,6 +14,7 @@ bin-int/
 
 # Project directories
 Pistachio/vendor/VulkanSDK
+Pistachio/vendor/vulkan
 Hat/assets/scenes
 Hat/assets/cache
 
@@ -23,3 +24,6 @@ Hat/assets/cache
 **/*.pistachio
 **/*.vert
 **/*.frag
+**/*.swp
+Makefile
+

@@ -100,7 +100,7 @@ namespace Pistachio {
 
 		if (event.MouseButton() != PST_MOUSE_BUTTON_LEFT) return false;
 
-		auto& [x, y] = Input::MousePosition();
+		auto [x, y] = Input::MousePosition();
 		glm::vec3 mousePositionCamera = WindowToCameraCoordinates({ x, y });
 
 		m_MousePressedPositionWorld = m_Camera.CameraViewMatrix() * glm::vec4(mousePositionCamera, 1.0f);

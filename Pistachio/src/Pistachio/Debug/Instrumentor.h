@@ -104,7 +104,7 @@ namespace Pistachio {
 			: m_Name(name), m_Stopped(false) {
 			if (!Instrumentor::Instance().IsProfiling()) return;
 
-			m_StartTimepoint = std::chrono::high_resolution_clock::now();
+			m_StartTimepoint = std::chrono::steady_clock::now();
 		}
 
 		~InstrumentationTimer() {
