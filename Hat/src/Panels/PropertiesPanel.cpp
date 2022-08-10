@@ -63,7 +63,8 @@ namespace Pistachio {
 
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
-			strncpy_s(buffer, tag.c_str(), tag.size() + 1);
+			// FIXME: Could be issues if tag exceeds 255 characters
+			strncpy(buffer, tag.c_str(), tag.size() + 1);
 
 			if (ImGui::InputText("##Tag", buffer, sizeof(buffer))) {
 				tag = std::string(buffer);

@@ -47,7 +47,7 @@
 	#if defined(PST_PLATFORM_WINDOWS)
 		#define PST_DEBUGBREAK() __debugbreak()
 	#elif defined(PST_PLATFORM_LINUX)
-		#include <signals.h>
+		#include <signal.h>
 		#define PST_DEBUGBREAK() raise(SIGTRAP)
 	#else
 		#error "Platform doesn't support debugbreak"

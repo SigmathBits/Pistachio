@@ -3,7 +3,7 @@
 #include "Pistachio/Core/Application.h"
 
 
-#ifdef PST_PLATFORM_WINDOWS
+//#ifdef PST_PLATFORM_WINDOWS
 
 extern Pistachio::Application* Pistachio::CreateApplication(ApplicationArguments args);
 
@@ -24,6 +24,6 @@ int main(int argc, char** argv) {
 	PST_PROFILE_END_SESSION();
 }
 
-#else
-	#error Pistachio only supports Windows!
-#endif
+//#else
+//	#error Pistachio only supports Windows!
+//#endif

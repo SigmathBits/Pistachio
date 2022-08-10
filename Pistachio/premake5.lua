@@ -40,7 +40,7 @@ project "Pistachio"
 	links {
 		"GLFW",
 		"Glad",
-		"imgui",
+		"ImGui",
 		"yaml-cpp",
 		"Box2D",
 		"opengl32.lib",

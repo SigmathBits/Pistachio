@@ -2,6 +2,8 @@
 
 #include "Pistachio/Scene/Scene.h"
 
+#include <filesystem>
+
 
 namespace Pistachio {
 

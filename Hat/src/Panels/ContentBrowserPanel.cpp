@@ -50,7 +50,8 @@ namespace Pistachio {
 
 		char buffer[256];
 		memset(buffer, 0, sizeof(buffer));
-		strncpy_s(buffer, directoryString.c_str(), directoryString.size() + 1);
+		// FIXME: Could have problems if directoryString exceeds 255 characters
+		strncpy(buffer, directoryString.c_str(), directoryString.size() + 1);
 
 		ImGui::InputText("##Directory", buffer, sizeof(buffer));
 		ImGui::EndDisabled();

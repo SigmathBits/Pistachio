@@ -2,8 +2,6 @@
 
 #include "SceneSerializer.h"
 
-#include <filesystem>
-
 #include <yaml-cpp/yaml.h>
 
 #include "Pistachio/Scene/Entity.h"

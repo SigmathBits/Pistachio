@@ -24,8 +24,31 @@ project "Hat"
 		"Pistachio"
 	}
 
+
 	filter "system:windows"
 		systemversion "latest"
+
+	filter "system:linux"
+		buildoptions {
+			"-fpermissive",
+		}
+
+		links {
+			"GLFW",
+			"Glad",
+			"ImGui",
+			"yaml-cpp",
+			"Box2D",
+
+			"d1",
+			"pthread",
+			"GL",
+			"X11",
+			"spriv-cross",
+			"shaderc",
+			"SPI
+		}
+
 
 	filter "configurations:Debug"
 		defines "PST_DEBUG"
