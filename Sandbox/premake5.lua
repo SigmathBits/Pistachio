@@ -24,8 +24,34 @@ project "Sandbox"
 		"Pistachio"
 	}
 
+	
 	filter "system:windows"
 		systemversion "latest"
+
+	filter "system:linux"
+		libdirs {
+			"%{LibraryDir.VulkanSDK}",
+		}
+
+		buildoptions {
+			"-fpermissive",
+		}
+
+		links {
+			"GLFW",
+			"Glad",
+			"ImGui",
+
+			"dl",
+			"pthread",
+			"GL",
+			"X11",
+
+			"shaderc_shared",
+			"spirv-cross-core",
+			"spirv-cross-glsl",
+		}
+
 
 	filter "configurations:Debug"
 		defines "PST_DEBUG"
