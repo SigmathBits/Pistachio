@@ -60,6 +60,7 @@ project "Hat"
 		runtime "Debug"
 		symbols "on"
 
+	filter { "configurations:Debug", "system:windows" }
 		postbuildcommands {
 			"{COPYDIR} %{LibraryDir.VulkanSDK_DebugDLL}/**sharedd.dll \"%{cfg.targetdir}\""
 		}

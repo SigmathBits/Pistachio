@@ -31,7 +31,7 @@ namespace Pistachio {
 
 	template<typename T>
 	static bool easeTowards(T& value, const T target, float threshold, float delta,
-		std::function<float(T)> absFunction = Utils::fabsf, std::function<T(T)> diffFunction = [](T a) {return a; }) {
+		std::function<float(T)> absFunction = Utils::fabsf, std::function<T(T)> diffFunction = [](T a) { return a; }) {
 		if (value != target) {
 			const T distanceDiff = diffFunction(target - value);
 			if (absFunction(distanceDiff) < threshold) {

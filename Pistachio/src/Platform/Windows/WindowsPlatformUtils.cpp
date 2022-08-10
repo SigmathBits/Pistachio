@@ -7,11 +7,11 @@
 
 #include <commdlg.h>
 
+#include <GLFW/glfw3.h>
+
 // Allow us to access the native Win32 window handle from GLFW
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
-
-#include <GLFW/glfw3.h>
 
 #include "Pistachio/Core/Application.h"
 

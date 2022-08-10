@@ -72,7 +72,6 @@ namespace Pistachio {
 		}
 
 		if (!sceneFilepath.empty() && std::filesystem::exists(sceneFilepath)) {
-			PST_INFO("Loading save \"{}\" ... ", sceneFilepath);
 			LoadSceneFile(sceneFilepath);
 		} else {
 			SetWindowTitle(m_EditorScene->Name(), true);
@@ -296,7 +295,7 @@ namespace Pistachio {
 				std::string path = (const char*)payload->Data;
 
 				if (Utils::EndsWith(path, PistachioSceneFileExtension)) {
-					LoadSceneFile(std::string(path));
+					LoadSceneFile(path);
 				}
 			}
 			ImGui::EndDragDropTarget();
@@ -660,7 +659,7 @@ namespace Pistachio {
 	}
 
 	void EditorLayer::FileOpen() {
-		std::string filepath = FileDialog::OpenFile("Pistachio Scene (*.pistachio)\0*.pistachio\0");
+		std::filesystem::path filepath = FileDialog::OpenFile("Pistachio Scene (*.pistachio)\0*.pistachio\0");
 		if (!filepath.empty()) {
 			LoadSceneFile(filepath);
 		}
@@ -676,9 +675,9 @@ namespace Pistachio {
 	}
 
 	void EditorLayer::FileSaveAs() {
-		std::string filepath = FileDialog::SaveFile("Pistachio Scene (*.pistachio)\0*.pistachio\0");
+		std::filesystem::path filepath = FileDialog::SaveFile("Pistachio Scene (*.pistachio)\0*.pistachio\0");
 		if (!filepath.empty()) {
-			if (!Utils::EndsWith(filepath, PistachioSceneFileExtension)) {
+			if (!Utils::EndsWith(filepath.string(), PistachioSceneFileExtension)) {
 				filepath = filepath.append(PistachioSceneFileExtension);
 			}
 
@@ -687,6 +686,8 @@ namespace Pistachio {
 	}
 
 	void EditorLayer::LoadSceneFile(const std::filesystem::path& filepath) {
+		PST_INFO("Loading save \"{}\" ... ", filepath.string());
+
 		// Currenty likely to throw exception if bad file is passed in
 		Ref<Scene> newScene = CreateRef<Scene>();
 
