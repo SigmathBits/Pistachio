@@ -48,7 +48,7 @@ source Pistachio/vendor/vulkan/1.3.204.1/setup-env.sh
 ```
 6. Run premake to generate the Makefiles
 ```bash
-./vendor/premake5/bin/premake5 gmake2
+./vendor/premake/bin/premake5 gmake2
 ```
 
 ## Build
@@ -68,7 +68,7 @@ Run `make Hat` with the desired configuration (`make help` will list all the tar
 ```bash
 make Hat config=release
 ```
-To run, change to the `Hat` directory and run the executable generated under `bin`.
+To run Hat, change to the `Hat` directory and run the executable generated under `bin`.
 ```bash
 cd Hat
 ./../bin/Release-linux-x86_64/Hat/Hat
