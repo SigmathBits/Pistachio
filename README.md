@@ -12,7 +12,7 @@ Hat is the Game Editor GUI partner application for Pistachio.
 
 ## Setup
 
-Currently Pistachio is currently only successfully tested to work for **64-bit Windows**.
+Pistachio is tested to work on **64-bit Windows** and **64-bit Linux Ubuntu 20.04**.
 
 ### Windows
 
