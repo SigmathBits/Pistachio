@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include "Pistachio/Core/Core.h"
 
 
@@ -18,7 +20,7 @@ namespace Pistachio {
 
 		virtual void Bind(unsigned int slot = 0) const = 0;
 
-		virtual std::string ResourceLocation() const = 0;
+		virtual std::filesystem::path ResourceLocation() const = 0;
 
 		virtual bool operator==(const Texture& other) const = 0;
 	};
@@ -28,7 +30,7 @@ namespace Pistachio {
 		virtual ~Texture2D() = default;
 
 		static Ref<Texture2D> Create(unsigned int width, unsigned int height);
-		static Ref<Texture2D> Create(const std::string& filepath, unsigned int levels = 1);
+		static Ref<Texture2D> Create(const std::filesystem::path& filepath, unsigned int levels = 1);
 	};
 
 }

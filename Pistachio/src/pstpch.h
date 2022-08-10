@@ -13,6 +13,9 @@
 #include <unordered_map>
 #include <unordered_set>
 
+
+#include "Pistachio/Core/Core.h"
+
 #include "Pistachio/Core/Log.h"
 
 #include "Pistachio/Debug/Instrumentor.h"

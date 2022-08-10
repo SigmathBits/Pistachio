@@ -10,7 +10,7 @@ namespace Pistachio {
 	class OpenGLTexture2D : public Texture2D {
 	public:
 		OpenGLTexture2D(unsigned int width, unsigned int height);
-		OpenGLTexture2D(const std::string& filepath, unsigned int levels = 1);
+		OpenGLTexture2D(const std::filesystem::path& filepath, unsigned int levels = 1);
 		virtual ~OpenGLTexture2D();
 
 		virtual unsigned int RendererID() const override { return m_RendererID; };
@@ -22,7 +22,7 @@ namespace Pistachio {
 
 		virtual void Bind(unsigned int slot = 0) const override;
 
-		virtual std::string ResourceLocation() const { return m_Filepath; };
+		virtual std::filesystem::path ResourceLocation() const { return m_Filepath; };
 
 		virtual bool operator==(const Texture& other) const override { 
 			return m_RendererID == ((const OpenGLTexture2D&)other).m_RendererID;
@@ -30,7 +30,7 @@ namespace Pistachio {
 
 	private:
 		unsigned int m_RendererID;
-		std::string m_Filepath;
+		std::filesystem::path m_Filepath;
 		unsigned int m_Width, m_Height;
 		GLenum m_InternalFormat, m_DataFormat;
 	};

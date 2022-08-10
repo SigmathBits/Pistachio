@@ -5,6 +5,9 @@
 **.vcxproj.filters
 **.vcxproj.user
 
+# VSCode project files
+.vscode/
+
 # Binary directories
 **/bin/**/
 intermediates/
@@ -26,4 +29,3 @@ Hat/assets/cache
 **/*.frag
 **/*.swp
 Makefile
-

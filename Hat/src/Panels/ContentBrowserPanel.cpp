@@ -45,8 +45,7 @@ namespace Pistachio {
 		ImGui::SameLine();
 
 		ImGui::BeginDisabled();
-		auto directoryString = m_CurrentDirectory.string() + "\\";
-		std::replace(directoryString.begin(), directoryString.end(), '\\', '/');
+		auto directoryString = m_CurrentDirectory.generic_string() + "/";
 
 		char buffer[256];
 		memset(buffer, 0, sizeof(buffer));

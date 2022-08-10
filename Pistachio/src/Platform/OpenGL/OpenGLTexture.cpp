@@ -26,7 +26,7 @@ namespace Pistachio {
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& filepath, unsigned int levels /*= 1*/)
+	OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& filepath, unsigned int levels /*= 1*/)
 		: m_Filepath(filepath) {
 		PST_PROFILE_FUNCTION();
 
@@ -36,9 +36,9 @@ namespace Pistachio {
 
 		stbi_uc* data = nullptr;
 		{
-			PST_PROFILE_SCOPE("stbi_load - Pistachio::OpenGLTexture2D::OpenGLTexture2D(const std::string& filepath)");
+			PST_PROFILE_SCOPE("stbi_load - Pistachio::OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& filepath)");
 
-			data = stbi_load(filepath.c_str(), &width, &height, &channels, 0);
+			data = stbi_load(filepath.string().c_str(), &width, &height, &channels, 0);
 		}
 
 		PST_CORE_ASSERT(data, "Failed to load image");

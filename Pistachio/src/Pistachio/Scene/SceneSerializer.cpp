@@ -142,12 +142,12 @@ namespace Pistachio {
 
 			auto& spriteComponent = entity.Component<SpriteRendererComponent>();
 
-			std::string textureResourceLocation = "";
+			std::filesystem::path textureResourceLocation = "";
 			if (auto& texture = spriteComponent.Sprite.SubTexture->Texture()) {
 				textureResourceLocation = texture->ResourceLocation();
 			}
 
-			out << YAML::Key << "TextureResourceLocation" << YAML::Value << textureResourceLocation;
+			out << YAML::Key << "TextureResourceLocation" << YAML::Value << textureResourceLocation.generic_string();
 			out << YAML::Key << "Colour" << YAML::Value << spriteComponent.Sprite.TintColour;
 			out << YAML::Key << "TilingScale" << YAML::Value << spriteComponent.Sprite.TilingScale;
 
@@ -284,7 +284,7 @@ namespace Pistachio {
 			auto& spriteComponent = entity.AddComponent<SpriteRendererComponent>();
 
 			if (auto node = spriteRendererComponentData["TextureResourceLocation"]) {
-				std::string textureResourceLocation = node.as<std::string>();
+				std::filesystem::path textureResourceLocation = node.as<std::string>();
 				if (!textureResourceLocation.empty()) {
 					spriteComponent.Sprite.SubTexture = CreateRef<SubTexture2D>(Texture2D::Create(textureResourceLocation));
 				}

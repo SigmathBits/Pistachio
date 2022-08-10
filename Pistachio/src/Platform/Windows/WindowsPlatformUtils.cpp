@@ -2,13 +2,14 @@
 
 #include "Pistachio/Utils/PlatformUtils.h"
 
-#ifdef PST_PLATFORM_WINDOWS
-	#include <commdlg.h>
 
-	// Allow us to access the native Win32 window handle from GLFW
-	#define GLFW_EXPOSE_NATIVE_WIN32
-	#include <GLFW/glfw3native.h>
-#endif
+#ifdef PST_PLATFORM_WINDOWS
+
+#include <commdlg.h>
+
+// Allow us to access the native Win32 window handle from GLFW
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
 
 #include <GLFW/glfw3.h>
 
@@ -22,8 +23,7 @@ namespace Pistachio {
 	}
 
 
-#ifdef PST_PLATFORM_WINDOWS
-	std::string FileDialog::OpenFile(const char* filter) {
+	std::filesystem::path FileDialog::OpenFile(const char* filter) {
 		OPENFILENAMEA openFilename;  // A at the end means ASCII version
 		CHAR filepathBuffer[260] = { 0 };
 
@@ -41,10 +41,10 @@ namespace Pistachio {
 			return openFilename.lpstrFile;
 		}
 
-		return std::string();
+		return std::filesystem::path();
 	}
 
-	std::string FileDialog::SaveFile(const char* filter) {
+	std::filesystem::path FileDialog::SaveFile(const char* filter) {
 		OPENFILENAMEA openFilename;  // A at the end means ASCII version
 		CHAR filepathBuffer[260] = { 0 };
 
@@ -62,23 +62,9 @@ namespace Pistachio {
 			return openFilename.lpstrFile;
 		}
 
-		return std::string();
+		return std::filesystem::path();
 	}
-#endif
-
-
-#ifdef PST_PLATFORM_LINUX
-	std::string FileDialog::OpenFile(const char* filter) {
-		// TODO: Impliment Open File dialog for Linux
-		PST_CORE_ERROR("OpenFile not yet implemented for Linux");
-		return std::string();
-	}
-
-	std::string FileDialog::SaveFile(const char* filter) {
-		// TODO: Impliment Save File dialog for Linux
-		PST_CORE_ERROR("SaveFile not yet implemented for Linux");
-		return std::string();
-	}
-#endif
 
 }
+
+#endif

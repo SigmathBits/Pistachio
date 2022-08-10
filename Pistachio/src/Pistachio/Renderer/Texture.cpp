@@ -22,7 +22,7 @@ namespace Pistachio {
 		}
 	}
 
-	Ref<Texture2D> Texture2D::Create(const std::string& filepath, unsigned int levels /*= 1*/) {
+	Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath, unsigned int levels /*= 1*/) {
 		switch (Renderer::RenderAPI()) {
 			case RendererAPI::RenderAPI::None:
 				PST_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
