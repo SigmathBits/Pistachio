@@ -29,6 +29,10 @@ project "Hat"
 		systemversion "latest"
 
 	filter "system:linux"
+		libdirs {
+			"%{LibraryDir.VulkanSDK}",
+		}
+	
 		buildoptions {
 			"-fpermissive",
 		}
@@ -40,13 +44,14 @@ project "Hat"
 			"yaml-cpp",
 			"Box2D",
 
-			"d1",
+			"dl",
 			"pthread",
 			"GL",
 			"X11",
-			"spriv-cross",
-			"shaderc",
-			"SPI
+
+			"shaderc_shared",
+			"spirv-cross-core",
+			"spirv-cross-glsl",
 		}
 
 
