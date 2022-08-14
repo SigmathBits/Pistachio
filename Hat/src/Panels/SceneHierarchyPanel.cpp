@@ -2,10 +2,9 @@
 
 #include <imgui/imgui.h>
 
-#include "Pistachio/Scene/Components.h"
+#include "Pistachio/Core/Input.h"
 
-// FIXME: Remove
-#include "Pistachio/Renderer/Texture.h"
+#include "Pistachio/Scene/Components.h"
 
 
 namespace Pistachio {
@@ -17,6 +16,14 @@ namespace Pistachio {
 	void SceneHierarchyPanel::SetContext(const Ref<Scene>& scene) {
 		m_Context = scene;
 		m_SelectedEntity = {};
+		m_EditingEntity = {};
+	}
+
+	void SceneHierarchyPanel::SetSelectedEntity(Entity entity) {
+		if (m_SelectedEntity != entity) {
+			m_SelectedEntity = entity;
+			m_EditingEntity = {};
+		}
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender() {
@@ -26,8 +33,12 @@ namespace Pistachio {
 			DrawEntityNode(entity);
 		});
 
-		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered()) {
-			m_SelectedEntity = {};
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered()) {
+			SetSelectedEntity({});
+		}
+
+		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) || ImGui::IsKeyDown(ImGuiKey_F2)) {
+			m_EditingEntity = m_SelectedEntity;
 		}
 
 		// Right Click on blank panel area
@@ -45,15 +56,24 @@ namespace Pistachio {
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity) {
 		std::string& tag = entity.Component<TagComponent>().Tag;
 		
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0);
-		bool opened = ImGui::TreeNodeEx((void*)(size_t)(unsigned int)entity, flags, tag.c_str());
-
-		if (ImGui::IsItemClicked()) {
-			m_SelectedEntity = entity;
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0);
+		if (m_EditingEntity != entity) {
+			flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 		}
 
+		bool opened = ImGui::TreeNodeEx((void*)(size_t)(unsigned int)entity, flags, "");
+
+		if (ImGui::IsItemClicked()) {
+			SetSelectedEntity(entity);
+		}
+
+		// Context menu logic
 		bool deleteEntity = false;
 		if (ImGui::BeginPopupContextItem()) {
+			if (ImGui::MenuItem("Rename Entity")) {
+				m_EditingEntity = entity;
+			}
+
 			if (ImGui::MenuItem("Delete Entity")) {
 				deleteEntity = true;
 			}
@@ -65,13 +85,52 @@ namespace Pistachio {
 			ImGui::EndPopup();
 		}
 
+		// Reordering logic
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+			ImGui::SetDragDropPayload("SCENE_HIEREARCHY_ENTITY", &entity, sizeof(entity));
+
+			ImGui::Text(entity.Name().c_str());
+
+			ImGui::EndDragDropSource();
+		}
+
+		if (ImGui::BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCENE_HIEREARCHY_ENTITY")) {
+				Entity& droppedEntity = *(Entity*)payload->Data;
+				m_Context->MoveEntityToEntityPosition(droppedEntity, entity);
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		// Editing Tag logic
+		ImGui::SameLine();
+		if (m_EditingEntity == entity) {
+			char buffer[256];
+			strncpy(buffer, tag.c_str(), tag.size() + 1);
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.0f, 0.0f));
+			if (ImGui::InputText("###Rename", buffer, sizeof(buffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue)) {
+				tag = buffer;
+				m_EditingEntity = {};
+			}
+			ImGui::PopStyleVar();
+
+			ImGui::SetKeyboardFocusHere(-1);
+
+			if (ImGui::IsKeyDown(ImGuiKey_Escape) || ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered()) {
+				m_EditingEntity = {};
+			}
+		} else {
+			ImGui::Text(tag.c_str());
+		}
+
 		if (opened) {
 			ImGui::TreePop();
 		}
 
+		// Deletion logic
 		if (deleteEntity) {
 			if (m_SelectedEntity == entity) {
-				m_SelectedEntity = {};
+				SetSelectedEntity({});
 			}
 			m_Context->DestroyEntity(entity);
 		}

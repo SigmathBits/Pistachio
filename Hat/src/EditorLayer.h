@@ -50,6 +50,7 @@ namespace Pistachio {
 		void ChangeSceneTo(Ref<Scene> scene);
 		void ChangeActiveSceneTo(Ref<Scene> scene);
 
+		void SetSelectedEntity(Entity entity);
 		void SetWindowTitle(const std::string& title, bool unsavedChanges = false);
 
 	private:

@@ -73,10 +73,10 @@ namespace Pistachio {
 		auto& sourceSceneRegistery = other->m_Registry;
 		auto& destSceneRegistery = newScene->m_Registry;
 
-		auto view = sourceSceneRegistery.view<UUIDComponent, TagComponent>();
-		for (auto&& [enttID, uuidComponent, tagComponent] : view.each()) {
-			entt::entity destEnttID = newScene->CreateEntityWithUUID(uuidComponent.UUID, tagComponent.Tag);
-			destEnttIDsByUUID[uuidComponent.UUID] = destEnttID;
+		for (auto& entity : other->m_Entities) {
+			UUID uuid = entity.UUID();
+			entt::entity destEnttID = newScene->CreateEntityWithUUID(uuid, entity.Name());
+			destEnttIDsByUUID[uuid] = destEnttID;
 		}
 
 		CopyComponentGroup(AllComponents{}, destSceneRegistery, sourceSceneRegistery, destEnttIDsByUUID);
@@ -95,6 +95,7 @@ namespace Pistachio {
 		entity.AddComponent<TransformComponent>();
 
 		m_EntityMap[uuid] = entity;
+		m_Entities.emplace_back(entity);
 
 		return entity;
 	}
@@ -109,7 +110,31 @@ namespace Pistachio {
 
 	void Scene::DestroyEntity(Entity entity) {
 		m_EntityMap.erase(entity.UUID());
+		m_Entities.erase(std::remove(m_Entities.begin(), m_Entities.end(), entity), m_Entities.end());
+
 		m_Registry.destroy(entity);
+	}
+
+	int Scene::EntityPosition(Entity entity) {
+		auto pos = std::find(m_Entities.begin(), m_Entities.end(), entity);
+		if (pos == m_Entities.end()) {
+			return -1;
+		}
+		return pos - m_Entities.begin();
+	}
+
+	void Scene::MoveEntityToEntityPosition(Entity moveEntity, Entity destEntity) {
+		int oldPosition = EntityPosition(moveEntity);
+		int newPosition = EntityPosition(destEntity);
+		if (oldPosition == -1 || newPosition == -1) {
+			return;
+		}
+
+		if (newPosition > oldPosition) {
+			std::rotate(m_Entities.begin() + oldPosition, m_Entities.begin() + oldPosition + 1, m_Entities.begin() + newPosition + 1);
+		} else {
+			std::rotate(m_Entities.rend() - oldPosition - 1, m_Entities.rend() - oldPosition, m_Entities.rend() - newPosition);
+		}
 	}
 
 	Entity Scene::EntityByUUID(UUID uuid) {
@@ -261,9 +286,9 @@ namespace Pistachio {
 	}
 
 	void Scene::EachEntity(std::function<void(Entity)> callback) {
-		m_Registry.each([this, &callback](auto entity) {
-			callback(Entity(entity, this));
-		});
+		for (auto& entity : m_Entities) {
+			callback(entity);
+		}
 	}
 
 	void Scene::Init2DPhysics() {

@@ -373,7 +373,7 @@ namespace Pistachio {
 
 		/// DockSpace windows begin
 		m_SceneHierarchyPanel.OnImGuiRender();
-		m_PropertiesPanel.SetSelectedEntity(m_SceneHierarchyPanel.SelectedEntity());
+		SetSelectedEntity(m_SceneHierarchyPanel.SelectedEntity());
 		m_PropertiesPanel.OnImGuiRender();
 
 		m_ContentBrowserPanel.OnImGuiRender();
@@ -543,8 +543,7 @@ namespace Pistachio {
 					m_GizmoType = -1;
 					return true;
 				} else if (m_SceneHierarchyPanel.SelectedEntity()) {
-					m_SceneHierarchyPanel.SetSelectedEntity({});
-					m_PropertiesPanel.SetSelectedEntity({});
+					SetSelectedEntity({});
 					return true;
 				}
 				break;
@@ -634,8 +633,7 @@ namespace Pistachio {
 	bool EditorLayer::OnMouseButtonReleased(MouseButtonReleasedEvent& event) {
 		if (m_ViewportHovered && event.MouseButton() == PST_MOUSE_BUTTON_LEFT
 			&& (m_GizmoType == -1 || !ImGuizmo::IsOver() || !m_SceneHierarchyPanel.SelectedEntity())) {
-			m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
-			m_PropertiesPanel.SetSelectedEntity(m_HoveredEntity);
+			SetSelectedEntity(m_HoveredEntity);
 
 			if (m_SceneState == SceneState::Play || !m_HoveredEntity) return false;
 
@@ -736,11 +734,15 @@ namespace Pistachio {
 
 	void EditorLayer::ChangeActiveSceneTo(Ref<Scene> scene) {
 		m_HoveredEntity = {};
-		m_SceneHierarchyPanel.SetSelectedEntity({});
-		m_PropertiesPanel.SetSelectedEntity({});
+		SetSelectedEntity({});
 
 		m_ActiveScene = scene;
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::SetSelectedEntity(Entity entity) {
+		m_SceneHierarchyPanel.SetSelectedEntity(entity);
+		m_PropertiesPanel.SetSelectedEntity(entity);
 	}
 
 	void EditorLayer::SetWindowTitle(const std::string& title, bool unsavedChanges /*= false*/) {

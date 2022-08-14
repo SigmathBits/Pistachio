@@ -7,8 +7,6 @@
 #include "Pistachio/Core/Application.h"
 #include "Pistachio/Core/Input.h"
 
-#include "Pistachio/Renderer/Texture.h"
-
 #include "Pistachio/Utils/Utils.h"
 #include "Pistachio/Utils/ImGuiUtils.h"
 

@@ -33,6 +33,9 @@ namespace Pistachio {
 		Entity EntityByUUID(UUID uuid);
 		b2Body* RigidBodyByUUID(UUID uuid);
 
+		int EntityPosition(Entity entity);
+		void MoveEntityToEntityPosition(Entity moveEntity, Entity destEntity);
+
 		inline const std::string& Name() const { return m_Name; }
 		inline void SetName(const std::string& name) { m_Name = name; }
 
@@ -80,6 +83,7 @@ namespace Pistachio {
 		std::unordered_map<UUID, b2Body*> m_RuntimeBodies;
 
 		std::unordered_map<UUID, entt::entity> m_EntityMap;
+		std::vector<Entity> m_Entities;
 
 		friend class Entity;
 	};
