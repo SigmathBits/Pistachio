@@ -108,8 +108,8 @@ namespace Pistachio {
 	}
 
 	void Scene::DestroyEntity(Entity entity) {
-		m_Registry.destroy(entity);
 		m_EntityMap.erase(entity.UUID());
+		m_Registry.destroy(entity);
 	}
 
 	Entity Scene::EntityByUUID(UUID uuid) {
