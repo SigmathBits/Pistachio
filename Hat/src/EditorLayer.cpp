@@ -733,14 +733,22 @@ namespace Pistachio {
 	}
 
 	void EditorLayer::ChangeActiveSceneTo(Ref<Scene> scene) {
+		Entity selectedEntity = m_SelectedEntity;
+
 		m_HoveredEntity = {};
 		SetSelectedEntity({});
 
 		m_ActiveScene = scene;
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+		// Maintain which entity is selected
+		if (selectedEntity) {
+			SetSelectedEntity(scene->EntityByUUID(selectedEntity.UUID()));
+		}
 	}
 
 	void EditorLayer::SetSelectedEntity(Entity entity) {
+		m_SelectedEntity = entity;
 		m_SceneHierarchyPanel.SetSelectedEntity(entity);
 		m_PropertiesPanel.SetSelectedEntity(entity);
 	}

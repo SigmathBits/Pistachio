@@ -88,6 +88,8 @@ namespace Pistachio {
 		PropertiesPanel m_PropertiesPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
 
+		Entity m_SelectedEntity;
+
 		// Editor Resources
 		Ref<Texture2D> m_PlayIcon;
 		Ref<Texture2D> m_SimulateIcon;
