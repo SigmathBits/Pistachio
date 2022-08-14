@@ -29,6 +29,9 @@ namespace Pistachio {
 		Entity DuplicateEntity(Entity entity);
 		void DestroyEntity(Entity entity);
 
+		int EntityPosition(Entity entity);
+		void MoveEntityToEntityPosition(Entity moveEntity, Entity destEntity);
+
 		inline const std::string& Name() const { return m_Name; }
 		inline void SetName(const std::string& name) { m_Name = name; }
 
@@ -74,6 +77,8 @@ namespace Pistachio {
 
 		b2World* m_PhysicsWorld = nullptr;
 		std::unordered_map<UUID, b2Body*> m_RuntimeBodies;
+
+		std::vector<Entity> m_Entities;
 
 		friend class Entity;
 	};

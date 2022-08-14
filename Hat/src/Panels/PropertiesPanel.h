@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Pistachio/Renderer/Texture.h"
+
 #include "Pistachio/Scene/Entity.h"
 
 
