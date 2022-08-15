@@ -482,6 +482,7 @@ namespace Pistachio {
 		m_RuntimeScene->OnRuntimeStart();
 
 		ChangeActiveSceneTo(m_RuntimeScene);
+		m_SceneHierarchyPanel.SetCanReorderEntities(false);
 	}
 
 	void EditorLayer::OnSceneStop() {
@@ -498,6 +499,7 @@ namespace Pistachio {
 		}
 
 		ChangeActiveSceneTo(m_EditorScene);
+		m_SceneHierarchyPanel.SetCanReorderEntities(true);
 
 		m_RuntimeScene = nullptr;
 
@@ -516,6 +518,7 @@ namespace Pistachio {
 		m_RuntimeScene->OnSimulationStart();
 
 		ChangeActiveSceneTo(m_RuntimeScene);
+		m_SceneHierarchyPanel.SetCanReorderEntities(false);
 	}
 
 	bool EditorLayer::OnEvent(Event& event) {
