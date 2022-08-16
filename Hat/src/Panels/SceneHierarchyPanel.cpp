@@ -37,7 +37,7 @@ namespace Pistachio {
 			SetSelectedEntity({});
 		}
 
-		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) || ImGui::IsKeyDown(ImGuiKey_F2)) {
+		if (ImGui::IsKeyDown(ImGuiKey_F2) && ImGui::IsWindowFocused()) {
 			m_EditingEntity = m_SelectedEntity;
 		}
 
@@ -62,6 +62,7 @@ namespace Pistachio {
 		}
 
 		bool opened = ImGui::TreeNodeEx((void*)(size_t)(unsigned int)entity, flags, "");
+		bool hovered = ImGui::IsItemHovered();
 
 		if (ImGui::IsItemClicked()) {
 			SetSelectedEntity(entity);
@@ -86,7 +87,7 @@ namespace Pistachio {
 		}
 
 		// Reordering logic
-		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+		if (m_CanReorderEntities && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 			ImGui::SetDragDropPayload("SCENE_HIEREARCHY_ENTITY", &entity, sizeof(entity));
 
 			ImGui::Text(entity.Name().c_str());
@@ -94,7 +95,7 @@ namespace Pistachio {
 			ImGui::EndDragDropSource();
 		}
 
-		if (ImGui::BeginDragDropTarget()) {
+		if (m_CanReorderEntities && ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCENE_HIEREARCHY_ENTITY")) {
 				Entity& droppedEntity = *(Entity*)payload->Data;
 				m_Context->MoveEntityToEntityPosition(droppedEntity, entity);
@@ -116,11 +117,16 @@ namespace Pistachio {
 
 			ImGui::SetKeyboardFocusHere(-1);
 
-			if (ImGui::IsKeyDown(ImGuiKey_Escape) || ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered()) {
+			if (ImGui::IsKeyDown(ImGuiKey_Escape)
+				|| (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseClicked(ImGuiMouseButton_Right)) && !ImGui::IsItemHovered()) {
 				m_EditingEntity = {};
 			}
 		} else {
 			ImGui::Text(tag.c_str());
+		}
+
+		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && hovered) {
+			m_EditingEntity = entity;
 		}
 
 		if (opened) {

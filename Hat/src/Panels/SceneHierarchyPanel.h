@@ -18,6 +18,8 @@ namespace Pistachio {
 		inline Entity SelectedEntity() const { return m_SelectedEntity; }
 		void SetSelectedEntity(Entity entity);
 
+		inline void SetCanReorderEntities(bool canReorderEntities) { m_CanReorderEntities = canReorderEntities; }
+
 		void OnImGuiRender();
 
 	private:
@@ -28,6 +30,8 @@ namespace Pistachio {
 		Entity m_SelectedEntity;
 
 		Entity m_EditingEntity;
+
+		bool m_CanReorderEntities = true;
 	};
 
 }

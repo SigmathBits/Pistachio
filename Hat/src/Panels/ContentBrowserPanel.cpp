@@ -18,8 +18,16 @@ namespace Pistachio {
 		: EventListener({ EventType::MouseScrolled, EventType::KeyPressed }), m_AssetsDirectory(directory), m_CurrentDirectory(directory) {
 		m_DirectoryIcon = Texture2D::Create("resources/icons/content-browser/folder.png", 4);
 		m_FileIcon = Texture2D::Create("resources/icons/content-browser/file.png", 4);
-		m_ImageIcon = Texture2D::Create("resources/icons/content-browser/image.png", 4);
-		m_ShaderIcon = Texture2D::Create("resources/icons/content-browser/shader.png", 4);
+
+
+		Ref<Texture2D> imageIcon = Texture2D::Create("resources/icons/content-browser/image.png", 4);
+		m_ExtensionIcons[".png"] = imageIcon;
+		m_ExtensionIcons[".jpg"] = imageIcon;
+						  
+		Ref<Texture2D> shaderIcon = Texture2D::Create("resources/icons/content-browser/shader.png", 4);
+		m_ExtensionIcons[".glsl"] = shaderIcon;
+		m_ExtensionIcons[".frag"] = shaderIcon;
+		m_ExtensionIcons[".vert"] = shaderIcon;
 	}
 
 	void ContentBrowserPanel::OnImGuiRender() {
@@ -67,14 +75,13 @@ namespace Pistachio {
 			std::string filename = path.filename().string();
 
 			ImGui::PushID(path.string().c_str());
-
+			
 			Ref<Texture2D> icon;
-			if (Utils::EndsWith(filename, ".png")) {
-				icon = m_ImageIcon;
-			} else if (Utils::EndsWith(filename, ".glsl") || Utils::EndsWith(filename, ".frag") || Utils::EndsWith(filename, ".vert")) {
-				icon = m_ShaderIcon;
+			if (directoryEntry.is_directory()) {
+				icon = m_DirectoryIcon;
 			} else {
-				icon = directoryEntry.is_directory() ? m_DirectoryIcon : m_FileIcon;
+				auto extensionIcon = m_ExtensionIcons.find(path.extension().string());
+				icon = extensionIcon != m_ExtensionIcons.end() ? extensionIcon->second : m_FileIcon;
 			}
 
 			Utils::ImGuiImageButton(icon, { (float)m_ThumbnailSize, (float)m_ThumbnailSize });
