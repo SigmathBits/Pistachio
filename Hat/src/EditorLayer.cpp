@@ -729,10 +729,10 @@ namespace Pistachio {
 			OnSceneStop();
 		}
 
-		m_EditorScene = scene;
-		m_EditorScene->OnViewportResize((unsigned int)m_ViewportSize.x, (unsigned int)m_ViewportSize.y);
+		scene->OnViewportResize((unsigned int)m_ViewportSize.x, (unsigned int)m_ViewportSize.y);
+		ChangeActiveSceneTo(scene);
 
-		ChangeActiveSceneTo(m_EditorScene);
+		m_EditorScene = scene;
 	}
 
 	void EditorLayer::ChangeActiveSceneTo(Ref<Scene> scene) {
