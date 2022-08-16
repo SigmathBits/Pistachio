@@ -25,8 +25,8 @@ namespace Pistachio {
 
 		Ref<Texture2D> m_DirectoryIcon;
 		Ref<Texture2D> m_FileIcon;
-		Ref<Texture2D> m_ImageIcon;
-		Ref<Texture2D> m_ShaderIcon;
+
+		std::unordered_map<std::string, Ref<Texture2D>> m_ExtensionIcons;
 
 		unsigned int m_ThumbnailSize = 128;
 		unsigned int m_Padding = 16;
