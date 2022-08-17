@@ -24,8 +24,10 @@ project "Hat"
 		"Pistachio"
 	}
 
+
 	filter "system:windows"
 		systemversion "latest"
+
 
 	filter "configurations:Debug"
 		defines "PST_DEBUG"

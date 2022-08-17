@@ -5,9 +5,11 @@
 **.vcxproj.filters
 **.vcxproj.user
 **.csproj
+**.csproj.user
 
 # Binary directories
 **/bin/**/
+Binaries/
 [Ii]ntermediates/
 bin-int/
 

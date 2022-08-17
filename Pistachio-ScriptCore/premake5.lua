@@ -3,22 +3,23 @@ project "Pistachio-ScriptCore"
 	language "C#"
 	dotnetframework "4.7.2"
 
-	targetdir "%{wks.location}/Hat/Resources/Scripts"
-	objdir "%{wks.location}/Hat/Resources/Scripts/Intermediates"
+	targetdir "../Hat/Resources/Scripts"
+	objdir "../Hat/Resources/Scripts/Intermediates"
 
 	files {
 		"Source/**.cs",
 		"Properties/**.cs",
 	}
 
+
 	filter "configurations:Debug"
-		runtime "Debug"
-		symbols "on"
+		optimize "off"
+		symbols "default"
 
 	filter "configurations:Release"
-		runtime "Release"
 		optimize "on"
+		symbols "default"
 
 	filter "configurations:Dist"
-		runtime "Release"
-		optimize "on"
+		optimize "full"
+		symbols "off"

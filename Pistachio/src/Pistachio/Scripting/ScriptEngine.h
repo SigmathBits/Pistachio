@@ -28,7 +28,7 @@ namespace Pistachio {
 	public:
 		ScriptClass() = default;
 
-		ScriptClass(const std::string& namespaceName, const std::string& className);
+		ScriptClass(MonoImage* image, const std::string& namespaceName, const std::string& className);
 
 		MonoObject* Instantiate();
 
@@ -94,6 +94,7 @@ namespace Pistachio {
 		static bool EntityClassExists(const std::string& fullClassName);
 
 		static void LoadAssembly(const std::filesystem::path& filepath);
+		static void LoadAppAssembly(const std::filesystem::path& filepath);
 
 		static Scene* SceneContext();
 		static std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses();
@@ -102,7 +103,7 @@ namespace Pistachio {
 		static void InitMono();
 		static void ShutdownMono();
 
-		static void LoadAssemblyClasses(MonoAssembly* assembly);
+		static void LoadAppAssemblyClasses();
 	};
 
 }

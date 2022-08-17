@@ -131,6 +131,9 @@ namespace Pistachio {
 		MonoAssembly* CoreAssembly = nullptr;
 		MonoImage* CoreAssemblyImage = nullptr;
 
+		MonoAssembly* AppAssembly = nullptr;
+		MonoImage* AppAssemblyImage = nullptr;
+
 		ScriptClass EntityClass;
 
 		std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
@@ -141,38 +144,13 @@ namespace Pistachio {
 
 	static ScriptEngineData* s_Data;
 
-	MonoClass* MonoClassFromName(const std::string& namespaceName, const std::string& className, MonoImage* image = nullptr) {
-		return mono_class_from_name(image ? image : s_Data->CoreAssemblyImage, namespaceName.c_str(), className.c_str());
-	}
-
-	MonoObject* InstantiateClass(const std::string& namespaceName, const std::string& className) {
-		MonoClass* monoClass = MonoClassFromName(namespaceName, className);
-
-		MonoObject* instance = mono_object_new(s_Data->AppDomain, monoClass);
-
-		if (instance == nullptr) {
-			PST_CORE_ERROR("Failed to instantiate class {}.{}", namespaceName, className);
-			return nullptr;
-		}
-
-		mono_runtime_object_init(instance);
-
-		return instance;
-	}
-
-	MonoObject* InstantiateClass(MonoClass* monoClass) {
-		MonoObject* instance = mono_object_new(s_Data->AppDomain, monoClass);
-		mono_runtime_object_init(instance);
-
-		return instance;
-	}
-
 	void ScriptEngine::Init() {
 		s_Data = new ScriptEngineData;
 
 		InitMono();
 
 		LoadAssembly("Resources/Scripts/Pistachio-ScriptCore.dll");
+		LoadAppAssembly("SandboxProject/Assets/Scripts/Binaries/Sandbox.dll");  // FIXME: Hardcoded for now
 
 
 		// Set up internal calls
@@ -180,9 +158,9 @@ namespace Pistachio {
 		ScriptGlue::RegisterInternalFunctions();
 
 		// Get Entity Class
-		s_Data->EntityClass = ScriptClass("Pistachio", "Entity");
+		s_Data->EntityClass = ScriptClass(s_Data->CoreAssemblyImage, "Pistachio", "Entity");
 
-		LoadAssemblyClasses(s_Data->CoreAssembly);
+		LoadAppAssemblyClasses();
 	}
 
 	void ScriptEngine::Shutdown() {
@@ -249,10 +227,10 @@ namespace Pistachio {
 		// TODO: Make shutdown work
 
 		//mono_domain_unload(s_Data->AppDomain);
-		//s_Data->AppDomain = nullptr;
+		s_Data->AppDomain = nullptr;
 
 		//mono_jit_cleanup(s_Data->RootDomain);
-		//s_Data->RootDomain = nullptr;
+		s_Data->RootDomain = nullptr;
 	}
 
 	void ScriptEngine::LoadAssembly(const std::filesystem::path& filepath) {
@@ -266,6 +244,12 @@ namespace Pistachio {
 		//Utils::PrintAssemblyTypes(s_Data->CoreAssembly);
 	}
 
+	void ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath) {
+		s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath);
+
+		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
+	}
+
 	Scene* ScriptEngine::SceneContext() {
 		return s_Data->SceneContext;
 	}
@@ -274,9 +258,8 @@ namespace Pistachio {
 		return s_Data->EntityClasses;
 	}
 
-	void ScriptEngine::LoadAssemblyClasses(MonoAssembly* assembly) {
-		MonoImage* image = mono_assembly_get_image(assembly);
-		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+	void ScriptEngine::LoadAppAssemblyClasses() {
+		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_Data->AppAssemblyImage, MONO_TABLE_TYPEDEF);
 		int typeCount = mono_table_info_get_rows(typeDefinitionsTable);
 
 		s_Data->EntityClasses.clear();
@@ -284,18 +267,18 @@ namespace Pistachio {
 			uint32_t columns[MONO_TYPEDEF_SIZE];
 			mono_metadata_decode_row(typeDefinitionsTable, i, columns, MONO_TYPEDEF_SIZE);
 
-			std::string nameSpace = mono_metadata_string_heap(image, columns[MONO_TYPEDEF_NAMESPACE]);
-			std::string name = mono_metadata_string_heap(image, columns[MONO_TYPEDEF_NAME]);
+			std::string nameSpace = mono_metadata_string_heap(s_Data->AppAssemblyImage, columns[MONO_TYPEDEF_NAMESPACE]);
+			std::string name = mono_metadata_string_heap(s_Data->AppAssemblyImage, columns[MONO_TYPEDEF_NAME]);
 			std::string fullName = nameSpace.empty() ? name : fmt::format("{}.{}", nameSpace, name);
 
-			MonoClass* monoClass = MonoClassFromName(nameSpace, name, image);
+			MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace.c_str(), name.c_str());
 			if (monoClass == s_Data->EntityClass) {
 				continue;
 			}
 
 			bool isEntity = mono_class_is_subclass_of(monoClass, s_Data->EntityClass, false);
 			if (isEntity) {
-				s_Data->EntityClasses[fullName] = CreateRef<ScriptClass>(nameSpace, name);
+				s_Data->EntityClasses[fullName] = CreateRef<ScriptClass>(s_Data->AppAssemblyImage, nameSpace, name);
 			}
 
 			PST_CORE_TRACE("{}.{} (isEntity: {})", nameSpace, name, isEntity);
@@ -303,13 +286,22 @@ namespace Pistachio {
 	}
 
 
-	ScriptClass::ScriptClass(const std::string& namespaceName, const std::string& className)
+	ScriptClass::ScriptClass(MonoImage* image, const std::string& namespaceName, const std::string& className)
 		: m_Namespace(namespaceName), m_Name(className) {
-		m_MonoClass = MonoClassFromName(namespaceName, className);
+		m_MonoClass = mono_class_from_name(image, namespaceName.c_str(), className.c_str());
 	}
 
 	MonoObject* ScriptClass::Instantiate() {
-		return InstantiateClass(m_MonoClass);
+		MonoObject* instance = mono_object_new(s_Data->AppDomain, m_MonoClass);
+
+		if (instance == nullptr) {
+			PST_CORE_ERROR("Failed to instantiate class {}.{}", m_Namespace, m_Name);
+			return nullptr;
+		}
+
+		mono_runtime_object_init(instance);
+
+		return instance;
 	}
 
 	MonoMethod* ScriptClass::Method(const std::string& methodName, size_t paramCount, MonoObject** exception) {
